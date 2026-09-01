@@ -1424,6 +1424,16 @@ body.dark .access-denied-card{
   pointer-events:none !important;
 }
 
+
+#raisedBy[readonly]{
+  background:rgba(122,44,255,.055) !important;
+  color:var(--ink) !important;
+  cursor:default !important;
+}
+body.dark #raisedBy[readonly]{
+  background:rgba(122,44,255,.12) !important;
+}
+
 </style>
 </head>
 <body>
@@ -1481,6 +1491,7 @@ body.dark .access-denied-card{
             <div class="field"><label>Environment</label><select class="select" id="environment"><option value="Production" selected>Production</option><option value="Testing/CERT">Testing/CERT</option></select></div>
             <div class="field"><label>Device / Kiosk ID <span>*</span></label><input class="input" id="device" placeholder="e.g. SYDT3ABD001" required /></div>
             <div class="field"><label>PNR</label><input class="input" id="pnr" placeholder="e.g. ABCDEF" maxlength="6" /></div>
+            <div class="field"><label>Raised By <span>*</span></label><input class="input" id="raisedBy" placeholder="Enter your name" required /></div>
             <div class="field"><label>Issue category <span>*</span></label><select class="select" id="category" required><option value="">Select category</option></select></div>
             <div class="field full"><label>Issue description <span>*</span></label><textarea class="textarea" id="description" maxlength="1000" placeholder="Describe what happened, including any error messages, steps taken and impact." required></textarea><div class="hint"><span id="count">0</span>/1000</div></div>
             <div class="field full"><label>Urgency <span>*</span></label><div class="urgency" id="urgency"><button type="button" data-u="Low"><span class="u-dot u-low"></span>Low<small>Minor issue</small></button><button type="button" data-u="Medium"><span class="u-dot u-med"></span>Medium<small>Affects some</small></button><button type="button" data-u="High"><span class="u-dot u-high"></span>High<small>Affects many</small></button><button type="button" data-u="Critical"><span class="u-dot u-critical"></span>Critical<small>System down</small></button></div></div>
@@ -1702,6 +1713,18 @@ const authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 let currentSession = null;
 let currentUser = null;
 
+
+function formatRaisedByFromEmail(email){
+  const local=(email||'').split('@')[0];
+  const parts=local.split('.').filter(Boolean);
+
+  if(parts.length>=2){
+    return parts.map(part=>part.charAt(0).toUpperCase()+part.slice(1).toLowerCase()).join(' ');
+  }
+
+  return local ? local.charAt(0).toUpperCase()+local.slice(1).toLowerCase() : '';
+}
+
 function isAuthenticated(){
   return !!currentSession?.user;
 }
@@ -1774,6 +1797,18 @@ function showAccessDenied(){
 function updateAuthUI(){
   const signedIn=isAuthenticated();
 
+  const raisedBy=document.getElementById('raisedBy');
+  if(raisedBy){
+    if(signedIn){
+      raisedBy.value=formatRaisedByFromEmail(currentUser?.email || '');
+      raisedBy.readOnly=true;
+      raisedBy.setAttribute('title','Pulled automatically from your Virgin Australia account');
+    }else{
+      raisedBy.value='';
+      raisedBy.readOnly=false;
+      raisedBy.removeAttribute('title');
+    }
+  }
 
   const staffLoginBtn=document.getElementById('staffLoginBtn');
   if(staffLoginBtn){
@@ -1995,6 +2030,7 @@ document.getElementById('clear').addEventListener('click',()=>{
   selectedUrgency='';
   document.querySelectorAll('#urgency button').forEach(x=>x.classList.remove('selected'));
   document.getElementById('count').textContent='0';
+  updateAuthUI();
   const statusBox=document.getElementById('submit-status');
   if(statusBox){ statusBox.style.display='none'; statusBox.textContent=''; }
 });
@@ -2045,6 +2081,7 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
   const device = document.getElementById('device').value.trim();
   const issueCategory = document.getElementById('category').value;
   const description = document.getElementById('description').value.trim();
+  const raisedBy = document.getElementById('raisedBy').value.trim();
 
   // Clear, human-readable validation instead of a button that appears to do nothing.
   if(!airportValue){
@@ -2067,6 +2104,11 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
     document.getElementById('description').focus();
     return;
   }
+  if(!raisedBy){
+    showStatus('Please enter the name of the person raising the issue.');
+    document.getElementById('raisedBy').focus();
+    return;
+  }
   if(!selectedUrgency){
     showStatus('Please select an urgency.');
     return;
@@ -2086,6 +2128,9 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
     environment: document.getElementById('environment').value || 'Production',
     device_id: device,
     pnr: document.getElementById('pnr').value.trim().toUpperCase() || null,
+    raised_by: isAuthenticated()
+      ? formatRaisedByFromEmail(currentUser?.email || '')
+      : raisedBy,
     category: issueCategory,
     description,
     urgency: selectedUrgency,
@@ -2132,6 +2177,7 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
     document.querySelectorAll('#urgency button').forEach(x=>x.classList.remove('selected'));
     document.getElementById('count').textContent='0';
     updateSystem(currentSystem);
+    updateAuthUI();
 
     await loadIssues();
 
@@ -2255,6 +2301,7 @@ function openTicket(id){
     ticketField('Environment', issue.environment || 'Production'),
     ticketField('Device / Kiosk ID', issue.device_id || ''),
     ticketField('PNR', issue.pnr || ''),
+    ticketField('Raised By', issue.raised_by || ''),
     ticketField('Issue Category', issue.category),
     ticketField('Urgency', issue.urgency),
     ticketField('Created', issue.created_at ? new Date(issue.created_at).toLocaleString('en-AU') : ''),
@@ -2528,6 +2575,7 @@ function exportCsv(){
     'Environment',
     'Device / Kiosk ID',
     'PNR',
+    'Raised By',
     'Issue Category',
     'Portal Status',
     'Resolution Notes',
@@ -2587,6 +2635,7 @@ function exportCsv(){
       i.environment || 'Production',
       i.device_id || '',
       i.pnr || '',
+      i.raised_by || '',
       i.category,
       i.status,
       i.resolution_notes || '',
