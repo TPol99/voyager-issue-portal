@@ -1919,6 +1919,99 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
   }
 }
 
+
+/* ===== Smart workflow additions ===== */
+.testing-run-meta{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:14px;margin:0 0 18px}
+.testing-history-card,.personal-dashboard,.timeline-section{
+  border:1px solid rgba(255,255,255,.62);border-radius:20px;background:rgba(255,255,255,.34);
+  box-shadow:0 14px 30px rgba(48,35,68,.07),inset 0 1px 0 rgba(255,255,255,.56);
+  backdrop-filter:blur(18px) saturate(135%);padding:18px;margin:18px 0
+}
+.personal-dashboard{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.personal-dashboard>div:first-child{display:flex;gap:7px;align-items:baseline}
+.personal-dashboard>div:first-child span{color:var(--muted);font-size:13px}
+.personal-dashboard>div:first-child strong{font-size:20px}
+.personal-stats{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.personal-stats strong{color:var(--ink);font-size:16px}
+.issue-search-control{min-width:260px!important;flex:1 1 320px!important}
+.timeline-section h3{margin:0 0 14px}
+.ticket-timeline{display:grid;gap:0}
+.timeline-item{position:relative;padding:0 0 16px 24px;color:var(--muted);font-size:12px;line-height:1.45}
+.timeline-item:before{content:"";position:absolute;left:5px;top:5px;width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#7a2cff,#00a9a5)}
+.timeline-item:after{content:"";position:absolute;left:9px;top:15px;bottom:0;width:1px;background:var(--line)}
+.timeline-item:last-child:after{display:none}.timeline-item strong{display:block;color:var(--ink);font-size:13px;margin-bottom:2px}
+.testing-history-table{width:100%;border-collapse:collapse}.testing-history-table th,.testing-history-table td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}
+.testing-history-table tr{cursor:pointer}.testing-history-table tbody tr:hover{background:var(--soft)}
+.raise-test-issue{font-size:11px!important;padding:7px 9px!important}
+body.dark .testing-history-card,body.dark .personal-dashboard,body.dark .timeline-section{background:rgba(28,21,39,.40);border-color:rgba(255,255,255,.10)}
+@media(max-width:900px){.testing-run-meta{grid-template-columns:1fr 1fr}.testing-run-meta .field:last-child{grid-column:1/-1}}
+@media(max-width:700px){.testing-run-meta{grid-template-columns:1fr}.testing-run-meta .field:last-child{grid-column:auto}.personal-dashboard{align-items:flex-start;flex-direction:column}.issue-search-control{min-width:0!important;width:100%!important}}
+
+
+/* ===== Testing results: Pass / Fail / Untested ===== */
+.test-result-controls{display:flex;align-items:center;justify-content:center;gap:6px}
+.pass-check{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.pass-check input{position:absolute;opacity:0;pointer-events:none}
+.pass-check span{
+  width:29px;height:29px;display:grid;place-items:center;border-radius:8px;
+  border:1px solid var(--line);background:rgba(255,255,255,.42);color:transparent;
+  font-weight:900;font-size:15px;transition:.18s ease;
+}
+.pass-check input:checked + span{background:#22b978;border-color:#22b978;color:#fff}
+.testing-fail{
+  width:29px;height:29px;border:1px solid var(--line);border-radius:8px;
+  background:rgba(255,255,255,.42);color:#b67a84;font-weight:900;font-size:14px;
+  cursor:pointer;transition:.18s ease;
+}
+.testing-fail:hover,.testing-fail.selected{background:#e92f3d;border-color:#e92f3d;color:#fff}
+.test-cell.test-failed{background:rgba(233,47,61,.07)}
+.testing-device-input-row{display:flex;align-items:center;gap:6px}
+.raise-test-issue{
+  display:block;width:100%;margin-top:6px;padding:6px 8px;border-radius:9px;
+  border:1px solid rgba(233,47,61,.18);background:rgba(233,47,61,.08);
+  color:#b4232e;font-size:11px;font-weight:850;cursor:pointer
+}
+.raise-test-issue:hover{background:#fff0f1}
+@media(max-width:1024px){
+  .pass-check span,.testing-fail{width:34px;height:34px}
+}
+
+
+/* ===== Raise Issue popup from Testing ===== */
+.testing-raise-backdrop{overflow-y:auto !important;-webkit-overflow-scrolling:touch;align-items:flex-start !important;padding-top:max(18px,env(safe-area-inset-top)) !important;padding-bottom:max(28px,env(safe-area-inset-bottom)) !important}
+.testing-raise-card{width:min(820px,94vw) !important;max-height:calc(100dvh - 36px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.testing-raise-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.testing-raise-grid .full{grid-column:1 / -1}
+.testing-raise-grid label{display:block;font-size:12px;font-weight:800;margin:2px 0 6px}
+.testing-raise-grid .input,.testing-raise-grid .select,.testing-raise-grid .textarea{width:100%}
+@media(max-width:700px){.testing-raise-card{width:calc(100vw - 20px) !important;padding:22px !important}.testing-raise-grid{grid-template-columns:1fr}.testing-raise-grid .full{grid-column:auto}}
+
+/* ===== Public Home page ===== */
+.home-hero{display:grid;grid-template-columns:minmax(0,1.35fr) 300px;gap:30px;align-items:center;padding:34px;border-radius:28px;background:linear-gradient(135deg,rgba(255,255,255,.64),rgba(244,232,255,.42));border:1px solid rgba(255,255,255,.72);box-shadow:0 18px 45px rgba(52,34,75,.08),inset 0 1px 0 rgba(255,255,255,.72);backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);margin-bottom:18px}
+.home-kicker{font-size:11px;font-weight:900;letter-spacing:.16em;color:#7a2cff;margin-bottom:9px}.home-copy h1{margin:0 0 10px;font-size:clamp(38px,4.2vw,58px);line-height:1.02;letter-spacing:-.04em}.home-copy p{max-width:650px;margin:0;color:var(--muted);font-size:16px;line-height:1.65}.home-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.home-orbit{width:250px;height:250px;margin:auto;position:relative;display:grid;place-items:center}.home-orbit-ring{position:absolute;border-radius:50%;border:1px solid rgba(122,44,255,.18);box-shadow:0 0 30px rgba(122,44,255,.09)}.ring-one{inset:12px}.ring-two{inset:44px;border-color:rgba(0,168,157,.24)}.home-orbit-core{width:110px;height:110px;border-radius:34px;display:grid;place-items:center;font-size:46px;background:linear-gradient(135deg,#d600b8,#7a2cff);color:#fff;box-shadow:0 22px 40px rgba(110,49,214,.28)}
+.home-basic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}.home-card,.home-protected-card,.home-info-card{border:1px solid rgba(255,255,255,.64);background:rgba(255,255,255,.38);box-shadow:0 13px 28px rgba(48,35,68,.06),inset 0 1px 0 rgba(255,255,255,.58);backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%);border-radius:20px}.home-card{padding:20px}.home-icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(122,44,255,.10);font-size:24px;margin-bottom:14px}.home-card h3{margin:0 0 6px}.home-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.home-protected-card{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:20px;margin-bottom:18px}.home-lock{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:rgba(122,44,255,.10);font-size:24px}.home-protected-card h3{margin:0 0 5px}.home-protected-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.home-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.home-info-card{padding:17px}.home-info-label{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}.home-info-card strong{display:block;font-size:16px;margin-bottom:4px}.home-info-card small{color:var(--muted);font-size:11px;line-height:1.45}.home-footer-note{text-align:center;color:var(--muted);font-size:11px;margin:20px 0 4px}
+body.dark .home-hero,body.dark .home-card,body.dark .home-protected-card,body.dark .home-info-card{background:rgba(28,21,39,.42);border-color:rgba(255,255,255,.10)}
+@media(max-width:900px){.home-hero{grid-template-columns:1fr}.home-orbit{width:190px;height:190px}.home-basic-grid,.home-info-grid{grid-template-columns:1fr}.home-protected-card{grid-template-columns:auto 1fr}.home-protected-card .btn{grid-column:1/-1;justify-self:start}}
+@media(max-width:640px){.home-hero{padding:24px}.home-copy h1{font-size:36px}.home-copy p{font-size:14px}.home-protected-card{grid-template-columns:auto 1fr}.home-protected-card .btn{width:100%}}
+
+
+/* ===== Home dashboard / quick links ===== */
+.home-quick-links-card,.home-dashboard-panel{border:1px solid rgba(255,255,255,.62);border-radius:20px;background:rgba(255,255,255,.34);box-shadow:0 14px 30px rgba(48,35,68,.07),inset 0 1px 0 rgba(255,255,255,.56);backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%)}
+.home-quick-links-card{padding:22px;margin-bottom:18px}.home-section-heading{margin-bottom:16px}.home-section-kicker{display:block;color:#7a2cff;font-size:10px;font-weight:900;letter-spacing:.12em;margin-bottom:5px}.home-section-heading h2,.home-dashboard-header h2{margin:0;font-size:21px}.home-quick-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.home-quick-link{appearance:none;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.34);padding:16px;text-align:left;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:.2s ease;color:var(--ink)}.home-quick-link:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(48,35,68,.08)}.home-quick-link>span{font-size:22px}.home-quick-link strong{font-size:14px}.home-quick-link small{color:var(--muted);font-size:11px;line-height:1.4}.ql-log:hover{border-color:#d600b8}.ql-issues:hover{border-color:#7a2cff}.ql-testing:hover{border-color:#00a9a5}.ql-knowledge:hover{border-color:#4d8dff}.home-dashboard-area{margin-bottom:18px}.home-dashboard-header{margin:2px 0 14px}.home-dashboard-header p{margin:4px 0 0;color:var(--muted);font-size:12px}.home-dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.home-dashboard-panel{padding:20px}.home-dashboard-panel .analytics-card-head{margin-bottom:13px}.home-dashboard-panel .analytics-card-head .btn{padding:8px 11px;font-size:11px}.home-metrics-grid{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:14px}.home-testing-metrics{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:16px}.home-mini-status{padding-top:5px}.home-mini-status .analytics-legend{margin-top:10px}.home-testing-progress{padding-top:4px}.home-testing-progress .analytics-card-head{margin-bottom:9px!important}.home-dashboard-area .metric-card{padding:14px}.home-dashboard-area .metric-card strong{font-size:26px}body.dark .home-quick-links-card,body.dark .home-dashboard-panel{background:rgba(28,21,39,.40);border-color:rgba(255,255,255,.10)}body.dark .home-quick-link{background:rgba(28,21,39,.32);border-color:rgba(255,255,255,.10)}
+@media(max-width:1000px){.home-quick-links{grid-template-columns:repeat(2,minmax(0,1fr))}.home-dashboard-grid{grid-template-columns:1fr}.home-metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.home-quick-links{grid-template-columns:1fr}.home-testing-metrics{grid-template-columns:1fr 1fr}.home-dashboard-panel{padding:15px}}
+
+
+.testing-save-row{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+@media(max-width:700px){
+  .testing-save-row .btn{width:100%;}
+}
+
 </style>
 </head>
 <body>
@@ -1928,7 +2021,8 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
   <div class="brand"><div class="brand-title">Airport Systems<span>Support Portal</span></div></div>
   <nav>
     <div class="nav-slider" id="navSlider"></div>
-    <button class="nav-item active" data-view="log">Log an Issue</button>
+    <button class="nav-item active" data-view="home">Home</button>
+    <button class="nav-item" data-view="log">Log an Issue</button>
     <button class="nav-item" data-view="issues">My Issues</button>
     <button class="nav-item" data-view="testing">Testing</button>
     <button class="nav-item" data-view="knowledge">Knowledge Base</button>
@@ -1959,7 +2053,84 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
       <button class="btn auth-control" id="staffLoginBtn" type="button">Staff Login</button>
     </div></div>
 
-  <section id="view-log" class="view active">
+  <section id="view-home" class="view active">
+    <div class="home-hero">
+      <div class="home-copy">
+        <div class="home-kicker">AIRPORT SYSTEMS SUPPORT</div>
+        <h1>Welcome to the Support Portal</h1>
+        <p>One place to report airport-system issues, run device tests and find quick support guidance.</p>
+        <div class="home-actions">
+          <button class="btn primary" id="homeLogIssue" type="button">Log an Issue ✈</button>
+        </div>
+      </div>
+      <div class="home-orbit" aria-hidden="true">
+        <div class="home-orbit-ring ring-one"></div>
+        <div class="home-orbit-ring ring-two"></div>
+        <div class="home-orbit-core">✈</div>
+      </div>
+    </div>
+
+    <div class="home-basic-grid">
+      <div class="home-card"><div class="home-icon">🏷️</div><h3>Bag Tagger</h3><p>Report printing, scanning, tag and override issues across airport devices.</p></div>
+      <div class="home-card"><div class="home-icon">🧳</div><h3>Auto Bag Drop</h3><p>Raise issues and run structured checks across ABD devices.</p></div>
+      <div class="home-card"><div class="home-icon">🧪</div><h3>Device Testing</h3><p>Run repeatable test cases and record device results.</p></div>
+    </div>
+
+    <div class="home-quick-links-card">
+      <div class="home-section-heading"><div><span class="home-section-kicker">QUICK LINKS</span><h2>What would you like to do?</h2></div></div>
+      <div class="home-quick-links">
+        <button class="home-quick-link ql-log" type="button" data-home-view="log"><span>✈️</span><strong>Log an Issue</strong><small>Report a device or system problem</small></button>
+        <button class="home-quick-link ql-issues" type="button" data-home-view="issues"><span>📋</span><strong>My Issues</strong><small>View and manage support tickets</small></button>
+        <button class="home-quick-link ql-testing" type="button" data-home-view="testing"><span>🧪</span><strong>Testing</strong><small>Run and record device tests</small></button>
+        <button class="home-quick-link ql-knowledge" type="button" data-home-view="knowledge"><span>📚</span><strong>Knowledge Base</strong><small>Find quick support guidance</small></button>
+      </div>
+    </div>
+
+    <div class="home-protected-card" id="homeSignInGate">
+      <div class="home-lock">🔒</div>
+      <div><h3>Sign in to view more data</h3><p>Ticket history, PNRs, comments, testing history and staff-only operational information are available after staff sign-in.</p></div>
+      <button class="btn primary" id="homeProtectedLogin" type="button">Sign in</button>
+    </div>
+
+    <div id="homeDashboardArea" class="home-dashboard-area" style="display:none">
+      <div class="home-dashboard-header">
+        <div><span class="home-section-kicker">STAFF DASHBOARD</span><h2 id="homeDashboardWelcome">Welcome back</h2><p>Live overview of support activity and testing.</p></div>
+      </div>
+
+      <div class="home-dashboard-grid">
+        <div class="home-dashboard-panel">
+          <div class="analytics-card-head"><div><h3>My Issues</h3><p>Current ticket overview.</p></div><button class="btn" type="button" data-home-view="issues">Open My Issues</button></div>
+          <div class="metrics-grid home-metrics-grid">
+            <div class="metric-card"><span class="metric-label">Open Tickets</span><strong id="homeMetricOpen">0</strong><small>Currently active</small></div>
+            <div class="metric-card"><span class="metric-label">Critical</span><strong id="homeMetricCritical">0</strong><small>Needs urgent attention</small></div>
+            <div class="metric-card"><span class="metric-label">Under Investigation</span><strong id="homeMetricInvestigating">0</strong><small>Being worked on</small></div>
+            <div class="metric-card"><span class="metric-label">Closed</span><strong id="homeMetricClosed">0</strong><small>Resolved tickets</small></div>
+          </div>
+          <div class="home-mini-status"><div class="status-bar" id="homeStatusBar"></div><div class="analytics-legend" id="homeStatusLegend"></div></div>
+        </div>
+
+        <div class="home-dashboard-panel">
+          <div class="analytics-card-head"><div><h3>Testing</h3><p>Current test run progress.</p></div><button class="btn" type="button" data-home-view="testing">Open Testing</button></div>
+          <div class="metrics-grid home-testing-metrics">
+            <div class="metric-card"><span class="metric-label">Devices Tested</span><strong id="homeTestingDevices">0</strong><small>Devices in this run</small></div>
+            <div class="metric-card"><span class="metric-label">Tests Completed</span><strong id="homeTestingCompleted">0</strong><small>Pass or fail recorded</small></div>
+            <div class="metric-card"><span class="metric-label">Completion</span><strong id="homeTestingPercent">0%</strong><small>Overall progress</small></div>
+          </div>
+          <div class="home-testing-progress"><div class="analytics-card-head"><strong>Test progress</strong><span id="homeTestingProgressText" class="analytics-total">0 / 0 tests</span></div><div class="progress-track"><div id="homeTestingProgressFill" class="progress-fill"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-info-grid">
+      <div class="home-info-card"><span class="home-info-label">PUBLIC ACCESS</span><strong>Log an Issue</strong><small>No staff account required to submit a new ticket.</small></div>
+      <div class="home-info-card"><span class="home-info-label">STAFF ACCESS</span><strong>Protected data</strong><small>Ticket and testing information stays behind authentication.</small></div>
+      <div class="home-info-card"><span class="home-info-label">DATABASE</span><strong><span class="online-dot"></span> Connected</strong><small>Support portal services are available.</small></div>
+    </div>
+
+    <div class="home-footer-note">Keeping airport tech moving ✈️</div>
+  </section>
+
+  <section id="view-log" class="view">
     <div class="hero"><div><h1>Log an Issue</h1><p>Tell us what’s going wrong and we’ll get it sorted. ✦</p></div><div class="hero-badge" id="selected-system-label">Bag Tagger selected</div></div>
     <div class="layout">
       <div class="panel">
@@ -2003,7 +2174,16 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
     <button class="btn primary" id="exportCsv" type="button">⇩ Export to CSV</button>
   </div>
 
-  <div class="analytics-toggle" id="issuesAnalyticsToggle">
+  
+  <div id="personalDashboard" class="personal-dashboard">
+    <div><span>Welcome,</span><strong id="welcomeName">Staff Member</strong></div>
+    <div class="personal-stats">
+      <span><strong id="myRaisedCount">0</strong> raised</span>
+      <span><strong id="myOpenCount">0</strong> open</span>
+      <span><strong id="myClosedCount">0</strong> closed</span>
+    </div>
+  </div>
+<div class="analytics-toggle" id="issuesAnalyticsToggle">
     <button type="button" class="analytics-tab active" data-analytics-view="dashboard">Dashboard</button>
     <button type="button" class="analytics-tab" data-analytics-view="pie">Pie Chart</button>
   </div>
@@ -2032,6 +2212,16 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
     </div>
   </div>
   <div class="issues-toolbar">
+    <div class="filter-control issue-search-control">
+      <input id="issueSearch" type="search" placeholder="Search ticket, device, PNR, port, raised by…">
+    </div>
+    <div class="filter-control">
+      <select id="filterOwnership">
+        <option value="all">All Issues</option>
+        <option value="mine">My Issues</option>
+      </select>
+    </div>
+
     <div class="filter-control">
       <select id="filterStatus">
         <option value="">All statuses</option>
@@ -2106,7 +2296,29 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
 
     <div class="panel testing-panel">
       <div class="section-title">🧪 Which system are you testing?</div>
-      <div class="testing-system-grid">
+      
+    <div class="testing-run-meta">
+      <div class="field">
+        <label for="testingPort">Port <span>*</span></label>
+        <select class="select" id="testingPort" required>
+          <option value="">Select port</option>
+          <option>MEL - Melbourne</option><option>SYD - Sydney</option><option>BNE - Brisbane</option>
+          <option>OOL - Gold Coast</option><option>MKY - Mackay</option><option>MCY - Sunshine Coast</option>
+          <option>DRW - Darwin</option><option>LST - Launceston</option><option>PER - Perth</option>
+          <option>ZQN - Queenstown</option><option>NAN - Nadi</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tested By</label>
+        <input class="input" id="testingTestedBy" readonly>
+      </div>
+      <div class="field">
+        <label for="testingRunName">Test Run Reference</label>
+        <input class="input" id="testingRunName" placeholder="Optional e.g. SYD morning regression">
+      </div>
+    </div>
+
+<div class="testing-system-grid">
         <button class="testing-system-card selected" type="button" data-testing-system="Bag Tagger">
           <div class="system-icon">🏷️</div>
           <div>
@@ -2152,8 +2364,19 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
         <span id="testingDeviceCount">1 device</span>
         <span>Checkboxes are optional.</span>
       </div>
+
+      <div class="testing-save-row">
+        <button class="btn primary" id="saveTestingRun" type="button">Save Testing</button>
+      </div>
     </div>
-  </section>
+  
+    <div class="testing-history-card">
+      <div class="analytics-card-head">
+        <div><h3>Testing History</h3><p>Saved test runs from Supabase.</p></div>
+      </div>
+      <div id="testingHistory"><div class="empty">No saved test runs yet.</div></div>
+    </div>
+</section>
 
   <section id="view-access-denied" class="view">
     <div class="hero">
@@ -2195,7 +2418,12 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
     </div>
 
 
-    <div class="comment-section">
+    
+    <div class="timeline-section">
+      <h3>Activity</h3>
+      <div id="ticketTimeline" class="ticket-timeline"></div>
+    </div>
+<div class="comment-section">
       <h3>Comments</h3>
       <textarea id="newComment" class="comment-box" placeholder="Add a comment or update…"></textarea>
       <div class="comment-actions">
@@ -2239,7 +2467,44 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 updateTestingAnalytics();
+
+document.querySelectorAll('[data-testing-system]').forEach(card=>card.addEventListener('click',()=>{
+  window.currentTestingSystem=card.dataset.testingSystem;
+}));
+
 </script>
+
+<div id="testingRaiseModal" class="auth-backdrop testing-raise-backdrop" aria-hidden="true">
+  <div class="auth-card testing-raise-card" role="dialog" aria-modal="true" aria-labelledby="testingRaiseTitle">
+    <button id="testingRaiseClose" class="auth-close" type="button" aria-label="Close">×</button>
+    <div class="auth-kicker">TESTING</div>
+    <h2 id="testingRaiseTitle">Raise an Issue</h2>
+    <p>Raise a support ticket directly from this failed test.</p>
+    <form id="testingRaiseForm" class="auth-form">
+      <div class="testing-raise-grid">
+        <div><label for="raiseSystem">System</label><input id="raiseSystem" class="input" readonly></div>
+        <div><label for="raisePort">Port <span>*</span></label><select id="raisePort" class="select" required><option value="">Select port</option>
+          <option>MEL - Melbourne</option><option>SYD - Sydney</option><option>BNE - Brisbane</option><option>OOL - Gold Coast</option><option>MKY - Mackay</option><option>MCY - Sunshine Coast</option><option>DRW - Darwin</option><option>LST - Launceston</option><option>PER - Perth</option><option>ZQN - Queenstown</option><option>NAN - Nadi</option>
+        </select></div>
+        <div><label for="raiseTerminal">Terminal</label><select id="raiseTerminal" class="select"><option value="">Select terminal</option><option>T1</option><option>T2</option><option>T3</option><option>Domestic</option><option>International</option></select></div>
+        <div><label for="raiseEnvironment">Environment</label><select id="raiseEnvironment" class="select"><option value="Testing/CERT" selected>Testing/CERT</option><option value="Production">Production</option></select></div>
+        <div><label for="raiseDevice">Device / Kiosk ID <span>*</span></label><input id="raiseDevice" class="input" readonly></div>
+        <div><label for="raisePnr">PNR</label><input id="raisePnr" class="input" placeholder="e.g. ABCDEF" maxlength="6"></div>
+        <div><label for="raiseBy">Raised By</label><input id="raiseBy" class="input" readonly></div>
+        <div><label for="raiseCategory">Issue Category <span>*</span></label><select id="raiseCategory" class="select" required></select></div>
+        <div class="full"><label for="raiseDescription">Issue Description <span>*</span></label><textarea id="raiseDescription" class="textarea" maxlength="1000" required></textarea></div>
+        <div class="full"><label>Urgency <span>*</span></label><div class="urgency" id="raiseUrgency">
+          <button type="button" data-u="Low"><span class="u-dot u-low"></span>Low<small>Minor issue</small></button>
+          <button type="button" data-u="Medium" class="selected"><span class="u-dot u-med"></span>Medium<small>Affects some</small></button>
+          <button type="button" data-u="High"><span class="u-dot u-high"></span>High<small>Affects many</small></button>
+          <button type="button" data-u="Critical"><span class="u-dot u-critical"></span>Critical<small>System down</small></button>
+        </div></div>
+      </div>
+      <div class="actions"><button class="btn" type="button" id="testingRaiseCancel">Cancel</button><button class="btn primary" type="submit">Submit Issue ✈</button></div>
+      <div id="testingRaiseMessage" class="auth-message" style="display:none"></div>
+    </form>
+  </div>
+</div>
 <div id="authModal" class="auth-backdrop" aria-hidden="true">
   <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
     <button id="authClose" class="auth-close" type="button" aria-label="Close">×</button>
@@ -2477,19 +2742,19 @@ function updateAuthUI(){
   }
 
   if(!signedIn){
+    const active=document.querySelector('.nav-item.active');
+    const currentView=active?.dataset.view;
+    const publicView=currentView==='log' ? 'log' : 'home';
+
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-
-    const currentRestricted=document.querySelector('.nav-item.active[data-view="issues"], .nav-item.active[data-view="knowledge"], .nav-item.active[data-view="testing"]');
-
-    const logView=document.getElementById('view-log');
-    if(logView) logView.classList.add('active');
+    const view=document.getElementById('view-'+publicView);
+    if(view) view.classList.add('active');
 
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-    const logNav=document.querySelector('[data-view="log"]');
-    if(logNav) logNav.classList.add('active');
+    const nav=document.querySelector(`[data-view="${publicView}"]`);
+    if(nav) nav.classList.add('active');
 
     window.__pendingProtectedNav=null;
-
     if(typeof syncNavSlider==='function') requestAnimationFrame(syncNavSlider);
   }
 }
@@ -2508,6 +2773,7 @@ async function initAuth(){
   }
 
   updateAuthUI();
+  updateHomeDashboard();
 
   authClient.auth.onAuthStateChange(async (event,session)=>{
     if(session?.user && !(await enforceConfirmedUser(session))){
@@ -2517,6 +2783,7 @@ async function initAuth(){
     currentSession=session || null;
     currentUser=currentSession?.user || null;
     updateAuthUI();
+    updateHomeDashboard();
 
     if(session && typeof loadIssues==='function'){
       loadIssues();
@@ -2735,6 +3002,7 @@ async function loadIssues() {
 
     issues = await response.json();
     renderIssues();
+    updateHomeDashboard();
   } catch (error) {
     console.error('Could not load issues:', error);
     box.innerHTML='<div class="empty">Could not load issues from Supabase.<br><small>Check the browser console for details.</small></div>';
@@ -2880,6 +3148,263 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
   }
 });
 
+
+/* ===== Smart workflow features ===== */
+const testingKnownDeviceIds=new Set();
+
+function currentDisplayName(){
+  return formatRaisedByFromEmail(currentUser?.email||'') || 'Staff Member';
+}
+
+function updatePersonalDashboard(){
+  const name=currentDisplayName();
+  const el=document.getElementById('welcomeName'); if(el) el.textContent=name;
+  const mine=issues.filter(i=>(i.raised_by||'').toLowerCase()===name.toLowerCase());
+  const raised=document.getElementById('myRaisedCount'); if(raised) raised.textContent=mine.length;
+  const open=document.getElementById('myOpenCount'); if(open) open.textContent=mine.filter(i=>i.status!=='Closed').length;
+  const closed=document.getElementById('myClosedCount'); if(closed) closed.textContent=mine.filter(i=>i.status==='Closed').length;
+  const tester=document.getElementById('testingTestedBy'); if(tester) tester.value=name;
+}
+
+function knownDeviceIds(){
+  const set=new Set();
+
+  issues.forEach(i=>{
+    if(i.device_id) set.add(String(i.device_id).trim());
+  });
+
+  if(typeof testingRows!=='undefined'){
+    testingRows.forEach(r=>{
+      if(r.device) set.add(String(r.device).trim());
+    });
+  }
+
+  testingKnownDeviceIds.forEach(id=>set.add(id));
+
+  return [...set].filter(Boolean).sort();
+}
+
+function attachDeviceAutocomplete(){
+  const dl=document.getElementById('knownDevices');
+  if(!dl) return;
+
+  dl.innerHTML=knownDeviceIds()
+    .map(x=>`<option value="${escapeHtml(x)}"></option>`)
+    .join('');
+
+  document.querySelectorAll('.testing-device-input, #device').forEach(input=>{
+    input.setAttribute('list','knownDevices');
+  });
+}
+
+async function loadTestingHistory(){
+  const box=document.getElementById('testingHistory');
+  if(!isAuthenticated()){
+    if(box) box.innerHTML='<div class="empty">Sign in to view testing history.</div>';
+    return;
+  }
+
+  if(box) box.innerHTML='<div class="empty">Loading saved test runs…</div>';
+
+  try{
+    const {data:runs,error}=await authClient
+      .from('testing_runs')
+      .select('id,created_at,port,system,run_reference,tested_by_name,device_count,total_tests,completed_tests')
+      .order('created_at',{ascending:false})
+      .limit(100);
+
+    if(error) throw error;
+
+    const {data:devices,error:deviceError}=await authClient
+      .from('testing_results')
+      .select('device_id')
+      .limit(5000);
+
+    if(deviceError) throw deviceError;
+
+    testingKnownDeviceIds.clear();
+    (devices||[]).forEach(row=>{
+      if(row.device_id) testingKnownDeviceIds.add(String(row.device_id).trim());
+    });
+
+    renderTestingHistory(runs||[]);
+    attachDeviceAutocomplete();
+  }catch(error){
+    console.error('Could not load testing history:',error);
+    if(box) box.innerHTML='<div class="empty">Could not load testing history from Supabase.</div>';
+  }
+}
+
+function collectTestingRun(){
+  const cases=testingCases[testingSystem]||[];
+  return testingRows
+    .map(row=>{
+      const deviceId=(row.device||'').trim();
+      return cases.map(name=>({
+        device_id:deviceId,
+        test_case:name,
+        result:row.checks[name] || 'untested'
+      }));
+    })
+    .flat()
+    .filter(item=>item.device_id);
+}
+
+async function saveTestingRun(){
+  if(!isAuthenticated()){
+    showAuthModal('login');
+    return;
+  }
+
+  const port=document.getElementById('testingPort')?.value||'';
+  const reference=document.getElementById('testingRunName')?.value.trim()||'';
+  const results=collectTestingRun();
+
+  if(!port){
+    alert('Please select a port before saving the testing.');
+    return;
+  }
+
+  if(!results.length){
+    alert('Please enter at least one Device ID before saving the testing.');
+    return;
+  }
+
+  const button=document.getElementById('saveTestingRun');
+  const originalText=button?.textContent||'Save Testing';
+  if(button){
+    button.disabled=true;
+    button.textContent='Saving…';
+  }
+
+  try{
+    const {data,error}=await authClient.rpc('save_testing_run',{
+      p_port:port.split(' - ')[0],
+      p_system:testingSystem,
+      p_run_reference:reference || null,
+      p_tested_by_name:currentDisplayName(),
+      p_results:results
+    });
+
+    if(error) throw error;
+
+    const savedId=data?.id || 'test run';
+    alert(`Testing saved successfully as ${savedId}.`);
+
+    testingRows=[{id:++testingRowId,device:'',checks:{}}];
+    document.getElementById('testingRunName').value='';
+    renderTestingTable();
+    attachDeviceAutocomplete();
+    await loadTestingHistory();
+
+  }catch(error){
+    console.error('Could not save testing:',error);
+    alert('Could not save testing: ' + (error.message || error));
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent=originalText;
+    }
+  }
+}
+
+function renderTestingHistory(runs=[]){
+  const box=document.getElementById('testingHistory');
+  if(!box) return;
+
+  if(!runs.length){
+    box.innerHTML='<div class="empty">No saved test runs yet.</div>';
+    return;
+  }
+
+  box.innerHTML=`
+    <div style="overflow-x:auto">
+      <table class="testing-history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Port</th>
+            <th>System</th>
+            <th>Reference</th>
+            <th>Devices</th>
+            <th>Completion</th>
+            <th>Tested By</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${runs.map(r=>{
+            const total=Number(r.total_tests||0);
+            const completed=Number(r.completed_tests||0);
+            const percent=total ? Math.round(completed/total*100) : 0;
+            return `
+              <tr>
+                <td>${r.created_at ? new Date(r.created_at).toLocaleString('en-AU') : ''}</td>
+                <td>${escapeHtml(r.port||'')}</td>
+                <td>${escapeHtml(r.system||'')}</td>
+                <td>${escapeHtml(r.run_reference||'')}</td>
+                <td>${Number(r.device_count||0)}</td>
+                <td>${percent}%</td>
+                <td>${escapeHtml(r.tested_by_name||'')}</td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+
+function populateTimeline(issue){
+  const box=document.getElementById('ticketTimeline');if(!box)return;
+  const events=[];
+  if(issue.created_at)events.push({date:issue.created_at,title:'Ticket raised',detail:`Raised by ${issue.raised_by||'Unknown'}`});
+  if(issue.status && issue.status!=='New')events.push({date:issue.updated_at||issue.created_at,title:`Status: ${issue.status}`,detail:'Current ticket status'});
+  if(issue.resolved_at)events.push({date:issue.resolved_at,title:'Ticket closed',detail:issue.resolution_notes||'Resolution recorded'});
+  events.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  box.innerHTML=events.map(e=>`<div class="timeline-item"><strong>${escapeHtml(e.title)}</strong>${escapeHtml(e.detail)}<br><small>${e.date?new Date(e.date).toLocaleString('en-AU'):''}</small></div>`).join('')||'<div class="comment-empty">No activity yet.</div>';
+}
+
+let raiseIssueUrgency='Medium';
+
+function showTestingRaiseModal(deviceId, failedLabels=[]){
+  if(!isAuthenticated()){ showAuthModal('login'); return; }
+
+  const modal=document.getElementById('testingRaiseModal');
+  if(!modal) return;
+
+  const system=testingSystem || window.currentTestingSystem || 'Bag Tagger';
+  const testingPort=document.getElementById('testingPort')?.value || '';
+  const description=`Failed testing for ${deviceId}${failedLabels.length ? ': '+failedLabels.join(', ') : '.'}`;
+
+  document.getElementById('raiseSystem').value=system;
+  document.getElementById('raisePort').value=testingPort;
+  document.getElementById('raiseTerminal').value='';
+  document.getElementById('raiseEnvironment').value='Testing/CERT';
+  document.getElementById('raiseDevice').value=deviceId;
+  document.getElementById('raisePnr').value='';
+  document.getElementById('raiseBy').value=currentDisplayName();
+  document.getElementById('raiseDescription').value=description;
+
+  const cat=document.getElementById('raiseCategory');
+  cat.innerHTML='<option value="">Select category</option>' +
+    (categories[system]||[]).map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join('');
+  if((categories[system]||[]).includes('Other issues')) cat.value='Other issues';
+
+  raiseIssueUrgency='Medium';
+  document.querySelectorAll('#raiseUrgency button').forEach(b=>b.classList.toggle('selected',b.dataset.u===raiseIssueUrgency));
+
+  const msg=document.getElementById('testingRaiseMessage');
+  msg.style.display='none'; msg.textContent='';
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+}
+
+function closeTestingRaiseModal(){
+  const modal=document.getElementById('testingRaiseModal');
+  if(!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+
 function urgencyClass(urgency){
   return urgency==='Critical'||urgency==='High'?'b-red':'b-purple';
 }
@@ -2897,13 +3422,19 @@ function getFilteredSortedIssues(){
   const port = document.getElementById('filterPort')?.value || '';
   const urgency = document.getElementById('filterUrgency')?.value || '';
   const sort = document.getElementById('sortIssues')?.value || 'newest';
+  const search=(document.getElementById('issueSearch')?.value||'').trim().toLowerCase();
+  const ownership=document.getElementById('filterOwnership')?.value||'all';
+  const me=currentDisplayName().toLowerCase();
 
-  let result = issues.filter(i =>
-    (!status || i.status === status) &&
-    (!system || i.system === system) &&
-    (!port || i.port === port) &&
-    (!urgency || i.urgency === urgency)
-  );
+  let result = issues.filter(i => {
+    const haystack=[i.issue_id,i.device_id,i.pnr,i.port,i.raised_by,i.category,i.description,i.system,i.status].join(' ').toLowerCase();
+    return (!status || i.status === status) &&
+      (!system || i.system === system) &&
+      (!port || i.port === port) &&
+      (!urgency || i.urgency === urgency) &&
+      (ownership!=='mine' || (i.raised_by||'').toLowerCase()===me) &&
+      (!search || haystack.includes(search));
+  });
 
   const urgencyRank = {Critical:4, High:3, Medium:2, Low:1};
   const statusRank = {'New':1, 'Under Investigation':2, 'Test':3, 'Closed':4};
@@ -2974,6 +3505,8 @@ const testingAnalyticsWrap=document.getElementById('testingTableWrap');
 if(testingAnalyticsWrap)testingAnalyticsObserver.observe(testingAnalyticsWrap,{childList:true,subtree:true});
 
 function renderIssues(){
+  updatePersonalDashboard();
+  attachDeviceAutocomplete();
   updateIssuesAnalytics();
   const box=document.getElementById('issues-panel');
   const visibleIssues = getFilteredSortedIssues();
@@ -3036,6 +3569,7 @@ function openTicket(id){
   ].join('');
 
   document.getElementById('ticketDescription').textContent = issue.description || '';
+  populateTimeline(issue);
   document.getElementById('ticketStatus').value = issue.status || 'New';
   document.getElementById('resolutionNotes').value = issue.resolution_notes || '';
   toggleResolutionNotes();
@@ -3389,6 +3923,10 @@ document.getElementById('filterSystem').addEventListener('change', renderIssues)
 document.getElementById('filterPort').addEventListener('change', renderIssues);
 document.getElementById('filterUrgency').addEventListener('change', renderIssues);
 document.getElementById('sortIssues').addEventListener('change', renderIssues);
+document.getElementById('issueSearch')?.addEventListener('input',renderIssues);
+document.getElementById('filterOwnership')?.addEventListener('change',renderIssues);
+document.getElementById('saveTestingRun')?.addEventListener('click',saveTestingRun);
+
 
 
 
@@ -3443,16 +3981,37 @@ function renderTestingTable(){
 
   body.innerHTML=testingRows.map(row=>{
     const checks=cases.map(name=>{
-      const key=testingSafeKey(name);
-      const checked=row.checks[name] ? 'checked' : '';
-      return `<td><input class="testing-check" type="checkbox" data-testing-row="${row.id}" data-testing-case="${escapeHtml(name)}" aria-label="${escapeHtml(name)}" ${checked}></td>`;
+      const result=row.checks[name] || '';
+      const checked=result==='pass' ? 'checked' : '';
+      const failed=result==='fail' ? 'selected' : '';
+
+      return `<td class="test-cell ${result==='fail'?'test-failed':''}">
+        <div class="test-result-controls">
+          <label class="pass-check" title="Mark Pass">
+            <input class="testing-check" type="checkbox"
+              data-testing-row="${row.id}"
+              data-testing-case="${escapeHtml(name)}"
+              aria-label="Pass: ${escapeHtml(name)}"
+              ${checked}>
+            <span>✓</span>
+          </label>
+          <button class="testing-fail ${failed}" type="button"
+            data-testing-fail-row="${row.id}"
+            data-testing-fail-case="${escapeHtml(name)}"
+            aria-label="Fail: ${escapeHtml(name)}"
+            title="Mark test failed">✕</button>
+        </div>
+      </td>`;
     }).join('');
 
     return `<tr data-testing-row-id="${row.id}">
       <td>
         <div class="testing-device-cell">
-          <input class="testing-device-input" type="text" value="${escapeHtml(row.device)}" placeholder="e.g. SYDT3ABD001" data-testing-device="${row.id}" aria-label="Device ID">
-          ${testingRows.length>1 ? `<button class="testing-remove" type="button" data-remove-testing-row="${row.id}" aria-label="Remove device">×</button>` : ''}
+          <div class="testing-device-input-row">
+            <input class="testing-device-input" type="text" value="${escapeHtml(row.device)}" placeholder="e.g. SYDT3ABD001" data-testing-device="${row.id}" aria-label="Device ID" list="knownDevices">
+            ${testingRows.length>1 ? `<button class="testing-remove" type="button" data-remove-testing-row="${row.id}" aria-label="Remove device">×</button>` : ''}
+          </div>
+          <button class="raise-test-issue" type="button" data-raise-test-row="${row.id}" style="${Object.values(row.checks).includes('fail') ? '' : 'display:none'}">⚠ Raise Issue</button>
         </div>
       </td>
       ${checks}
@@ -3460,6 +4019,7 @@ function renderTestingTable(){
   }).join('');
 
   updateTestingDeviceCount();
+  attachDeviceAutocomplete();
 }
 
 function setTestingSystem(system){
@@ -3499,9 +4059,54 @@ document.getElementById('testingTableBody').addEventListener('input',e=>{
 document.getElementById('testingTableBody').addEventListener('change',e=>{
   const checkbox=e.target.closest('[data-testing-case]');
   if(!checkbox) return;
+
   const id=Number(checkbox.dataset.testingRow);
   const row=testingRows.find(r=>r.id===id);
-  if(row) row.checks[checkbox.dataset.testingCase]=checkbox.checked;
+  if(!row) return;
+
+  const name=checkbox.dataset.testingCase;
+  row.checks[name]=checkbox.checked ? 'pass' : '';
+
+  renderTestingTable();
+  attachDeviceAutocomplete();
+  if(typeof updateTestingProgress==='function') updateTestingProgress();
+});
+
+document.getElementById('testingTableBody').addEventListener('click',e=>{
+  const fail=e.target.closest('[data-testing-fail-row]');
+  if(fail){
+    const id=Number(fail.dataset.testingFailRow);
+    const row=testingRows.find(r=>r.id===id);
+    if(!row) return;
+
+    row.checks[fail.dataset.testingFailCase]='fail';
+
+    renderTestingTable();
+    attachDeviceAutocomplete();
+    if(typeof updateTestingProgress==='function') updateTestingProgress();
+    return;
+  }
+
+  const raise=e.target.closest('[data-raise-test-row]');
+  if(raise){
+    if(!isAuthenticated()){
+      showAuthModal('login');
+      return;
+    }
+
+    const id=Number(raise.dataset.raiseTestRow);
+    const row=testingRows.find(r=>r.id===id);
+    if(!row || !row.device){
+      alert('Enter a Device ID first.');
+      return;
+    }
+
+    const failedCases=(testingCases[testingSystem] || [])
+      .filter(name=>row.checks[name]==='fail');
+
+    showTestingRaiseModal(row.device,failedCases);
+    return;
+  }
 });
 
 document.getElementById('testingTableBody').addEventListener('click',e=>{
@@ -3511,6 +4116,58 @@ document.getElementById('testingTableBody').addEventListener('click',e=>{
   testingRows=testingRows.filter(row=>row.id!==id);
   if(!testingRows.length) testingRows=[{id:++testingRowId,device:'',checks:{}}];
   renderTestingTable();
+});
+
+document.getElementById('testingRaiseClose')?.addEventListener('click',closeTestingRaiseModal);
+document.getElementById('testingRaiseCancel')?.addEventListener('click',closeTestingRaiseModal);
+document.getElementById('testingRaiseModal')?.addEventListener('click',e=>{ if(e.target.id==='testingRaiseModal') closeTestingRaiseModal(); });
+
+document.querySelectorAll('#raiseUrgency button').forEach(b=>b.addEventListener('click',()=>{
+  raiseIssueUrgency=b.dataset.u;
+  document.querySelectorAll('#raiseUrgency button').forEach(x=>x.classList.remove('selected'));
+  b.classList.add('selected');
+}));
+
+document.getElementById('testingRaiseForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!isAuthenticated()){ closeTestingRaiseModal(); showAuthModal('login'); return; }
+
+  const portValue=document.getElementById('raisePort').value;
+  const system=document.getElementById('raiseSystem').value;
+  const terminal=document.getElementById('raiseTerminal').value || null;
+  const environment=document.getElementById('raiseEnvironment').value || 'Testing/CERT';
+  const device=document.getElementById('raiseDevice').value.trim();
+  const pnr=document.getElementById('raisePnr').value.trim().toUpperCase() || null;
+  const raisedBy=document.getElementById('raiseBy').value.trim();
+  const category=document.getElementById('raiseCategory').value;
+  const description=document.getElementById('raiseDescription').value.trim();
+  const msg=document.getElementById('testingRaiseMessage');
+  const submit=e.target.querySelector('button[type="submit"]');
+
+  if(!portValue || !device || !raisedBy || !category || !description || !raiseIssueUrgency){
+    msg.style.display='block'; msg.className='auth-message error'; msg.textContent='Please complete all required fields.'; return;
+  }
+
+  submit.disabled=true; msg.style.display='block'; msg.className='auth-message success'; msg.textContent='Submitting issue…';
+
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/issues`,{
+      method:'POST',
+      headers:apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
+      body:JSON.stringify({
+        system, port:portValue.split(' - ')[0], terminal, environment, device_id:device, pnr, raised_by:raisedBy, category, description, urgency:raiseIssueUrgency, status:'New'
+      })
+    });
+    const text=await response.text();
+    if(!response.ok){
+      let detail=text; try{const parsed=JSON.parse(text);detail=parsed.message||parsed.details||parsed.hint||text;}catch(_){}
+      throw new Error(`Supabase ${response.status}: ${detail}`);
+    }
+    closeTestingRaiseModal();
+    if(typeof loadIssues==='function') await loadIssues();
+  }catch(error){
+    msg.className='auth-message error'; msg.textContent='Could not submit: '+(error.message||error);
+  }finally{ submit.disabled=false; }
 });
 
 function exportTestingCsv(){
@@ -3591,7 +4248,7 @@ window.addEventListener('resize', ()=>{
 document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',async ()=>{
   const view=btn.dataset.view;
 
-  if(view!=='log' && !isAuthenticated()){
+  if(!['home','log'].includes(view) && !isAuthenticated()){
     window.__pendingProtectedNav=btn;
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
     btn.classList.add('active');
@@ -3610,15 +4267,52 @@ document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click'
   const target=document.getElementById('view-'+view);
   if(target) target.classList.add('active');
 
-  const themeMap={log:'report',issues:'issues',knowledge:'knowledge',testing:'testing'};
+  const themeMap={home:'report',log:'report',issues:'issues',knowledge:'knowledge',testing:'testing'};
   document.body.setAttribute('data-view-theme',themeMap[view]||'report');
 
   if(view==='issues') await loadIssues();
+  if(view==='testing') await loadTestingHistory();
 }));
 
 document.getElementById('guideBtn').addEventListener('click',()=>{
   document.querySelector('[data-view="knowledge"]').click();
 });
+
+
+/* ===== Home quick links + protected dashboard ===== */
+function updateHomeDashboard(){
+  const signedIn=isAuthenticated();
+  const gate=document.getElementById('homeSignInGate');
+  const area=document.getElementById('homeDashboardArea');
+  if(gate) gate.style.display=signedIn?'none':'flex';
+  if(area) area.style.display=signedIn?'block':'none';
+  if(!signedIn) return;
+
+  const name=formatRaisedByFromEmail(currentUser?.email||'') || 'Staff Member';
+  const welcome=document.getElementById('homeDashboardWelcome');
+  if(welcome) welcome.textContent=`Welcome back, ${name}`;
+
+  const counts={New:0,'Under Investigation':0,Test:0,Closed:0};
+  issues.forEach(i=>{const key=counts.hasOwnProperty(i.status)?i.status:'New';counts[key]++;});
+  const total=issues.length;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set('homeMetricOpen',total-counts.Closed);set('homeMetricCritical',issues.filter(i=>i.urgency==='Critical').length);set('homeMetricInvestigating',counts['Under Investigation']);set('homeMetricClosed',counts.Closed);
+  const classes={New:'status-new','Under Investigation':'status-investigating',Test:'status-test',Closed:'status-closed'};
+  const bar=document.getElementById('homeStatusBar');
+  if(bar) bar.innerHTML=Object.entries(counts).map(([s,n])=>`<div class="status-segment ${classes[s]}" style="width:${total?n/total*100:0}%"></div>`).join('');
+  const legend=document.getElementById('homeStatusLegend');
+  if(legend) legend.innerHTML=Object.entries(counts).map(([s,n])=>`<div class="legend-item"><span class="legend-dot ${classes[s]}"></span><span>${escapeHtml(s)}</span><strong style="margin-left:auto;color:var(--ink)">${n}</strong></div>`).join('');
+
+  const rows=Array.from(document.querySelectorAll('#testingTableBody tr'));let tests=0,done=0;
+  rows.forEach(row=>row.querySelectorAll('[data-testing-case]').forEach(el=>{tests++;const cell=el.closest('.test-cell');if(el.checked||cell?.querySelector('.testing-fail.selected'))done++;}));
+  const pct=tests?Math.round(done/tests*100):0;
+  set('homeTestingDevices',typeof testingRows!=='undefined'&&testingRows?testingRows.length:rows.length);set('homeTestingCompleted',done);set('homeTestingPercent',pct+'%');set('homeTestingProgressText',`${done} / ${tests} tests`);
+  const fill=document.getElementById('homeTestingProgressFill');if(fill)fill.style.width=pct+'%';
+}
+
+document.querySelectorAll('[data-home-view]').forEach(btn=>btn.addEventListener('click',()=>{const nav=document.querySelector(`.nav-item[data-view="${btn.dataset.homeView}"]`);if(nav) nav.click();}));
+document.getElementById('homeProtectedLogin')?.addEventListener('click',()=>showAuthModal('login'));
+
 
 // Appearance controls
 const savedTheme = localStorage.getItem('airportPortalTheme') || 'light';
@@ -3677,7 +4371,13 @@ if(rememberMeInput){
   });
 }
 
-initAuth();
+initAuth().then(()=>{
+  if(isAuthenticated()){
+    loadTestingHistory();
+    attachDeviceAutocomplete();
+    updatePersonalDashboard();
+  }
+});
 
 /* ===== Glitter sparkle mouse trail ===== */
 (function(){
@@ -3729,6 +4429,7 @@ initAuth();
 
 </div>
 
+<datalist id="knownDevices"></datalist>
 </body>
 </html>
 <style>
