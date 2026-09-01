@@ -1240,6 +1240,190 @@ body.dark .ticket-close{
   }
 }
 
+
+/* ===== Staff authentication ===== */
+.auth-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:10001;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  background:rgba(20,14,28,.42);
+  backdrop-filter:blur(10px) saturate(120%);
+  -webkit-backdrop-filter:blur(10px) saturate(120%);
+}
+.auth-backdrop.open{display:flex}
+.auth-card{
+  position:relative;
+  width:min(460px,94vw);
+  padding:28px;
+  border-radius:24px;
+  background:rgba(255,255,255,.74);
+  border:1px solid rgba(255,255,255,.78);
+  box-shadow:0 28px 80px rgba(42,27,61,.22), inset 0 1px 0 rgba(255,255,255,.76);
+  backdrop-filter:blur(28px) saturate(145%);
+  -webkit-backdrop-filter:blur(28px) saturate(145%);
+}
+.auth-close{
+  position:absolute;
+  top:15px;
+  right:15px;
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  border:1px solid rgba(90,67,116,.18);
+  background:rgba(255,255,255,.38);
+  color:var(--ink);
+  font-size:20px;
+  cursor:pointer;
+}
+.auth-kicker{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  color:#7a2cff;
+  margin-bottom:8px;
+}
+.auth-card h2{margin:0 45px 6px 0;font-size:28px}
+.auth-card p{margin:0 0 18px;color:var(--muted);line-height:1.5}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.auth-tab{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.36);
+  color:var(--ink);
+  border-radius:12px;
+  padding:10px 12px;
+  font:inherit;
+  font-weight:750;
+  cursor:pointer;
+}
+.auth-tab.active{
+  color:#fff;
+  border-color:transparent;
+  background:linear-gradient(135deg,#d600b8,#7a2cff);
+}
+.auth-form{display:flex;flex-direction:column;gap:8px}
+.auth-form label{font-size:12px;font-weight:800;margin-top:2px}
+.auth-form input{
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid rgba(90,67,116,.20);
+  border-radius:12px;
+  padding:12px 13px;
+  background:rgba(255,255,255,.60);
+  color:var(--ink);
+  font:inherit;
+  outline:none;
+  margin-bottom:7px;
+}
+.auth-form input:focus{
+  border-color:#7a2cff;
+  box-shadow:0 0 0 3px rgba(122,44,255,.10);
+}
+.auth-message{
+  margin-top:14px;
+  padding:11px 13px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.5;
+}
+.auth-message.success{background:#eaf9f2;color:#128356}
+.auth-message.error{background:#fff0f1;color:#b4232e}
+.auth-note{margin-top:14px;text-align:center;color:var(--muted);font-size:11px}
+.auth-control{white-space:nowrap}
+body.dark .auth-card{
+  background:rgba(29,22,40,.74);
+  border-color:rgba(255,255,255,.11);
+}
+body.dark .auth-close,
+body.dark .auth-tab{
+  background:rgba(28,21,39,.52);
+  border-color:rgba(255,255,255,.11);
+  color:#f7f4fb;
+}
+body.dark .auth-form input{
+  background:rgba(20,15,28,.58);
+  border-color:rgba(255,255,255,.12);
+  color:#f7f4fb;
+}
+
+
+/* ===== Access denied page ===== */
+.access-denied{
+  min-height:55vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:30px;
+}
+.access-denied-card{
+  width:min(520px,92vw);
+  padding:40px 32px;
+  border-radius:26px;
+  background:rgba(255,255,255,.50);
+  border:1px solid rgba(255,255,255,.68);
+  box-shadow:
+    0 20px 50px rgba(50,34,70,.10),
+    inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter:blur(24px) saturate(140%);
+  -webkit-backdrop-filter:blur(24px) saturate(140%);
+}
+.access-denied-icon{
+  width:64px;
+  height:64px;
+  margin:0 auto 18px;
+  display:grid;
+  place-items:center;
+  border-radius:20px;
+  background:rgba(122,44,255,.10);
+  border:1px solid rgba(122,44,255,.18);
+  font-size:28px;
+}
+.access-denied-card h1{
+  margin:0 0 8px;
+  font-size:28px;
+}
+.access-denied-card p{
+  margin:0 auto 22px;
+  max-width:400px;
+  color:var(--muted);
+  line-height:1.6;
+}
+body.dark .access-denied-card{
+  background:rgba(28,21,39,.56);
+  border-color:rgba(255,255,255,.10);
+}
+
+
+/* Preserve the animated tab colour system */
+.nav-item{
+  transition:
+    background .45s ease,
+    color .35s ease,
+    box-shadow .45s ease,
+    transform .25s ease !important;
+}
+
+
+/* ===== Final navigation presentation fix ===== */
+.nav-item{
+  position:relative !important;
+  z-index:1 !important;
+  background:transparent !important;
+}
+.nav-item.active{
+  background:transparent !important;
+  color:#fff !important;
+}
+.nav-slider{
+  z-index:0 !important;
+  pointer-events:none !important;
+}
+
 </style>
 </head>
 <body>
@@ -1273,7 +1457,11 @@ body.dark .ticket-close{
 </aside>
 
 <main>
-  <div class="topbar"><div class="crumb">Home / Support</div><div class="top-actions"><div class="pill"><span class="online-dot"></span>Database Connected</div></div></div>
+  <div class="topbar"><div class="crumb">Home / Support</div><div class="top-actions">
+      <div class="pill"><span class="online-dot"></span>Database Connected</div>
+      <div class="pill" id="userPill" style="display:none"></div>
+      <button class="btn auth-control" id="staffLoginBtn" type="button">Staff Login</button>
+    </div></div>
 
   <section id="view-log" class="view active">
     <div class="hero"><div><h1>Log an Issue</h1><p>Tell us what’s going wrong and we’ll get it sorted. ✦</p></div><div class="hero-badge" id="selected-system-label">Bag Tagger selected</div></div>
@@ -1381,6 +1569,24 @@ body.dark .ticket-close{
   <div class="panel" id="issues-panel"></div>
 </section>
   <section id="view-knowledge" class="view"><div class="hero"><div><h1>Knowledge Base</h1><p>Quick fixes for the most common airport-system gremlins.</p></div></div><div class="panel"><h3>Bag Tagger</h3><p style="color:var(--muted);line-height:1.7">To investigate the cause of an error, select the Virgin logo three times, scan your override QR code, then open <strong>History</strong> to review the event details.</p><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><h3>Auto Bag Drop (ABD)</h3><p style="color:var(--muted);line-height:1.7">To investigate the cause of an error, select the Virgin logo three times, scan your override QR code, then open <strong>History</strong> to review the event details.</p></div></section>
+  <section id="view-access-denied" class="view">
+    <div class="hero">
+      <div>
+        <h1>Access Denied</h1>
+        <p>You need to sign in to access this section.</p>
+      </div>
+    </div>
+
+    <div class="access-denied">
+      <div class="access-denied-card">
+        <div class="access-denied-icon">🔒</div>
+        <h1>Staff access required</h1>
+        <p>This area contains ticket and operational information. Please sign in with your Virgin Australia staff account to continue.</p>
+        <button class="btn primary" id="accessDeniedLogin" type="button">Staff Login</button>
+      </div>
+    </div>
+  </section>
+
 </main>
 </div>
 
@@ -1445,9 +1651,283 @@ body.dark .ticket-close{
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<div id="authModal" class="auth-backdrop" aria-hidden="true">
+  <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <button id="authClose" class="auth-close" type="button" aria-label="Close">×</button>
+    <div class="auth-kicker">STAFF ACCESS</div>
+    <h2 id="authTitle">Sign in</h2>
+    <p id="authSubtitle">Sign in to view and manage tickets.</p>
+
+    <div class="auth-tabs">
+      <button id="loginTab" type="button" class="auth-tab active">Sign in</button>
+      <button id="signupTab" type="button" class="auth-tab">Create account</button>
+    </div>
+
+    <form id="loginForm" class="auth-form">
+      <label for="loginEmail">Email</label>
+      <input id="loginEmail" type="email" autocomplete="email" placeholder="you@virginaustralia.com" required>
+      <label for="loginPassword">Password</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required>
+      <button class="btn primary" type="submit">Sign in</button>
+    </form>
+
+    <form id="signupForm" class="auth-form" style="display:none">
+      <label for="signupEmail">Email</label>
+      <input id="signupEmail" type="email" autocomplete="email" placeholder="you@virginaustralia.com" required>
+      <label for="signupPassword">Password</label>
+      <input id="signupPassword" type="password" autocomplete="new-password" placeholder="Create a password" required>
+      <label for="signupPasswordConfirm">Confirm password</label>
+      <input id="signupPasswordConfirm" type="password" autocomplete="new-password" placeholder="Confirm password" required>
+      <button class="btn primary" type="submit">Create account</button>
+    </form>
+
+    <div id="authMessage" class="auth-message" style="display:none"></div>
+    <div class="auth-note">Virgin Australia email addresses only.</div>
+  </div>
 <script>
+
 const SUPABASE_URL = 'https://nxyutzeplurgirgdivtd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gSJWywfwqb0ucXeqNcgu7g_kFJKTAF8';
+
+/* ===== Supabase Auth ===== */
+const authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
+
+let currentSession = null;
+let currentUser = null;
+
+function isAuthenticated(){
+  return !!currentSession?.user;
+}
+
+function authRedirectUrl(){
+  const protocol = window.location.protocol;
+  return (protocol === 'http:' || protocol === 'https:')
+    ? window.location.href
+    : undefined;
+}
+
+function showAuthModal(mode='login'){
+  const modal=document.getElementById('authModal');
+  if(!modal) return;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  setAuthMode(mode);
+
+  const msg=document.getElementById('authMessage');
+  msg.style.display='none';
+  msg.textContent='';
+}
+
+function closeAuthModal(){
+  const modal=document.getElementById('authModal');
+  if(!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+}
+
+function setAuthMode(mode){
+  const login=mode!=='signup';
+
+  document.getElementById('loginForm').style.display=login?'flex':'none';
+  document.getElementById('signupForm').style.display=login?'none':'flex';
+
+  document.getElementById('loginTab').classList.toggle('active',login);
+  document.getElementById('signupTab').classList.toggle('active',!login);
+
+  document.getElementById('authTitle').textContent=login?'Sign in':'Create account';
+  document.getElementById('authSubtitle').textContent=login
+    ? 'Sign in to view and manage tickets.'
+    : 'Create a staff account using your Virgin Australia email.';
+}
+
+function showAuthMessage(message,type='error'){
+  const msg=document.getElementById('authMessage');
+  msg.style.display='block';
+  msg.className='auth-message '+type;
+  msg.textContent=message;
+}
+
+
+function showAccessDenied(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const denied=document.getElementById('view-access-denied');
+  if(denied) denied.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+
+  // Keep the user's selected protected tab highlighted visually.
+  if(typeof moveNavSlider==='function' && window.__pendingProtectedNav){
+    window.__pendingProtectedNav.classList.add('active');
+    moveNavSlider(window.__pendingProtectedNav, true);
+  }
+
+  document.body.setAttribute('data-view-theme','report');
+}
+
+function updateAuthUI(){
+  const signedIn=isAuthenticated();
+
+
+  const staffLoginBtn=document.getElementById('staffLoginBtn');
+  if(staffLoginBtn){
+    staffLoginBtn.textContent=signedIn ? 'Sign Out' : 'Staff Login';
+  }
+
+  const userPill=document.getElementById('userPill');
+  if(userPill){
+    userPill.textContent=signedIn ? (currentUser?.email || 'Signed in') : '';
+    userPill.style.display=signedIn ? '' : 'none';
+  }
+
+  if(!signedIn){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+
+    const currentRestricted=document.querySelector('.nav-item.active[data-view="issues"], .nav-item.active[data-view="knowledge"]');
+
+    const logView=document.getElementById('view-log');
+    if(logView) logView.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+    const logNav=document.querySelector('[data-view="log"]');
+    if(logNav) logNav.classList.add('active');
+
+    window.__pendingProtectedNav=null;
+
+    if(typeof syncNavSlider==='function') requestAnimationFrame(syncNavSlider);
+  }
+}
+
+async function initAuth(){
+  const {data,error}=await authClient.auth.getSession();
+
+  if(error) console.error('Auth session error:',error);
+
+  currentSession=data?.session || null;
+  currentUser=currentSession?.user || null;
+  updateAuthUI();
+
+  authClient.auth.onAuthStateChange((event,session)=>{
+    currentSession=session || null;
+    currentUser=currentSession?.user || null;
+    updateAuthUI();
+
+    if(session && typeof loadIssues==='function'){
+      loadIssues();
+    }
+  });
+
+  if(currentSession && typeof loadIssues==='function'){
+    await loadIssues();
+  }
+}
+
+document.getElementById('authClose').addEventListener('click',closeAuthModal);
+
+document.getElementById('authModal').addEventListener('click',e=>{
+  if(e.target.id==='authModal') closeAuthModal();
+});
+
+document.getElementById('loginTab').addEventListener('click',()=>setAuthMode('login'));
+document.getElementById('signupTab').addEventListener('click',()=>setAuthMode('signup'));
+
+document.getElementById('staffLoginBtn').addEventListener('click',async ()=>{
+  if(isAuthenticated()){
+    await authClient.auth.signOut();
+  }else{
+    showAuthModal('login');
+  }
+});
+
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+
+  showAuthMessage('Signing in…','success');
+
+  const {data,error}=await authClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    showAuthMessage(error.message);
+    return;
+  }
+
+  currentSession=data.session;
+  currentUser=data.user;
+
+  updateAuthUI();
+  closeAuthModal();
+
+  if(window.__pendingProtectedNav){
+    const target=window.__pendingProtectedNav;
+    window.__pendingProtectedNav=null;
+    target.click();
+  }
+});
+
+document.getElementById('signupForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const email=document.getElementById('signupEmail').value.trim();
+  const password=document.getElementById('signupPassword').value;
+  const confirm=document.getElementById('signupPasswordConfirm').value;
+
+  if(!email.toLowerCase().endsWith('@virginaustralia.com')){
+    showAuthMessage('Only @virginaustralia.com email addresses can register.');
+    return;
+  }
+
+  if(password.length<8){
+    showAuthMessage('Password must be at least 8 characters.');
+    return;
+  }
+
+  if(password!==confirm){
+    showAuthMessage('Passwords do not match.');
+    return;
+  }
+
+  showAuthMessage('Creating your account…','success');
+
+  const options={};
+  const redirect=authRedirectUrl();
+  if(redirect) options.emailRedirectTo=redirect;
+
+  const {data,error}=await authClient.auth.signUp({
+    email,
+    password,
+    options
+  });
+
+  if(error){
+    showAuthMessage(error.message);
+    return;
+  }
+
+  if(!data.session){
+    showAuthMessage(
+      'Account created. Check your Virgin Australia email to confirm your account, then sign in.',
+      'success'
+    );
+  }else{
+    currentSession=data.session;
+    currentUser=data.user;
+    updateAuthUI();
+    closeAuthModal();
+  }
+});
+
 
 const categories={
   'Bag Tagger':['Error Printing','Unable to read bag tags','Unable to retrieve booking','Incorrect allowance','Incorrect fees','Other issues'],
@@ -1465,10 +1945,10 @@ let issues=[];
 const category=document.getElementById('category');
 const label=document.getElementById('selected-system-label');
 
-function apiHeaders(extra={}) {
+function apiHeaders(extra={}){
   return {
     'apikey': SUPABASE_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Authorization': 'Bearer ' + (currentSession?.access_token || SUPABASE_KEY),
     ...extra
   };
 }
@@ -1512,6 +1992,7 @@ document.getElementById('clear').addEventListener('click',()=>{
 });
 
 async function loadIssues() {
+  if(!isAuthenticated()) return;
   const box=document.getElementById('issues-panel');
   box.innerHTML='<div class="empty">Loading issues… ✨</div>';
 
@@ -1798,6 +2279,7 @@ document.getElementById('ticketModal').addEventListener('click', e=>{
 
 
 async function loadComments(issueId){
+  if(!isAuthenticated()){ showAuthModal('login'); return; }
   const history = document.getElementById('commentHistory');
   history.innerHTML = '<div class="comment-empty">Loading comments…</div>';
 
@@ -1841,6 +2323,7 @@ async function loadComments(issueId){
 }
 
 document.getElementById('addCommentBtn').addEventListener('click', async ()=>{
+  if(!isAuthenticated()){ showAuthModal('login'); return; }
   if(!activeTicketId) return;
 
   const textarea = document.getElementById('newComment');
@@ -1932,6 +2415,7 @@ document.getElementById('ticketStatus').addEventListener('change', ()=>{
 });
 
 document.getElementById('saveTicketStatus').addEventListener('click', async ()=>{
+  if(!isAuthenticated()){ showAuthModal('login'); return; }
   if(!activeTicketId) return;
 
   const newStatus = document.getElementById('ticketStatus').value;
@@ -2010,6 +2494,7 @@ document.getElementById('saveTicketStatus').addEventListener('click', async ()=>
 });
 
 function exportCsv(){
+  if(!isAuthenticated()){ showAuthModal('login'); return; }
   if(!issues.length){
     alert('There are no issues to export yet.');
     return;
@@ -2161,21 +2646,31 @@ window.addEventListener('resize', ()=>{
 
 
 document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',async ()=>{
+  const view=btn.dataset.view;
+
+  if(view!=='log' && !isAuthenticated()){
+    window.__pendingProtectedNav=btn;
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    if(typeof moveNavSlider==='function') moveNavSlider(btn);
+    showAccessDenied();
+    return;
+  }
+
+  window.__pendingProtectedNav=null;
+
   document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
   btn.classList.add('active');
-  moveNavSlider(btn, true);
+  if(typeof moveNavSlider==='function') moveNavSlider(btn);
 
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('view-'+btn.dataset.view).classList.add('active');
+  const target=document.getElementById('view-'+view);
+  if(target) target.classList.add('active');
 
-  const themeMap = {
-    report:'report',
-    issues:'issues',
-    knowledge:'knowledge'
-  };
-  document.body.setAttribute('data-view-theme', themeMap[btn.dataset.view] || 'report');
+  const themeMap={log:'report',issues:'issues',knowledge:'knowledge'};
+  document.body.setAttribute('data-view-theme',themeMap[view]||'report');
 
-  if(btn.dataset.view==='issues') await loadIssues();
+  if(view==='issues') await loadIssues();
 }));
 
 document.getElementById('guideBtn').addEventListener('click',()=>{
@@ -2222,10 +2717,15 @@ if(savedTheme==='dark'){
 
 
 
-// Set initial section accent and load live issue data.
+// Set initial section accent. Protected data loads after Auth initialisation.
 document.body.setAttribute('data-view-theme','report');
 requestAnimationFrame(()=>syncNavSlider());
-loadIssues();
+
+document.getElementById('accessDeniedLogin').addEventListener('click',()=>{
+  showAuthModal('login');
+});
+
+initAuth();
 
 /* ===== Glitter sparkle mouse trail ===== */
 (function(){
@@ -2269,8 +2769,13 @@ loadIssues();
   });
 })();
 
+
 </script>
 
+
+
+
+</div>
 
 </body>
 </html>
