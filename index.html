@@ -1434,6 +1434,11 @@ body.dark #raisedBy[readonly]{
   background:rgba(122,44,255,.12) !important;
 }
 
+
+.auth-message.error{
+  border:1px solid rgba(180,35,46,.12);
+}
+
 </style>
 </head>
 <body>
@@ -1725,6 +1730,36 @@ function formatRaisedByFromEmail(email){
   return local ? local.charAt(0).toUpperCase()+local.slice(1).toLowerCase() : '';
 }
 
+
+function isEmailConfirmed(user){
+  return !!user?.email_confirmed_at;
+}
+
+async function enforceConfirmedUser(session){
+  if(!session?.user) return false;
+
+  if(isEmailConfirmed(session.user)){
+    return true;
+  }
+
+  // Do not keep an unconfirmed user signed in.
+  try{
+    await authClient.auth.signOut();
+  }catch(_){}
+
+  currentSession=null;
+  currentUser=null;
+  updateAuthUI();
+
+  showAuthModal('login');
+  showAuthMessage(
+    'Please confirm your Virgin Australia email address before signing in. Check your inbox for the confirmation email.',
+    'error'
+  );
+
+  return false;
+}
+
 function isAuthenticated(){
   return !!currentSession?.user;
 }
@@ -1846,9 +1881,18 @@ async function initAuth(){
 
   currentSession=data?.session || null;
   currentUser=currentSession?.user || null;
+
+  if(currentSession?.user && !(await enforceConfirmedUser(currentSession))){
+    return;
+  }
+
   updateAuthUI();
 
-  authClient.auth.onAuthStateChange((event,session)=>{
+  authClient.auth.onAuthStateChange(async (event,session)=>{
+    if(session?.user && !(await enforceConfirmedUser(session))){
+      return;
+    }
+
     currentSession=session || null;
     currentUser=currentSession?.user || null;
     updateAuthUI();
@@ -1895,6 +1939,20 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
 
   if(error){
     showAuthMessage(error.message);
+    return;
+  }
+
+  if(!data.user?.email_confirmed_at){
+    try{ await authClient.auth.signOut(); }catch(_){}
+
+    currentSession=null;
+    currentUser=null;
+    updateAuthUI();
+
+    showAuthMessage(
+      'Please confirm your Virgin Australia email address before signing in. Check your inbox for the confirmation email.',
+      'error'
+    );
     return;
   }
 
@@ -1952,7 +2010,7 @@ document.getElementById('signupForm').addEventListener('submit',async e=>{
 
   if(!data.session){
     showAuthMessage(
-      'Account created. Check your Virgin Australia email to confirm your account, then sign in.',
+      'Account created! Check your Virgin Australia email and click the confirmation link before signing in.',
       'success'
     );
   }else{
