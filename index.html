@@ -1946,11 +1946,19 @@ const category=document.getElementById('category');
 const label=document.getElementById('selected-system-label');
 
 function apiHeaders(extra={}){
-  return {
+  const headers = {
     'apikey': SUPABASE_KEY,
-    'Authorization': 'Bearer ' + (currentSession?.access_token || SUPABASE_KEY),
     ...extra
   };
+
+  // Only send a Bearer token when a real authenticated session exists.
+  // When signed out, the request stays in the anonymous (anon) role so
+  // the public INSERT policy can apply.
+  if(currentSession?.access_token){
+    headers['Authorization'] = 'Bearer ' + currentSession.access_token;
+  }
+
+  return headers;
 }
 
 function escapeHtml(value='') {
