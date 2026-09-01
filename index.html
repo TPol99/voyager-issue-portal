@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Airport Systems Support</title>
+<style>
+  :root{
+    --purple:#5b20e6; --purple2:#7d35ff; --pink:#e60087; --ink:#18153a; --muted:#6f6b8c;
+    --line:#e8e5f2; --soft:#f8f7fc; --green:#16b978; --amber:#ffae00; --red:#e92f3d;
+    --page-bg:#ffffff; --surface:#ffffff; --surface-2:#fcfbff; --field-bg:#ffffff; --sidebar-bg-1:#fcfbff; --sidebar-bg-2:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--page-bg);min-height:100vh;overflow-x:hidden;transition:background .2s ease,color .2s ease}
+  button,input,select,textarea{font:inherit}
+  .cursor-star{position:fixed;pointer-events:none;z-index:9999;font-size:15px;transform:translate(-50%,-50%);animation:starFade .75s ease-out forwards}
+  @keyframes starFade{0%{opacity:1;transform:translate(-50%,-50%) scale(.8) rotate(0)}100%{opacity:0;transform:translate(-50%,-85%) scale(1.4) rotate(35deg)}}
+  .app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+  aside{position:sticky;top:0;height:100vh;border-right:1px solid var(--line);background:linear-gradient(180deg,var(--sidebar-bg-1),var(--sidebar-bg-2));padding:28px 18px;display:flex;flex-direction:column}
+  .brand{display:flex;align-items:center;gap:13px;padding:7px 10px 26px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  .brand-mark{width:43px;height:43px;border-radius:13px;background:linear-gradient(135deg,var(--pink),var(--purple));color:white;display:grid;place-items:center;font-weight:900;font-size:23px;box-shadow:0 8px 25px #7c3cff35}
+  .brand-title{font-size:15px;font-weight:800;line-height:1.1}.brand-title span{display:block;color:var(--purple);font-weight:600;margin-top:3px}
+  nav{display:grid;gap:8px}.nav-item{display:flex;gap:13px;align-items:center;border:0;background:transparent;padding:13px 14px;border-radius:14px;color:#5f5a79;cursor:pointer;text-align:left;font-weight:600}.nav-item.active{background:linear-gradient(135deg,#6924e8,#7c31f9);color:#fff;box-shadow:0 12px 28px #6b2af333}.nav-icon{font-size:18px;width:22px;text-align:center}
+  .sidebar-note{margin-top:auto;background:linear-gradient(135deg,#faf7ff,#fff);border:1px solid var(--line);padding:17px;border-radius:18px;color:#625d7f;font-size:12px;line-height:1.5}.sidebar-note strong{color:var(--ink);display:block;margin-bottom:4px}
+  main{padding:32px 38px 46px;max-width:1500px;width:100%;margin:auto}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.crumb{color:#807a99;font-size:13px}.top-actions{display:flex;gap:10px;align-items:center}.pill{border:1px solid var(--line);border-radius:999px;padding:9px 14px;background:var(--surface);color:#5f5a79;font-weight:700;font-size:13px}.online-dot{width:9px;height:9px;background:var(--green);border-radius:50%;display:inline-block;margin-right:7px}
+  .hero{display:flex;justify-content:space-between;gap:30px;align-items:flex-end;margin-bottom:28px}.hero h1{font-size:44px;letter-spacing:-1.7px;margin:0 0 5px}.hero p{margin:0;color:var(--muted);font-size:16px}.hero-badge{background:#fff7fd;border:1px solid #f3d5eb;color:#bd197f;border-radius:16px;padding:12px 15px;font-weight:700}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:24px}.panel{border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:0 14px 40px #2920470a;padding:22px}.section-title{font-weight:850;font-size:18px;margin:0 0 17px;display:flex;gap:10px;align-items:center}.section-title small{color:var(--muted);font-size:12px;font-weight:600;margin-left:auto}
+  .system-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}.system-card{border:1.5px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;transition:.18s;background:var(--surface);display:flex;gap:13px;align-items:center}.system-card:hover{transform:translateY(-2px);box-shadow:0 10px 25px #2c1b5010}.system-card.selected{border-color:var(--purple);box-shadow:0 0 0 3px #752bff16;background:linear-gradient(180deg,#fff,#fcf9ff)}.system-icon{width:66px;height:66px;border-radius:16px;background:linear-gradient(135deg,#faf6ff,#f2edff);display:grid;place-items:center;font-size:32px}.system-card h3{margin:0 0 4px;font-size:16px}.system-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}.radio{width:18px;height:18px;border-radius:50%;border:2px solid #a7a1c0;position:relative;flex:0 0 auto}.selected .radio{border-color:var(--purple)}.selected .radio:after{content:"";width:8px;height:8px;background:var(--purple);border-radius:50%;position:absolute;top:3px;left:3px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field{display:grid;gap:7px}.field.full{grid-column:1/-1}label{font-weight:750;font-size:13px}label span{color:#df1d67}.input,.select,.textarea{width:100%;border:1px solid #ddd8ea;border-radius:13px;padding:13px 14px;background:var(--field-bg);outline:none;color:var(--ink);transition:.15s}.input:focus,.select:focus,.textarea:focus{border-color:var(--purple);box-shadow:0 0 0 4px #6b2df214}.textarea{min-height:145px;resize:vertical}.hint{font-size:11px;color:#85809d}.urgency{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.urgency button{border:1px solid var(--line);background:var(--surface);border-radius:13px;padding:11px 10px;text-align:left;cursor:pointer;font-weight:750}.urgency button small{display:block;color:var(--muted);font-weight:500;margin-top:3px}.urgency button.selected{border-color:var(--purple);box-shadow:0 0 0 3px #6b2df214}.u-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px}.u-low{background:#19b978}.u-med{background:#3687ff}.u-high{background:#f9a900}.u-critical{background:#e92f3d}
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}.btn{border:1px solid var(--line);padding:12px 18px;border-radius:13px;background:#fff;color:var(--ink);font-weight:800;cursor:pointer}.btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 12px 24px #6b2df329}.btn:hover{transform:translateY(-1px)}
+  .side{display:grid;gap:15px;align-content:start}.side-card{border:1px solid var(--line);border-radius:20px;padding:18px;background:var(--surface)}.side-card h3{margin:0 0 10px;font-size:15px}.side-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}.status-row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0edf6;font-size:13px}.status-row:last-child{border-bottom:0}.ok{color:var(--green);font-weight:800}.issue-list{margin:0;padding-left:18px;color:#4f4a69;font-size:12px;line-height:2}.help{background:linear-gradient(135deg,#fbf8ff,#fff7fc)}
+  .view{display:none}.view.active{display:block}
+  .appearance-card{margin-top:14px;border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--surface);}
+  .appearance-title{font-size:12px;font-weight:850;margin-bottom:10px;color:var(--ink)}
+  .theme-row{display:flex;gap:8px;margin-bottom:10px}.theme-btn{flex:1;border:1px solid var(--line);background:var(--field-bg);color:var(--ink);border-radius:10px;padding:8px 9px;font-weight:800;font-size:11px;cursor:pointer}.theme-btn.active{border-color:var(--purple);box-shadow:0 0 0 3px #6b2df214;color:var(--purple)}
+  .pastel-row{display:flex;gap:8px;flex-wrap:wrap}.swatch{width:25px;height:25px;border-radius:50%;border:2px solid rgba(0,0,0,.08);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.08)}.swatch.active{outline:3px solid #6b2df222;outline-offset:2px}
+  body.dark{--page-bg:#17131f;--surface:#211a2b;--surface-2:#261e31;--field-bg:#1d1726;--sidebar-bg-1:#1e1728;--sidebar-bg-2:#17131f;--ink:#f7f4fb;--muted:#b7adc8;--line:#3a3048;--soft:#2a2235;}
+  body.dark .nav-item{color:#c6bdd4} body.dark .nav-item.active{color:#fff} body.dark .brand-title span{color:#a988ff} body.dark .hero-badge{background:#2a1c2b;border-color:#58364d;color:#ff8bc7} body.dark .system-icon{background:linear-gradient(135deg,#2e2638,#282033)} body.dark .selected{background:linear-gradient(180deg,#241c2f,#211a2b)} body.dark .issue-table th,body.dark .issue-table td{border-bottom-color:#382e45} body.dark .sidebar-note{background:linear-gradient(135deg,#241d2d,#1c1724);color:#c5bad1} body.dark .sidebar-note strong{color:#fff}
+
+  body.dark .btn:not(.primary){
+    background:#2a2235 !important;
+    border-color:#4a3d59 !important;
+    color:#f7f4fb !important;
+  }
+  body.dark .btn:not(.primary):hover{
+    background:#332941 !important;
+  }
+  body.dark .help{
+    background:linear-gradient(135deg,#2a2235,#211a2b) !important;
+  }
+  body.dark .help h3,
+  body.dark .help p{
+    color:#f7f4fb !important;
+  }
+  body.dark .system-card.selected{
+    background:linear-gradient(180deg,#2a2235,#211a2b) !important;
+  }
+  body.dark .urgency button{
+    background:#211a2b !important;
+    color:#f7f4fb !important;
+    border-color:#3a3048 !important;
+  }
+  body.dark .urgency button small{
+    color:#b7adc8 !important;
+  }
+  body.dark .input,
+  body.dark .select,
+  body.dark .textarea,
+  body.dark .theme-btn{
+    background:#1d1726 !important;
+    color:#f7f4fb !important;
+    border-color:#4a3d59 !important;
+  }
+  body.dark .input::placeholder,
+  body.dark .textarea::placeholder{
+    color:#8f839f !important;
+  }
+  body.dark .pill{
+    background:#211a2b !important;
+    color:#d8cfe4 !important;
+    border-color:#3a3048 !important;
+  }
+
+.empty{border:1px dashed #cfc8e0;border-radius:18px;padding:35px;text-align:center;color:var(--muted)}.issue-table{width:100%;border-collapse:collapse;margin-top:14px}.issue-table th,.issue-table td{text-align:left;padding:13px 10px;border-bottom:1px solid #eeeaf4;font-size:12px}.badge{border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}.b-purple{background:#f0e9ff;color:#6427dd}.b-red{background:#fff0f1;color:#d32637}.b-green{background:#eaf9f2;color:#128356}
+  @media(max-width:1000px){.app{grid-template-columns:1fr}aside{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--line)}nav{grid-template-columns:repeat(4,1fr)}.sidebar-note{display:none}.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr 1fr}.system-grid,.form-grid{grid-template-columns:1fr}.urgency{grid-template-columns:1fr 1fr}}
+  @media(max-width:650px){main{padding:22px 16px}.hero{align-items:flex-start;flex-direction:column}.hero h1{font-size:34px}.side{grid-template-columns:1fr}.topbar{align-items:flex-start}.top-actions{display:none}nav{grid-template-columns:1fr 1fr}.system-card{align-items:flex-start}}
+
+/* Ticket detail modal */
+.ticket-modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(20,14,28,.52);
+  backdrop-filter:blur(5px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9998;
+  padding:24px;
+}
+.ticket-modal-backdrop.open{display:flex}
+.ticket-modal{
+  width:min(720px,96vw);
+  max-height:88vh;
+  overflow:auto;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:24px;
+  box-shadow:0 30px 80px rgba(0,0,0,.28);
+  padding:26px;
+}
+.ticket-modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:20px;
+  margin-bottom:18px;
+}
+.ticket-modal h2{margin:0 0 6px;font-size:24px}
+.ticket-close{
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--ink);
+  border-radius:12px;
+  width:40px;
+  height:40px;
+  cursor:pointer;
+  font-size:20px;
+}
+.ticket-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  margin:18px 0;
+}
+.ticket-field{
+  background:var(--soft);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:13px 14px;
+}
+.ticket-field strong{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  margin-bottom:5px;
+}
+.ticket-description{
+  white-space:pre-wrap;
+  line-height:1.6;
+}
+.ticket-status-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:end;
+  margin-top:18px;
+}
+.issue-table tbody tr{cursor:pointer}
+.issue-table tbody tr:hover{background:var(--soft)}
+body.dark .ticket-modal,
+body.dark .ticket-close{
+  background:#211a2b;
+}
+body.dark .ticket-field{
+  background:#1d1726;
+  border-color:#3a3048;
+}
+@media(max-width:640px){
+  .ticket-grid{grid-template-columns:1fr}
+  .ticket-status-row{grid-template-columns:1fr}
+}
+
+
+/* Solid ticket modal + comments */
+.ticket-modal{
+  background:#ffffff !important;
+  opacity:1 !important;
+  backdrop-filter:none !important;
+}
+.ticket-modal-backdrop{
+  background:rgba(17,12,24,.72) !important;
+}
+body.dark .ticket-modal{
+  background:#211a2b !important;
+}
+.comment-section{
+  margin-top:22px;
+  padding-top:20px;
+  border-top:1px solid var(--line);
+}
+.comment-section h3{
+  margin:0 0 12px;
+  font-size:16px;
+}
+.comment-box{
+  width:100%;
+  min-height:92px;
+  resize:vertical;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 14px;
+  background:var(--panel);
+  color:var(--ink);
+  outline:none;
+  font:inherit;
+  line-height:1.5;
+}
+.comment-box:focus{
+  border-color:#7a2cff;
+  box-shadow:0 0 0 3px rgba(122,44,255,.12);
+}
+.comment-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:10px;
+}
+.comment-history{
+  margin-top:18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.comment-empty{
+  color:var(--muted);
+  font-size:13px;
+  padding:12px 0;
+}
+.comment-item{
+  background:var(--soft);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 14px;
+}
+.comment-meta{
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+.comment-text{
+  white-space:pre-wrap;
+  line-height:1.55;
+}
+body.dark .comment-box{
+  background:#1d1726;
+  color:#f7f4fb;
+  border-color:#4a3d59;
+}
+body.dark .comment-item{
+  background:#1d1726;
+  border-color:#3a3048;
+}
+
+
+.resolution-wrap{
+  display:none;
+  margin-top:14px;
+}
+.resolution-wrap.show{
+  display:block;
+}
+.resolution-box{
+  width:100%;
+  min-height:100px;
+  resize:vertical;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px 14px;
+  background:var(--panel);
+  color:var(--ink);
+  outline:none;
+  font:inherit;
+  line-height:1.5;
+}
+.resolution-box:focus{
+  border-color:#7a2cff;
+  box-shadow:0 0 0 3px rgba(122,44,255,.12);
+}
+body.dark .resolution-box{
+  background:#1d1726;
+  color:#f7f4fb;
+  border-color:#4a3d59;
+}
+
+
+.issues-toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  margin:0 0 18px;
+}
+.issues-toolbar .filter-control{
+  min-width:150px;
+  flex:0 1 auto;
+}
+.issues-toolbar select,
+.issues-toolbar input{
+  width:100%;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--ink);
+  border-radius:12px;
+  padding:10px 12px;
+  font:inherit;
+  outline:none;
+}
+.issues-toolbar select:focus,
+.issues-toolbar input:focus{
+  border-color:#7a2cff;
+  box-shadow:0 0 0 3px rgba(122,44,255,.10);
+}
+.issues-count{
+  margin-left:auto;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+body.dark .issues-toolbar select,
+body.dark .issues-toolbar input{
+  background:#1d1726;
+  color:#f7f4fb;
+  border-color:#4a3d59;
+}
+@media(max-width:720px){
+  .issues-toolbar .filter-control{
+    min-width:calc(50% - 5px);
+    flex:1 1 calc(50% - 5px);
+  }
+  .issues-count{
+    width:100%;
+    margin-left:0;
+  }
+}
+
+
+.issues-toolbar{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 8px 22px rgba(28,18,45,.06);
+  margin-bottom:18px;
+}
+.issues-toolbar .filter-control{
+  background:var(--soft);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:4px;
+}
+.issues-toolbar select{
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+body.dark .issues-toolbar{
+  background:#211a2b;
+  border-color:#3a3048;
+}
+body.dark .issues-toolbar .filter-control{
+  background:#1d1726;
+  border-color:#4a3d59;
+}
+
+
+/* =========================================================
+   LIQUID GLASS DESIGN SYSTEM
+   ========================================================= */
+
+:root{
+  --glass-bg: rgba(255,255,255,.58);
+  --glass-bg-strong: rgba(255,255,255,.76);
+  --glass-border: rgba(255,255,255,.72);
+  --glass-shadow: 0 18px 45px rgba(74,46,104,.12);
+  --glass-highlight: rgba(255,255,255,.78);
+}
+
+body{
+  background:
+    radial-gradient(circle at 14% 10%, rgba(210,184,255,.32), transparent 30%),
+    radial-gradient(circle at 88% 12%, rgba(255,182,213,.28), transparent 28%),
+    radial-gradient(circle at 70% 88%, rgba(183,226,255,.26), transparent 30%),
+    var(--page) !important;
+  background-attachment: fixed !important;
+}
+
+.sidebar,
+.panel,
+.system-card,
+.side-card,
+.issues-toolbar,
+.ticket-modal,
+.ticket-field,
+.comment-item,
+.sidebar-note,
+.appearance-card,
+.hero-badge,
+.pill{
+  background: linear-gradient(
+      145deg,
+      rgba(255,255,255,.78),
+      rgba(255,255,255,.42)
+    ) !important;
+  border: 1px solid rgba(255,255,255,.72) !important;
+  box-shadow:
+    0 18px 45px rgba(52,31,79,.10),
+    inset 0 1px 0 rgba(255,255,255,.88),
+    inset 0 -1px 0 rgba(255,255,255,.32) !important;
+  backdrop-filter: blur(22px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(155%) !important;
+}
+
+.sidebar{
+  box-shadow:
+    12px 0 35px rgba(46,29,67,.08),
+    inset -1px 0 0 rgba(255,255,255,.6) !important;
+}
+
+.panel,
+.ticket-modal{
+  position:relative;
+  overflow:hidden;
+}
+
+.panel::before,
+.ticket-modal::before,
+.issues-toolbar::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(
+      120deg,
+      rgba(255,255,255,.42) 0%,
+      rgba(255,255,255,.10) 28%,
+      transparent 48%
+    );
+  border-radius:inherit;
+}
+
+.system-card,
+.side-card,
+.ticket-field,
+.comment-item,
+.issues-toolbar .filter-control{
+  position:relative;
+  overflow:hidden;
+}
+
+.system-card::after,
+.side-card::after,
+.ticket-field::after,
+.comment-item::after,
+.issues-toolbar .filter-control::after{
+  content:"";
+  position:absolute;
+  top:-45%;
+  left:-20%;
+  width:70%;
+  height:120%;
+  transform:rotate(24deg);
+  pointer-events:none;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.28),
+    transparent
+  );
+  opacity:.7;
+}
+
+.system-card:hover,
+.nav-item:hover,
+.btn:hover,
+.issues-toolbar .filter-control:hover{
+  transform:translateY(-1px);
+}
+
+.system-card.selected{
+  background:
+    linear-gradient(145deg, rgba(239,226,255,.88), rgba(255,238,249,.65)) !important;
+  border-color:rgba(131,56,255,.55) !important;
+  box-shadow:
+    0 18px 38px rgba(120,44,210,.16),
+    inset 0 1px 0 rgba(255,255,255,.92) !important;
+}
+
+.nav-item.active,
+.btn.primary{
+  background:
+    linear-gradient(135deg, rgba(217,0,133,.95), rgba(112,34,255,.95)) !important;
+  box-shadow:
+    0 12px 28px rgba(127,40,210,.24),
+    inset 0 1px 0 rgba(255,255,255,.35) !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+}
+
+.btn:not(.primary),
+.theme-btn,
+.issues-toolbar select,
+.select,
+.input,
+.textarea,
+.comment-box,
+.resolution-box{
+  background:rgba(255,255,255,.52) !important;
+  border:1px solid rgba(255,255,255,.72) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.76),
+    0 6px 16px rgba(58,39,78,.06) !important;
+  backdrop-filter:blur(14px) saturate(145%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(145%) !important;
+}
+
+.issue-table tbody tr{
+  transition:background .18s ease, transform .18s ease;
+}
+
+.issue-table tbody tr:hover{
+  background:rgba(255,255,255,.32) !important;
+}
+
+.badge{
+  backdrop-filter:blur(10px) saturate(145%);
+  -webkit-backdrop-filter:blur(10px) saturate(145%);
+  border:1px solid rgba(255,255,255,.55);
+}
+
+.cursor-star{
+  filter:drop-shadow(0 4px 8px rgba(91,49,120,.18));
+}
+
+/* Dark liquid glass */
+body.dark{
+  --glass-bg: rgba(28,21,39,.62);
+  --glass-bg-strong: rgba(31,23,43,.78);
+  --glass-border: rgba(255,255,255,.11);
+  --glass-shadow: 0 18px 45px rgba(0,0,0,.28);
+}
+
+body.dark{
+  background:
+    radial-gradient(circle at 14% 10%, rgba(105,48,160,.20), transparent 30%),
+    radial-gradient(circle at 88% 10%, rgba(180,32,121,.15), transparent 30%),
+    radial-gradient(circle at 76% 90%, rgba(46,102,149,.14), transparent 32%),
+    #15101e !important;
+}
+
+body.dark .sidebar,
+body.dark .panel,
+body.dark .system-card,
+body.dark .side-card,
+body.dark .issues-toolbar,
+body.dark .ticket-modal,
+body.dark .ticket-field,
+body.dark .comment-item,
+body.dark .sidebar-note,
+body.dark .appearance-card,
+body.dark .hero-badge,
+body.dark .pill{
+  background:
+    linear-gradient(
+      145deg,
+      rgba(39,30,52,.78),
+      rgba(25,19,34,.60)
+    ) !important;
+  border-color:rgba(255,255,255,.10) !important;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -1px 0 rgba(255,255,255,.02) !important;
+}
+
+body.dark .system-card.selected{
+  background:
+    linear-gradient(145deg, rgba(76,44,105,.82), rgba(51,30,72,.72)) !important;
+  border-color:rgba(168,98,255,.58) !important;
+}
+
+body.dark .btn:not(.primary),
+body.dark .theme-btn,
+body.dark .issues-toolbar select,
+body.dark .select,
+body.dark .input,
+body.dark .textarea,
+body.dark .comment-box,
+body.dark .resolution-box{
+  background:rgba(24,18,33,.58) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  color:#f7f4fb !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 8px 20px rgba(0,0,0,.14) !important;
+}
+
+body.dark .issue-table tbody tr:hover{
+  background:rgba(255,255,255,.045) !important;
+}
+
+
+/* =========================================================
+   TRUE FROSTED GLASS OVERRIDES
+   No fake diagonal gradients — real transparency + blur.
+   ========================================================= */
+
+/* Remove fake reflective overlays */
+.panel::before,
+.ticket-modal::before,
+.issues-toolbar::before,
+.system-card::after,
+.side-card::after,
+.ticket-field::after,
+.comment-item::after,
+.issues-toolbar .filter-control::after{
+  display:none !important;
+  content:none !important;
+}
+
+/* Glass panels */
+.sidebar,
+.panel,
+.system-card,
+.side-card,
+.issues-toolbar,
+.ticket-modal,
+.ticket-field,
+.comment-item,
+.sidebar-note,
+.appearance-card,
+.hero-badge,
+.pill{
+  background:rgba(255,255,255,.48) !important;
+  border:1px solid rgba(255,255,255,.62) !important;
+  box-shadow:
+    0 14px 34px rgba(48,35,68,.10),
+    inset 0 1px 0 rgba(255,255,255,.58) !important;
+  backdrop-filter:blur(22px) saturate(135%) !important;
+  -webkit-backdrop-filter:blur(22px) saturate(135%) !important;
+}
+
+/* Ticket modal needs to show the page behind it */
+.ticket-modal-backdrop{
+  background:rgba(20,14,28,.28) !important;
+  backdrop-filter:blur(4px) !important;
+  -webkit-backdrop-filter:blur(4px) !important;
+}
+
+.ticket-modal{
+  background:rgba(255,255,255,.62) !important;
+  backdrop-filter:blur(28px) saturate(140%) !important;
+  -webkit-backdrop-filter:blur(28px) saturate(140%) !important;
+}
+
+/* Inner ticket cards */
+.ticket-field,
+.comment-item{
+  background:rgba(255,255,255,.38) !important;
+}
+
+/* Form controls */
+.btn:not(.primary),
+.theme-btn,
+.issues-toolbar select,
+.select,
+.input,
+.textarea,
+.comment-box,
+.resolution-box{
+  background:rgba(255,255,255,.34) !important;
+  border:1px solid rgba(255,255,255,.58) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42) !important;
+  backdrop-filter:blur(16px) saturate(130%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(130%) !important;
+}
+
+/* Selected system: subtle tint only, no gradient */
+.system-card.selected{
+  background:rgba(239,226,255,.62) !important;
+  border-color:rgba(131,56,255,.48) !important;
+  box-shadow:
+    0 14px 30px rgba(120,44,210,.12),
+    inset 0 1px 0 rgba(255,255,255,.55) !important;
+}
+
+/* Dark mode: still transparent enough to see through */
+body.dark .sidebar,
+body.dark .panel,
+body.dark .system-card,
+body.dark .side-card,
+body.dark .issues-toolbar,
+body.dark .ticket-field,
+body.dark .comment-item,
+body.dark .sidebar-note,
+body.dark .appearance-card,
+body.dark .hero-badge,
+body.dark .pill{
+  background:rgba(28,21,39,.52) !important;
+  border-color:rgba(255,255,255,.10) !important;
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+body.dark .ticket-modal-backdrop{
+  background:rgba(8,5,12,.30) !important;
+  backdrop-filter:blur(5px) !important;
+  -webkit-backdrop-filter:blur(5px) !important;
+}
+
+body.dark .ticket-modal{
+  background:rgba(27,20,38,.64) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  backdrop-filter:blur(30px) saturate(135%) !important;
+  -webkit-backdrop-filter:blur(30px) saturate(135%) !important;
+}
+
+body.dark .ticket-field,
+body.dark .comment-item{
+  background:rgba(36,27,49,.42) !important;
+}
+
+body.dark .btn:not(.primary),
+body.dark .theme-btn,
+body.dark .issues-toolbar select,
+body.dark .select,
+body.dark .input,
+body.dark .textarea,
+body.dark .comment-box,
+body.dark .resolution-box{
+  background:rgba(24,18,33,.38) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  color:#f7f4fb !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+body.dark .system-card.selected{
+  background:rgba(70,43,96,.50) !important;
+  border-color:rgba(168,98,255,.48) !important;
+}
+
+/* Keep the background interesting enough that glass has something to reveal */
+body{
+  background:
+    radial-gradient(circle at 16% 12%, rgba(200,177,247,.24), transparent 30%),
+    radial-gradient(circle at 88% 16%, rgba(244,184,215,.20), transparent 28%),
+    radial-gradient(circle at 72% 86%, rgba(170,214,239,.20), transparent 32%),
+    var(--page) !important;
+  background-attachment:fixed !important;
+}
+
+body.dark{
+  background:
+    radial-gradient(circle at 16% 12%, rgba(103,62,145,.20), transparent 30%),
+    radial-gradient(circle at 88% 16%, rgba(150,45,108,.14), transparent 28%),
+    radial-gradient(circle at 72% 86%, rgba(58,103,139,.14), transparent 32%),
+    #15101e !important;
+}
+
+
+/* =========================================================
+   TAB COLOUR TRANSITIONS
+   Each section gets its own accent and smoothly morphs.
+   ========================================================= */
+
+:root{
+  --nav-accent-1:#d600b8;
+  --nav-accent-2:#7a2cff;
+  --nav-glow:rgba(122,44,255,.28);
+}
+
+body{
+  transition:
+    background-color .55s ease,
+    background .55s ease;
+}
+
+/* Smooth nav state changes */
+.nav-item{
+  transition:
+    background .45s ease,
+    color .35s ease,
+    box-shadow .45s ease,
+    transform .25s ease,
+    border-color .35s ease !important;
+}
+
+/* Log an Issue */
+body[data-view-theme="report"]{
+  --nav-accent-1:#d600b8;
+  --nav-accent-2:#7a2cff;
+  --nav-glow:rgba(122,44,255,.30);
+}
+
+/* My Issues */
+body[data-view-theme="issues"]{
+  --nav-accent-1:#6c4dff;
+  --nav-accent-2:#2d8cff;
+  --nav-glow:rgba(45,140,255,.28);
+}
+
+/* Knowledge Base */
+body[data-view-theme="knowledge"]{
+  --nav-accent-1:#9a3cff;
+  --nav-accent-2:#00a89d;
+  --nav-glow:rgba(0,168,157,.25);
+}
+
+.nav-item.active,
+.btn.primary{
+  background:
+    linear-gradient(135deg,var(--nav-accent-1),var(--nav-accent-2)) !important;
+  box-shadow:
+    0 12px 28px var(--nav-glow),
+    inset 0 1px 0 rgba(255,255,255,.25) !important;
+}
+
+/* subtle accent glow on each active page */
+body[data-view-theme="report"] main{
+  --page-accent:rgba(214,0,184,.08);
+}
+body[data-view-theme="issues"] main{
+  --page-accent:rgba(45,140,255,.08);
+}
+body[data-view-theme="knowledge"] main{
+  --page-accent:rgba(0,168,157,.08);
+}
+
+main{
+  position:relative;
+}
+main::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 78% 14%, var(--page-accent,rgba(122,44,255,.07)), transparent 26%);
+  opacity:.9;
+  transition:background .6s ease, opacity .6s ease;
+  z-index:-1;
+}
+
+
+/* =========================================================
+   SLIDING ACTIVE NAV PILL
+   ========================================================= */
+aside nav{
+  position:relative;
+}
+
+.nav-slider{
+  position:absolute;
+  left:0;
+  top:0;
+  width:0;
+  height:0;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--nav-accent-1),var(--nav-accent-2));
+  box-shadow:
+    0 12px 28px var(--nav-glow),
+    inset 0 1px 0 rgba(255,255,255,.24);
+  pointer-events:none;
+  z-index:0;
+  transition:
+    transform .46s cubic-bezier(.22,1,.36,1),
+    width .34s cubic-bezier(.22,1,.36,1),
+    height .34s cubic-bezier(.22,1,.36,1),
+    background .45s ease,
+    box-shadow .45s ease;
+}
+
+.nav-item{
+  position:relative;
+  z-index:1;
+  background:transparent !important;
+  box-shadow:none !important;
+  transition:
+    color .30s ease,
+    transform .22s ease !important;
+}
+
+.nav-item.active{
+  background:transparent !important;
+  box-shadow:none !important;
+  color:#fff !important;
+}
+
+.nav-item:not(.active):hover{
+  background:rgba(255,255,255,.10) !important;
+}
+
+body.dark .nav-item:not(.active):hover{
+  background:rgba(255,255,255,.05) !important;
+}
+
+
+/* =========================================================
+   THIN VIEW: KEEP THE SLIDING PILL FEELING SMOOTH
+   ========================================================= */
+@media (max-width: 980px){
+  aside nav{
+    display:grid !important;
+    grid-template-columns:repeat(3, minmax(0,1fr)) !important;
+    gap:0 !important;
+    align-items:stretch !important;
+  }
+
+  aside nav .nav-item{
+    min-height:68px !important;
+    height:68px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+    padding:12px 16px !important;
+    line-height:1.15 !important;
+    white-space:normal !important;
+  }
+
+  .nav-slider{
+    border-radius:16px !important;
+    transition:
+      transform .52s cubic-bezier(.22,1,.36,1),
+      width .42s cubic-bezier(.22,1,.36,1),
+      height .42s cubic-bezier(.22,1,.36,1),
+      background .45s ease,
+      box-shadow .45s ease !important;
+  }
+}
+
+
+/* ===== Final clean branding + working colour picker ===== */
+.brand{
+  padding-left:8px !important;
+}
+.brand-title{
+  font-size:17px !important;
+}
+.nav-item{
+  gap:0 !important;
+}
+
+/* The existing appearance JavaScript updates --page-bg.
+   Make the actual page use it underneath the frosted glass. */
+body:not(.dark){
+  background:
+    radial-gradient(circle at 16% 12%, rgba(200,177,247,.13), transparent 30%),
+    radial-gradient(circle at 88% 16%, rgba(244,184,215,.11), transparent 28%),
+    radial-gradient(circle at 72% 86%, rgba(170,214,239,.11), transparent 32%),
+    var(--page-bg) !important;
+  transition:background .45s ease !important;
+}
+
+/* Make the chosen pastel more visible through the glass. */
+body:not(.dark) .sidebar,
+body:not(.dark) .panel,
+body:not(.dark) .system-card,
+body:not(.dark) .side-card,
+body:not(.dark) .issues-toolbar,
+body:not(.dark) .ticket-modal,
+body:not(.dark) .ticket-field,
+body:not(.dark) .comment-item,
+body:not(.dark) .sidebar-note,
+body:not(.dark) .appearance-card,
+body:not(.dark) .hero-badge,
+body:not(.dark) .pill{
+  background:rgba(255,255,255,.42) !important;
+}
+
+/* Dark mode remains intentionally dark. */
+body.dark{
+  background:
+    radial-gradient(circle at 16% 12%, rgba(103,62,145,.20), transparent 30%),
+    radial-gradient(circle at 88% 16%, rgba(150,45,108,.14), transparent 28%),
+    radial-gradient(circle at 72% 86%, rgba(58,103,139,.14), transparent 32%),
+    #15101e !important;
+}
+
+.swatch{
+  cursor:pointer !important;
+}
+
+
+/* ===== Form controls: visible boxed inputs again ===== */
+.input,
+.select,
+.textarea,
+.comment-box,
+.resolution-box,
+.issues-toolbar select,
+.theme-btn{
+  background:rgba(255,255,255,.70) !important;
+  border:1px solid rgba(78,58,106,.22) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.70),
+    0 4px 12px rgba(45,31,63,.05) !important;
+  border-radius:14px !important;
+  padding:12px 14px !important;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus,
+.comment-box:focus,
+.resolution-box:focus,
+.issues-toolbar select:focus{
+  border-color:#7a2cff !important;
+  box-shadow:
+    0 0 0 3px rgba(122,44,255,.12),
+    inset 0 1px 0 rgba(255,255,255,.70) !important;
+  outline:none !important;
+}
+
+body.dark .input,
+body.dark .select,
+body.dark .textarea,
+body.dark .comment-box,
+body.dark .resolution-box,
+body.dark .issues-toolbar select,
+body.dark .theme-btn{
+  background:rgba(22,17,30,.62) !important;
+  border-color:rgba(255,255,255,.14) !important;
+  color:#f7f4fb !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 4px 12px rgba(0,0,0,.14) !important;
+}
+
+/* Slightly clearer grouped form area */
+.panel{
+  border:1px solid rgba(96,74,122,.14) !important;
+}
+
+body.dark .panel{
+  border-color:rgba(255,255,255,.10) !important;
+}
+
+
+/* ===== iPad / mobile ticket modal scrolling fix ===== */
+.ticket-modal-backdrop{
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain;
+  align-items:flex-start !important;
+  padding-top:max(18px, env(safe-area-inset-top)) !important;
+  padding-bottom:max(28px, env(safe-area-inset-bottom)) !important;
+}
+
+.ticket-modal{
+  width:min(720px, calc(100vw - 28px)) !important;
+  max-height:calc(100dvh - 36px) !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  margin:auto !important;
+  padding-bottom:max(30px, env(safe-area-inset-bottom)) !important;
+}
+
+/* Keep the top of the ticket accessible while scrolling */
+.ticket-modal-head{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:inherit;
+  backdrop-filter:blur(22px) saturate(135%);
+  -webkit-backdrop-filter:blur(22px) saturate(135%);
+  padding-top:2px;
+  padding-bottom:12px;
+}
+
+/* Prevent iOS from trapping scroll gestures inside textareas */
+.comment-box,
+.resolution-box,
+.textarea{
+  touch-action:pan-y;
+}
+
+/* Tablet-specific comfort spacing */
+@media (max-width: 1024px){
+  .ticket-modal-backdrop{
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+
+  .ticket-modal{
+    max-height:calc(100dvh - 28px) !important;
+    border-radius:22px !important;
+  }
+
+  .comment-section,
+  .ticket-status-row,
+  .resolution-wrap{
+    scroll-margin-bottom:120px;
+  }
+}
+
+
+/* ===== Refined frosted ticket header ===== */
+.ticket-modal-head{
+  position:sticky !important;
+  top:0 !important;
+  z-index:10 !important;
+  display:flex !important;
+  justify-content:space-between !important;
+  align-items:flex-start !important;
+  gap:16px !important;
+
+  background:rgba(255,255,255,.62) !important;
+  backdrop-filter:blur(28px) saturate(140%) !important;
+  -webkit-backdrop-filter:blur(28px) saturate(140%) !important;
+
+  border:1px solid rgba(255,255,255,.72) !important;
+  border-radius:20px !important;
+  padding:18px 20px !important;
+  margin-bottom:22px !important;
+
+  box-shadow:
+    0 12px 30px rgba(55,35,80,.10),
+    inset 0 1px 0 rgba(255,255,255,.68) !important;
+}
+
+.ticket-modal-head::after{
+  content:"";
+  position:absolute;
+  left:20px;
+  right:20px;
+  bottom:0;
+  height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#d600b8,#7a2cff,#2d8cff);
+  opacity:.55;
+}
+
+#ticketTitle{
+  margin:0 0 6px !important;
+  font-size:clamp(24px,4vw,30px) !important;
+  line-height:1.05 !important;
+  letter-spacing:-.02em !important;
+}
+
+#ticketSub{
+  color:var(--muted) !important;
+  font-size:13px !important;
+  line-height:1.4 !important;
+}
+
+.ticket-close{
+  flex:0 0 auto !important;
+  width:40px !important;
+  height:40px !important;
+  border-radius:50% !important;
+  background:rgba(255,255,255,.34) !important;
+  border:1px solid rgba(255,255,255,.58) !important;
+  color:var(--ink) !important;
+  backdrop-filter:blur(14px) saturate(130%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(130%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.52),
+    0 6px 16px rgba(45,31,63,.08) !important;
+  transition:transform .18s ease, background .18s ease !important;
+}
+
+.ticket-close:hover{
+  transform:scale(1.04);
+  background:rgba(255,255,255,.50) !important;
+}
+
+body.dark .ticket-modal-head{
+  background:rgba(28,21,39,.66) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+
+body.dark .ticket-close{
+  background:rgba(30,23,41,.48) !important;
+  border-color:rgba(255,255,255,.12) !important;
+  color:#f7f4fb !important;
+}
+
+@media(max-width:640px){
+  .ticket-modal-head{
+    padding:16px 16px !important;
+    margin-bottom:18px !important;
+    border-radius:18px !important;
+  }
+
+  #ticketTitle{
+    font-size:24px !important;
+  }
+
+  #ticketSub{
+    font-size:12px !important;
+    max-width:260px;
+  }
+
+  .ticket-close{
+    width:38px !important;
+    height:38px !important;
+  }
+}
+
+
+
+/* ===== Glitter-only cursor sparkles ===== */
+.cursor-star{
+  position:fixed;
+  pointer-events:none;
+  z-index:10000;
+  user-select:none;
+  font-weight:900;
+  line-height:1;
+  text-shadow:0 0 4px #fff, 0 0 10px currentColor;
+  animation:glitterSparkle .75s ease-out forwards;
+  filter:drop-shadow(0 0 9px currentColor) drop-shadow(0 0 14px currentColor);
+}
+@keyframes glitterSparkle{
+  0%{
+    opacity:0;
+    transform:translate(-50%,-50%) scale(.35) rotate(0deg);
+  }
+  18%{
+    opacity:1;
+  }
+  100%{
+    opacity:0;
+    transform:translate(
+      calc(-50% + var(--dx, 0px)),
+      calc(-50% - 26px)
+    ) scale(.1) rotate(75deg);
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+<aside>
+  <div class="brand"><div class="brand-title">Airport Systems<span>Support Portal</span></div></div>
+  <nav>
+    <div class="nav-slider" id="navSlider"></div>
+    <button class="nav-item active" data-view="log">Log an Issue</button>
+    <button class="nav-item" data-view="issues">My Issues</button>
+    <button class="nav-item" data-view="knowledge">Knowledge Base</button>
+  </nav>
+  <div class="appearance-card">
+    <div class="appearance-title">Appearance</div>
+    <div class="theme-row">
+      <button class="theme-btn" type="button" data-theme="light">Light</button>
+      <button class="theme-btn" type="button" data-theme="dark">Dark</button>
+    </div>
+    <div class="pastel-row" aria-label="Background colour">
+      <button class="swatch" type="button" data-bg="#ffffff" title="White" style="background:#ffffff"></button>
+      <button class="swatch" type="button" data-bg="#f7dce9" title="Blush" style="background:#f7dce9"></button>
+      <button class="swatch" type="button" data-bg="#e4dcf7" title="Lavender" style="background:#e4dcf7"></button>
+      <button class="swatch" type="button" data-bg="#d7eaf6" title="Baby blue" style="background:#d7eaf6"></button>
+      <button class="swatch" type="button" data-bg="#d8eee2" title="Mint" style="background:#d8eee2"></button>
+      <button class="swatch" type="button" data-bg="#f2e7bf" title="Vanilla" style="background:#f2e7bf"></button>
+      <button class="swatch" type="button" data-bg="#f4d7cc" title="Peach" style="background:#f4d7cc"></button>
+    </div>
+  </div>
+  <div class="sidebar-note"><strong>Keeping airport tech moving ✈️</strong>Log issues for Bag Tagger and Auto Bag Drop devices in one place.</div>
+</aside>
+
+<main>
+  <div class="topbar"><div class="crumb">Home / Support</div><div class="top-actions"><div class="pill"><span class="online-dot"></span>Database Connected</div></div></div>
+
+  <section id="view-log" class="view active">
+    <div class="hero"><div><h1>Log an Issue</h1><p>Tell us what’s going wrong and we’ll get it sorted. ✦</p></div><div class="hero-badge" id="selected-system-label">Bag Tagger selected</div></div>
+    <div class="layout">
+      <div class="panel">
+        <div class="section-title">⚙️ Which system is affected?</div>
+        <div class="system-grid">
+          <div class="system-card selected" data-system="Bag Tagger"><div class="system-icon">🏷️</div><div><div style="display:flex;gap:9px;align-items:center"><span class="radio"></span><h3>Bag Tagger</h3></div><p>Bag tag printing, scales, scanners or tag output.</p></div></div>
+          <div class="system-card" data-system="Auto Bag Drop"><div class="system-icon">🧳</div><div><div style="display:flex;gap:9px;align-items:center"><span class="radio"></span><h3>Auto Bag Drop</h3></div><p>Self-service bag drop, scanning, belts or bag acceptance.</p></div></div>
+        </div>
+
+        <div class="section-title">📋 Issue details <small>Required fields marked *</small></div>
+        <form id="issue-form" novalidate>
+          <div class="form-grid">
+            <div class="field"><label>Airport <span>*</span></label><select class="select" id="airport" required><option value="">Select port</option><option>MEL - Melbourne</option><option>SYD - Sydney</option><option>BNE - Brisbane</option><option>OOL - Gold Coast</option><option>MKY - Mackay</option><option>MCY - Sunshine Coast</option><option>DRW - Darwin</option><option>LST - Launceston</option><option>PER - Perth</option><option>ZQN - Queenstown</option><option>NAN - Nadi</option></select></div>
+            <div class="field"><label>Terminal</label><select class="select" id="terminal"><option value="">Select terminal</option><option>T1</option><option>T2</option><option>T3</option><option>Domestic</option><option>International</option></select></div>
+            <div class="field"><label>Environment</label><select class="select" id="environment"><option value="Production" selected>Production</option><option value="Testing/CERT">Testing/CERT</option></select></div>
+            <div class="field"><label>Device / Kiosk ID <span>*</span></label><input class="input" id="device" placeholder="e.g. SYDT3ABD001" required /></div>
+            <div class="field"><label>PNR</label><input class="input" id="pnr" placeholder="e.g. ABCDEF" maxlength="6" /></div>
+            <div class="field"><label>Issue category <span>*</span></label><select class="select" id="category" required><option value="">Select category</option></select></div>
+            <div class="field full"><label>Issue description <span>*</span></label><textarea class="textarea" id="description" maxlength="1000" placeholder="Describe what happened, including any error messages, steps taken and impact." required></textarea><div class="hint"><span id="count">0</span>/1000</div></div>
+            <div class="field full"><label>Urgency <span>*</span></label><div class="urgency" id="urgency"><button type="button" data-u="Low"><span class="u-dot u-low"></span>Low<small>Minor issue</small></button><button type="button" data-u="Medium"><span class="u-dot u-med"></span>Medium<small>Affects some</small></button><button type="button" data-u="High"><span class="u-dot u-high"></span>High<small>Affects many</small></button><button type="button" data-u="Critical"><span class="u-dot u-critical"></span>Critical<small>System down</small></button></div></div>
+          </div>
+          <div class="actions"><button class="btn" type="button" id="clear">Clear Form</button><button class="btn primary" type="submit" id="submitIssueBtn">Submit Issue ✈</button></div>
+          <div id="submit-status" style="display:none;margin-top:14px;padding:13px 15px;border-radius:13px;font-size:13px;font-weight:700;line-height:1.5"></div>
+        </form>
+      </div>
+
+      <div class="side">
+        <div class="side-card help"><h3>✨ Need help?</h3><p>Not sure what to select or how to describe the issue?</p><button class="btn" style="width:100%;margin-top:12px" id="guideBtn">View Guide</button></div>
+        
+      </div>
+    </div>
+  </section>
+
+  <section id="view-issues" class="view">
+  <div class="hero">
+    <div>
+      <h1>My Issues</h1>
+      <p>Track issues you’ve submitted.</p>
+    </div>
+    <button class="btn primary" id="exportCsv" type="button">⇩ Export to CSV</button>
+  </div>
+
+  <div class="issues-toolbar">
+    <div class="filter-control">
+      <select id="filterStatus">
+        <option value="">All statuses</option>
+        <option value="New">New</option>
+        <option value="Under Investigation">Under Investigation</option>
+        <option value="Test">Test</option>
+        <option value="Closed">Closed</option>
+      </select>
+    </div>
+
+    <div class="filter-control">
+      <select id="filterSystem">
+        <option value="">All systems</option>
+        <option value="Bag Tagger">Bag Tagger</option>
+        <option value="Auto Bag Drop">Auto Bag Drop</option>
+      </select>
+    </div>
+
+    <div class="filter-control">
+      <select id="filterPort">
+        <option value="">All ports</option>
+        <option>MEL</option>
+        <option>SYD</option>
+        <option>BNE</option>
+        <option>OOL</option>
+        <option>MKY</option>
+        <option>MCY</option>
+        <option>DRW</option>
+        <option>LST</option>
+        <option>PER</option>
+        <option>ZQN</option>
+        <option>NAN</option>
+      </select>
+    </div>
+
+    <div class="filter-control">
+      <select id="filterUrgency">
+        <option value="">All urgencies</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+        <option value="Critical">Critical</option>
+      </select>
+    </div>
+
+    <div class="filter-control">
+      <select id="sortIssues">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="id-asc">Ticket ID A–Z</option>
+        <option value="id-desc">Ticket ID Z–A</option>
+        <option value="urgency">Urgency</option>
+        <option value="status">Status</option>
+      </select>
+    </div>
+
+    <div class="issues-count" id="issuesCount"></div>
+  </div>
+
+  <div class="panel" id="issues-panel"></div>
+</section>
+  <section id="view-knowledge" class="view"><div class="hero"><div><h1>Knowledge Base</h1><p>Quick fixes for the most common airport-system gremlins.</p></div></div><div class="panel"><h3>Bag Tagger</h3><p style="color:var(--muted);line-height:1.7">To investigate the cause of an error, select the Virgin logo three times, scan your override QR code, then open <strong>History</strong> to review the event details.</p><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><h3>Auto Bag Drop (ABD)</h3><p style="color:var(--muted);line-height:1.7">To investigate the cause of an error, select the Virgin logo three times, scan your override QR code, then open <strong>History</strong> to review the event details.</p></div></section>
+</main>
+</div>
+
+
+<div id="ticketModal" class="ticket-modal-backdrop" aria-hidden="true">
+  <div class="ticket-modal" role="dialog" aria-modal="true" aria-labelledby="ticketTitle">
+    <div class="ticket-modal-head">
+      <div>
+        <h2 id="ticketTitle">Ticket</h2>
+        <div id="ticketSub" style="color:var(--muted);font-size:13px"></div>
+      </div>
+      <button id="ticketClose" class="ticket-close" type="button" aria-label="Close">×</button>
+    </div>
+
+    <div id="ticketFields" class="ticket-grid"></div>
+
+    <div class="ticket-field">
+      <strong>Description</strong>
+      <div id="ticketDescription" class="ticket-description"></div>
+    </div>
+
+
+    <div class="comment-section">
+      <h3>Comments</h3>
+      <textarea id="newComment" class="comment-box" placeholder="Add a comment or update…"></textarea>
+      <div class="comment-actions">
+        <button id="addCommentBtn" class="btn primary" type="button">Add Comment</button>
+      </div>
+      <div id="commentMessage" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700"></div>
+      <div id="commentHistory" class="comment-history">
+        <div class="comment-empty">No comments yet.</div>
+      </div>
+    </div>
+
+
+
+    <div class="ticket-status-row">
+      <div>
+        <label for="ticketStatus" style="display:block;font-weight:800;margin-bottom:8px">Status</label>
+        <select id="ticketStatus" class="select">
+          <option value="New">New</option>
+          <option value="Under Investigation">Under Investigation</option>
+          <option value="Test">Test</option>
+          <option value="Closed">Closed</option>
+        </select>
+      </div>
+      <button id="saveTicketStatus" class="btn primary" type="button">Save Status</button>
+    </div>
+
+    <div id="resolutionWrap" class="resolution-wrap">
+      <label for="resolutionNotes" style="display:block;font-weight:800;margin-bottom:8px">
+        Resolution Notes
+      </label>
+      <textarea
+        id="resolutionNotes"
+        class="resolution-box"
+        placeholder="Describe how the issue was resolved…"
+      ></textarea>
+    </div>
+
+    <div id="ticketStatusMessage" style="display:none;margin-top:14px;padding:12px 14px;border-radius:12px;font-size:13px;font-weight:700"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://nxyutzeplurgirgdivtd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gSJWywfwqb0ucXeqNcgu7g_kFJKTAF8';
+
+const categories={
+  'Bag Tagger':['Error Printing','Unable to read bag tags','Unable to retrieve booking','Incorrect allowance','Incorrect fees','Other issues'],
+  'Auto Bag Drop':['Error Printing','Unable to read bag tags','Unable to retrieve booking','Incorrect allowance','Incorrect fees','Other issues']
+};
+const commons={
+  'Bag Tagger':['Error Printing','Unable to read bag tags','Unable to retrieve booking','Incorrect allowance','Incorrect fees'],
+  'Auto Bag Drop':['Error Printing','Unable to read bag tags','Unable to retrieve booking','Incorrect allowance','Incorrect fees']
+};
+
+let currentSystem='Bag Tagger';
+let selectedUrgency='';
+let issues=[];
+
+const category=document.getElementById('category');
+const label=document.getElementById('selected-system-label');
+
+function apiHeaders(extra={}) {
+  return {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    ...extra
+  };
+}
+
+function escapeHtml(value='') {
+  return String(value)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+function updateSystem(system){
+  currentSystem=system;
+  document.querySelectorAll('.system-card').forEach(c=>c.classList.toggle('selected',c.dataset.system===system));
+  label.textContent=system+' selected';
+  category.innerHTML='<option value="">Select category</option>'+categories[system].map(x=>'<option>'+x+'</option>').join('');
+}
+updateSystem(currentSystem);
+
+document.querySelectorAll('.system-card').forEach(c=>c.addEventListener('click',()=>updateSystem(c.dataset.system)));
+
+document.querySelectorAll('#urgency button').forEach(b=>b.addEventListener('click',()=>{
+  selectedUrgency=b.dataset.u;
+  document.querySelectorAll('#urgency button').forEach(x=>x.classList.remove('selected'));
+  b.classList.add('selected');
+}));
+
+document.getElementById('description').addEventListener('input',e=>{
+  document.getElementById('count').textContent=e.target.value.length;
+});
+
+document.getElementById('clear').addEventListener('click',()=>{
+  document.getElementById('issue-form').reset();
+  selectedUrgency='';
+  document.querySelectorAll('#urgency button').forEach(x=>x.classList.remove('selected'));
+  document.getElementById('count').textContent='0';
+  const statusBox=document.getElementById('submit-status');
+  if(statusBox){ statusBox.style.display='none'; statusBox.textContent=''; }
+});
+
+async function loadIssues() {
+  const box=document.getElementById('issues-panel');
+  box.innerHTML='<div class="empty">Loading issues… ✨</div>';
+
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/issues?select=*&order=created_at.desc`,
+      { headers: apiHeaders() }
+    );
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || `HTTP ${response.status}`);
+    }
+
+    issues = await response.json();
+    renderIssues();
+  } catch (error) {
+    console.error('Could not load issues:', error);
+    box.innerHTML='<div class="empty">Could not load issues from Supabase.<br><small>Check the browser console for details.</small></div>';
+  }
+}
+
+document.getElementById('issue-form').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const statusBox = document.getElementById('submit-status');
+  const submitButton = document.getElementById('submitIssueBtn');
+
+  function showStatus(message, type='error'){
+    statusBox.style.display='block';
+    statusBox.textContent=message;
+    statusBox.style.background = type==='success' ? '#eaf9f2' : type==='working' ? '#f0e9ff' : '#fff0f1';
+    statusBox.style.color = type==='success' ? '#128356' : type==='working' ? '#6427dd' : '#b4232e';
+    statusBox.style.border = type==='success'
+      ? '1px solid #bfead7'
+      : type==='working'
+        ? '1px solid #dacbff'
+        : '1px solid #f3c4c8';
+  }
+
+  const airportValue = document.getElementById('airport').value;
+  const device = document.getElementById('device').value.trim();
+  const issueCategory = document.getElementById('category').value;
+  const description = document.getElementById('description').value.trim();
+
+  // Clear, human-readable validation instead of a button that appears to do nothing.
+  if(!airportValue){
+    showStatus('Please select an airport.');
+    document.getElementById('airport').focus();
+    return;
+  }
+  if(!device){
+    showStatus('Please enter a Device / Kiosk ID.');
+    document.getElementById('device').focus();
+    return;
+  }
+  if(!issueCategory){
+    showStatus('Please select an issue category.');
+    document.getElementById('category').focus();
+    return;
+  }
+  if(!description){
+    showStatus('Please enter an issue description.');
+    document.getElementById('description').focus();
+    return;
+  }
+  if(!selectedUrgency){
+    showStatus('Please select an urgency.');
+    return;
+  }
+
+  const originalText = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = 'Submitting…';
+  showStatus('Submitting issue to Supabase…', 'working');
+
+  const port = airportValue.split(' - ')[0];
+
+  const item = {
+    system: currentSystem,
+    port,
+    terminal: document.getElementById('terminal').value || null,
+    environment: document.getElementById('environment').value || 'Production',
+    device_id: device,
+    pnr: document.getElementById('pnr').value.trim().toUpperCase() || null,
+    category: issueCategory,
+    description,
+    urgency: selectedUrgency,
+    status: 'New'
+  };
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/issues`, {
+      method: 'POST',
+      mode: 'cors',
+      headers: apiHeaders({
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      }),
+      body: JSON.stringify(item)
+    });
+
+    const responseText = await response.text();
+
+    if(!response.ok){
+      let detail = responseText;
+      try {
+        const parsed = JSON.parse(responseText);
+        detail = parsed.message || parsed.details || parsed.hint || responseText;
+      } catch (_) {}
+      throw new Error(`Supabase ${response.status}: ${detail}`);
+    }
+
+    let created = [];
+    try { created = responseText ? JSON.parse(responseText) : []; } catch (_) {}
+
+    const issueNumber = created[0]?.issue_id || 'submitted issue';
+
+    showStatus(`Success! ${issueNumber} has been saved.`, 'success');
+
+    // Reset only after confirmed database success.
+    document.getElementById('issue-form').reset();
+    selectedUrgency = '';
+    document.querySelectorAll('#urgency button').forEach(x=>x.classList.remove('selected'));
+    document.getElementById('count').textContent='0';
+    updateSystem(currentSystem);
+
+    await loadIssues();
+
+  } catch(error) {
+    console.error('Could not submit issue:', error);
+
+    let friendly = error.message || String(error);
+
+    if(friendly.includes('Failed to fetch')){
+      friendly =
+        'The browser could not reach Supabase. If you opened this inside the ChatGPT preview, download the HTML file and open it directly in Chrome or Edge instead.';
+    }
+
+    showStatus(`Could not submit: ${friendly}`);
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  }
+});
+
+function urgencyClass(urgency){
+  return urgency==='Critical'||urgency==='High'?'b-red':'b-purple';
+}
+
+function statusClass(status){
+  if(status==='Closed') return 'b-green';
+  if(status==='Test') return 'b-purple';
+  if(status==='Under Investigation') return 'b-purple';
+  return 'b-purple';
+}
+
+function getFilteredSortedIssues(){
+  const status = document.getElementById('filterStatus')?.value || '';
+  const system = document.getElementById('filterSystem')?.value || '';
+  const port = document.getElementById('filterPort')?.value || '';
+  const urgency = document.getElementById('filterUrgency')?.value || '';
+  const sort = document.getElementById('sortIssues')?.value || 'newest';
+
+  let result = issues.filter(i =>
+    (!status || i.status === status) &&
+    (!system || i.system === system) &&
+    (!port || i.port === port) &&
+    (!urgency || i.urgency === urgency)
+  );
+
+  const urgencyRank = {Critical:4, High:3, Medium:2, Low:1};
+  const statusRank = {'New':1, 'Under Investigation':2, 'Test':3, 'Closed':4};
+
+  result = [...result].sort((a,b)=>{
+    switch(sort){
+      case 'oldest':
+        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+      case 'id-asc':
+        return String(a.issue_id || '').localeCompare(String(b.issue_id || ''));
+      case 'id-desc':
+        return String(b.issue_id || '').localeCompare(String(a.issue_id || ''));
+      case 'urgency':
+        return (urgencyRank[b.urgency] || 0) - (urgencyRank[a.urgency] || 0);
+      case 'status':
+        return (statusRank[a.status] || 99) - (statusRank[b.status] || 99);
+      case 'newest':
+      default:
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    }
+  });
+
+  return result;
+}
+
+function renderIssues(){
+  const box=document.getElementById('issues-panel');
+  const visibleIssues = getFilteredSortedIssues();
+  const count = document.getElementById('issuesCount');
+
+  if(count){
+    count.textContent = `${visibleIssues.length} of ${issues.length} ticket${issues.length===1?'':'s'}`;
+  }
+
+  if(!visibleIssues.length){
+    box.innerHTML='<div class="empty">No tickets match those filters.</div>';
+    return;
+  }
+
+  box.innerHTML=
+    '<table class="issue-table"><thead><tr>'+
+    '<th>ID</th><th>System</th><th>Port</th><th>Device</th><th>Issue</th><th>Urgency</th><th>Status</th>'+
+    '</tr></thead><tbody>'+
+    visibleIssues.map(i=>`<tr onclick="openTicket('${i.id}')">
+      <td>${escapeHtml(i.issue_id)}</td>
+      <td>${escapeHtml(i.system)}</td>
+      <td>${escapeHtml(i.port)}</td>
+      <td>${escapeHtml(i.device_id || '')}</td>
+      <td>${escapeHtml(i.category)}</td>
+      <td><span class="badge ${urgencyClass(i.urgency)}">${escapeHtml(i.urgency)}</span></td>
+      <td><span class="badge ${statusClass(i.status)}">${escapeHtml(i.status)}</span></td>
+    </tr>`).join('')+
+    '</tbody></table>';
+}
+
+
+let activeTicketId = null;
+
+function ticketField(label, value){
+  return `<div class="ticket-field"><strong>${escapeHtml(label)}</strong><div>${escapeHtml(value ?? '')}</div></div>`;
+}
+
+function openTicket(id){
+  const issue = issues.find(x => x.id === id);
+  if(!issue) return;
+
+  activeTicketId = id;
+
+  document.getElementById('ticketTitle').textContent = issue.issue_id || 'Ticket';
+  document.getElementById('ticketSub').textContent =
+    `${issue.system || ''} • ${issue.port || ''} • ${issue.category || ''}`;
+
+  document.getElementById('ticketFields').innerHTML = [
+    ticketField('System', issue.system),
+    ticketField('Port', issue.port),
+    ticketField('Terminal', issue.terminal || ''),
+    ticketField('Environment', issue.environment || 'Production'),
+    ticketField('Device / Kiosk ID', issue.device_id || ''),
+    ticketField('PNR', issue.pnr || ''),
+    ticketField('Issue Category', issue.category),
+    ticketField('Urgency', issue.urgency),
+    ticketField('Created', issue.created_at ? new Date(issue.created_at).toLocaleString('en-AU') : ''),
+    ticketField('Portal Issue ID', issue.issue_id || '')
+  ].join('');
+
+  document.getElementById('ticketDescription').textContent = issue.description || '';
+  document.getElementById('ticketStatus').value = issue.status || 'New';
+  document.getElementById('resolutionNotes').value = issue.resolution_notes || '';
+  toggleResolutionNotes();
+
+  const msg = document.getElementById('ticketStatusMessage');
+  msg.style.display='none';
+  msg.textContent='';
+
+  const modal = document.getElementById('ticketModal');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+
+  document.getElementById('newComment').value = '';
+  loadComments(id);
+}
+
+function closeTicket(){
+  const modal = document.getElementById('ticketModal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  activeTicketId = null;
+}
+
+document.getElementById('ticketClose').addEventListener('click', closeTicket);
+document.getElementById('ticketModal').addEventListener('click', e=>{
+  if(e.target.id==='ticketModal') closeTicket();
+});
+
+
+async function loadComments(issueId){
+  const history = document.getElementById('commentHistory');
+  history.innerHTML = '<div class="comment-empty">Loading comments…</div>';
+
+  try{
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/issue_comments?issue_id=eq.${encodeURIComponent(issueId)}&select=*&order=created_at.desc`,
+      { headers: apiHeaders() }
+    );
+
+    const text = await response.text();
+
+    if(!response.ok){
+      let detail = text;
+      try{
+        const parsed = JSON.parse(text);
+        detail = parsed.message || parsed.details || parsed.hint || text;
+      }catch(_){}
+      throw new Error(`Supabase ${response.status}: ${detail}`);
+    }
+
+    const comments = text ? JSON.parse(text) : [];
+
+    if(!comments.length){
+      history.innerHTML = '<div class="comment-empty">No comments yet.</div>';
+      return;
+    }
+
+    history.innerHTML = comments.map(c => `
+      <div class="comment-item">
+        <div class="comment-meta">${escapeHtml(
+          c.created_at ? new Date(c.created_at).toLocaleString('en-AU') : ''
+        )}</div>
+        <div class="comment-text">${escapeHtml(c.comment || '')}</div>
+      </div>
+    `).join('');
+
+  }catch(error){
+    console.error('Could not load comments:', error);
+    history.innerHTML = `<div class="comment-empty">Could not load comments: ${escapeHtml(error.message || error)}</div>`;
+  }
+}
+
+document.getElementById('addCommentBtn').addEventListener('click', async ()=>{
+  if(!activeTicketId) return;
+
+  const textarea = document.getElementById('newComment');
+  const comment = textarea.value.trim();
+  const btn = document.getElementById('addCommentBtn');
+  const msg = document.getElementById('commentMessage');
+
+  if(!comment){
+    msg.style.display='block';
+    msg.style.background='#fff0f1';
+    msg.style.color='#b4232e';
+    msg.textContent='Please enter a comment first.';
+    return;
+  }
+
+  const oldText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Adding…';
+  msg.style.display='block';
+  msg.style.background='#f0e9ff';
+  msg.style.color='#6427dd';
+  msg.textContent='Saving comment…';
+
+  try{
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/issue_comments`,{
+      method:'POST',
+      headers:apiHeaders({
+        'Content-Type':'application/json',
+        'Prefer':'return=representation'
+      }),
+      body:JSON.stringify({
+        issue_id:activeTicketId,
+        comment
+      })
+    });
+
+    const text = await response.text();
+
+    if(!response.ok){
+      let detail = text;
+      try{
+        const parsed = JSON.parse(text);
+        detail = parsed.message || parsed.details || parsed.hint || text;
+      }catch(_){}
+      throw new Error(`Supabase ${response.status}: ${detail}`);
+    }
+
+    textarea.value='';
+    msg.style.background='#eaf9f2';
+    msg.style.color='#128356';
+    msg.textContent='Comment added.';
+    await loadComments(activeTicketId);
+
+  }catch(error){
+    console.error('Could not add comment:', error);
+    msg.style.background='#fff0f1';
+    msg.style.color='#b4232e';
+    msg.textContent='Could not add comment: ' + (error.message || error);
+  }finally{
+    btn.disabled=false;
+    btn.textContent=oldText;
+  }
+});
+
+
+
+function toggleResolutionNotes(){
+  const status = document.getElementById('ticketStatus').value;
+  const wrap = document.getElementById('resolutionWrap');
+
+  if(status === 'Closed'){
+    wrap.classList.add('show');
+  }else{
+    wrap.classList.remove('show');
+  }
+}
+
+document.getElementById('ticketStatus').addEventListener('change', ()=>{
+  toggleResolutionNotes();
+
+  if(document.getElementById('ticketStatus').value === 'Closed'){
+    setTimeout(()=>{
+      const wrap = document.getElementById('resolutionWrap');
+      if(wrap && window.matchMedia('(max-width: 1024px)').matches){
+        wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+    }, 80);
+  }
+});
+
+document.getElementById('saveTicketStatus').addEventListener('click', async ()=>{
+  if(!activeTicketId) return;
+
+  const newStatus = document.getElementById('ticketStatus').value;
+  const resolutionNotes = document.getElementById('resolutionNotes').value.trim();
+
+  if(newStatus === 'Closed' && !resolutionNotes){
+    const msg = document.getElementById('ticketStatusMessage');
+    msg.style.display='block';
+    msg.style.background='#fff0f1';
+    msg.style.color='#b4232e';
+    msg.textContent='Please enter resolution notes before closing the ticket.';
+    document.getElementById('resolutionNotes').focus();
+    return;
+  }
+  const btn = document.getElementById('saveTicketStatus');
+  const msg = document.getElementById('ticketStatusMessage');
+  const oldText = btn.textContent;
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  msg.style.display='block';
+  msg.style.background='#f0e9ff';
+  msg.style.color='#6427dd';
+  msg.textContent='Updating ticket status…';
+
+  try{
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/issues?id=eq.${encodeURIComponent(activeTicketId)}`,
+      {
+        method:'PATCH',
+        headers:apiHeaders({
+          'Content-Type':'application/json',
+          'Prefer':'return=representation'
+        }),
+        body:JSON.stringify({
+          status:newStatus,
+          resolved_at:newStatus==='Closed' ? new Date().toISOString() : null,
+          resolution_notes:newStatus==='Closed' ? resolutionNotes : null
+        })
+      }
+    );
+
+    const text = await response.text();
+
+    if(!response.ok){
+      let detail = text;
+      try{
+        const parsed = JSON.parse(text);
+        detail = parsed.message || parsed.details || parsed.hint || text;
+      }catch(_){}
+      throw new Error(`Supabase ${response.status}: ${detail}`);
+    }
+
+    msg.style.background='#eaf9f2';
+    msg.style.color='#128356';
+    msg.textContent='Status updated successfully.';
+
+    await loadIssues();
+
+    const refreshed = issues.find(x=>x.id===activeTicketId);
+    if(refreshed){
+      document.getElementById('ticketStatus').value = refreshed.status;
+      document.getElementById('resolutionNotes').value = refreshed.resolution_notes || '';
+      toggleResolutionNotes();
+    }
+
+  }catch(error){
+    console.error('Could not update ticket status:', error);
+    msg.style.background='#fff0f1';
+    msg.style.color='#b4232e';
+    msg.textContent='Could not update status: ' + (error.message || error);
+  }finally{
+    btn.disabled=false;
+    btn.textContent=oldText;
+  }
+});
+
+function exportCsv(){
+  if(!issues.length){
+    alert('There are no issues to export yet.');
+    return;
+  }
+
+  // Jira-friendly CSV:
+  // Keep Description clean and put operational detail in separate columns.
+  const headers = [
+    'Summary',
+    'Issue Type',
+    'Description',
+    'Priority',
+    'Labels',
+    'Portal Issue ID',
+    'System',
+    'Port',
+    'Terminal',
+    'Environment',
+    'Device / Kiosk ID',
+    'PNR',
+    'Issue Category',
+    'Portal Status',
+    'Resolution Notes',
+    'Created'
+  ];
+
+  const esc = v => {
+    const x = String(v ?? '');
+    return /[",\n]/.test(x) ? '"' + x.replace(/"/g,'""') + '"' : x;
+  };
+
+  const jiraPriority = urgency => {
+    switch(urgency){
+      case 'Critical': return 'Highest';
+      case 'High': return 'High';
+      case 'Medium': return 'Medium';
+      case 'Low': return 'Low';
+      default: return 'Medium';
+    }
+  };
+
+  const slug = value =>
+    String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+  const rows = issues.map(i => {
+    const summary = [
+      `[${i.issue_id}]`,
+      `[${i.system}]`,
+      `[${i.port}]`,
+      i.device_id ? `[${i.device_id}]` : '',
+      i.pnr ? `[PNR ${i.pnr}]` : '',
+      i.category
+    ].filter(Boolean).join(' ');
+
+    const labels = [
+      'airport-systems',
+      slug(i.system),
+      slug(i.port),
+      slug(i.category),
+      i.device_id ? slug(i.device_id) : ''
+    ].filter(Boolean).join(' ');
+
+    return [
+      summary,
+      'Bug',
+      i.description || '',
+      jiraPriority(i.urgency),
+      labels,
+      i.issue_id,
+      i.system,
+      i.port,
+      i.terminal || '',
+      i.environment || 'Production',
+      i.device_id || '',
+      i.pnr || '',
+      i.category,
+      i.status,
+      i.resolution_notes || '',
+      i.created_at ? new Date(i.created_at).toLocaleString('en-AU') : ''
+    ].map(esc).join(',');
+  });
+
+  const csv = '\ufeff' + headers.map(esc).join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'jira-airport-issues-' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('exportCsv').addEventListener('click',exportCsv);
+
+document.getElementById('filterStatus').addEventListener('change', renderIssues);
+document.getElementById('filterSystem').addEventListener('change', renderIssues);
+document.getElementById('filterPort').addEventListener('change', renderIssues);
+document.getElementById('filterUrgency').addEventListener('change', renderIssues);
+document.getElementById('sortIssues').addEventListener('change', renderIssues);
+
+
+
+function moveNavSlider(target, animate=true){
+  const slider = document.getElementById('navSlider');
+  const nav = target?.closest('nav');
+  if(!slider || !nav || !target) return;
+
+  requestAnimationFrame(()=>{
+    const navRect = nav.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+
+    const offsetX = targetRect.left - navRect.left;
+    const offsetY = targetRect.top - navRect.top;
+
+    const applyPosition = () => {
+      slider.style.width = targetRect.width + 'px';
+      slider.style.height = targetRect.height + 'px';
+      slider.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    };
+
+    if(!animate){
+      const oldTransition = slider.style.transition;
+      slider.style.transition = 'none';
+      applyPosition();
+      slider.offsetHeight;
+      slider.style.transition = oldTransition;
+    }else{
+      applyPosition();
+    }
+  });
+}
+
+function syncNavSlider(){
+  const active = document.querySelector('.nav-item.active');
+  if(active) moveNavSlider(active, false);
+}
+
+let navResizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(navResizeTimer);
+  navResizeTimer = setTimeout(syncNavSlider, 140);
+});
+
+
+document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',async ()=>{
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  moveNavSlider(btn, true);
+
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+btn.dataset.view).classList.add('active');
+
+  const themeMap = {
+    report:'report',
+    issues:'issues',
+    knowledge:'knowledge'
+  };
+  document.body.setAttribute('data-view-theme', themeMap[btn.dataset.view] || 'report');
+
+  if(btn.dataset.view==='issues') await loadIssues();
+}));
+
+document.getElementById('guideBtn').addEventListener('click',()=>{
+  document.querySelector('[data-view="knowledge"]').click();
+});
+
+// Appearance controls
+const savedTheme = localStorage.getItem('airportPortalTheme') || 'light';
+const savedBg = localStorage.getItem('airportPortalBg') || '#ffffff';
+
+function applyTheme(theme){
+  document.body.classList.toggle('dark', theme === 'dark');
+  document.querySelectorAll('.theme-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.theme===theme));
+  localStorage.setItem('airportPortalTheme',theme);
+}
+
+function applyBackground(bg){
+  document.documentElement.style.setProperty('--page-bg', bg);
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.bg.toLowerCase()===bg.toLowerCase()));
+  localStorage.setItem('airportPortalBg',bg);
+}
+
+document.querySelectorAll('.theme-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  const theme=btn.dataset.theme;
+  applyTheme(theme);
+  if(theme==='dark'){
+    document.documentElement.style.setProperty('--page-bg','#17131f');
+  } else {
+    applyBackground(localStorage.getItem('airportPortalBg') || '#ffffff');
+  }
+}));
+
+document.querySelectorAll('.swatch').forEach(s=>s.addEventListener('click',()=>{
+  applyTheme('light');
+  applyBackground(s.dataset.bg);
+}));
+
+applyTheme(savedTheme);
+if(savedTheme==='dark'){
+  document.documentElement.style.setProperty('--page-bg','#17131f');
+}else{
+  applyBackground(savedBg);
+}
+
+
+
+// Set initial section accent and load live issue data.
+document.body.setAttribute('data-view-theme','report');
+requestAnimationFrame(()=>syncNavSlider());
+loadIssues();
+
+/* ===== Glitter sparkle mouse trail ===== */
+(function(){
+  if(!window.matchMedia('(pointer:fine)').matches) return;
+
+  let sparkles = [];
+  let lastSparkle = 0;
+
+  const colours = [
+    '#ff4f81',
+    '#ff7a00',
+    '#ffd447',
+    '#49c95a',
+    '#22b8d6',
+    '#5f7cff',
+    '#a46cff',
+    '#ffffff'
+  ];
+
+  document.addEventListener('mousemove', e=>{
+    const now = performance.now();
+
+    // Dense sparkle stream, but keep it lightweight.
+    if(now-lastSparkle < 18) return;
+    lastSparkle = now;
+
+    for(let i=0;i<4;i++){
+      const s=document.createElement('span');
+      s.className='cursor-star';
+      s.textContent='✦';
+      s.style.left=(e.clientX+(Math.random()-.5)*18)+'px';
+      s.style.top=(e.clientY+(Math.random()-.5)*18)+'px';
+      s.style.color=colours[Math.floor(Math.random()*colours.length)];
+      s.style.fontSize=(14+Math.random()*12)+'px';
+      s.style.animationDuration=(520+Math.random()*420)+'ms';
+      s.style.transform=`translate(-50%,-50%) rotate(${Math.random()*360}deg) scale(${.7+Math.random()*.8})`;
+
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(),900);
+    }
+  });
+})();
+
+</script>
+
+
+</body>
+</html>
