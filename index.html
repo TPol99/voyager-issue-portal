@@ -1889,6 +1889,36 @@ body.dark .pie-wrap:after{background:#211a2b;border-color:rgba(255,255,255,.10)}
 @media(max-width:900px){.metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-legend{grid-template-columns:repeat(2,minmax(0,1fr))}.pie-layout{grid-template-columns:1fr}}
 @media(max-width:700px){.metrics-grid,.testing-metrics{grid-template-columns:1fr 1fr}.analytics-toggle{width:100%}.analytics-tab{flex:1}.analytics-card-head{flex-direction:column}.pie-wrap{width:210px;height:210px}.pie-chart{width:210px;height:210px}.pie-wrap:after{inset:42px}}
 
+
+.remember-row{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center;
+  gap:9px;
+  margin:0 0 8px !important;
+  color:var(--muted);
+  font-size:12px !important;
+  font-weight:700 !important;
+  cursor:pointer;
+}
+.remember-row input{
+  width:17px !important;
+  height:17px !important;
+  min-width:17px !important;
+  min-height:17px !important;
+  padding:0 !important;
+  margin:0 !important;
+  accent-color:#7a2cff;
+}
+
+
+@media(max-width:640px){
+  .remember-row input{
+    width:20px !important;
+    height:20px !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2227,6 +2257,10 @@ updateTestingAnalytics();
       <input id="loginEmail" type="email" autocomplete="email" placeholder="you@virginaustralia.com" required>
       <label for="loginPassword">Password</label>
       <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required>
+      <label class="remember-row">
+        <input id="rememberMe" type="checkbox">
+        <span>Remember me</span>
+      </label>
       <button class="btn primary" type="submit">Sign in</button>
     </form>
 
@@ -2249,13 +2283,54 @@ const SUPABASE_URL = 'https://nxyutzeplurgirgdivtd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_gSJWywfwqb0ucXeqNcgu7g_kFJKTAF8';
 
 /* ===== Supabase Auth ===== */
-const authClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-});
+function getRememberMePreference(){
+  return localStorage.getItem('airportPortalRememberMe') === 'true';
+}
+
+function setRememberMePreference(enabled){
+  localStorage.setItem('airportPortalRememberMe', enabled ? 'true' : 'false');
+}
+
+function createAuthClient(){
+  const storage={
+    getItem(key){
+      try{
+        return getRememberMePreference()
+          ? localStorage.getItem(key)
+          : sessionStorage.getItem(key);
+      }catch(_){ return null; }
+    },
+    setItem(key,value){
+      try{
+        if(getRememberMePreference()) localStorage.setItem(key,value);
+        else sessionStorage.setItem(key,value);
+      }catch(_){}
+    },
+    removeItem(key){
+      try{
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      }catch(_){}
+    }
+  };
+
+  return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth:{
+      storage,
+      persistSession:true,
+      autoRefreshToken:true,
+      detectSessionInUrl:true
+    }
+  });
+}
+
+let authClient = createAuthClient();
+
+function rememberMeEnabled(){
+  return document.getElementById('rememberMe')?.checked === true;
+}
+
+
 
 let currentSession = null;
 let currentUser = null;
@@ -2319,6 +2394,9 @@ function showAuthModal(mode='login'){
   modal.classList.add('open');
   modal.setAttribute('aria-hidden','false');
   setAuthMode(mode);
+
+  const remember=document.getElementById('rememberMe');
+  if(remember) remember.checked=getRememberMePreference();
 
   const msg=document.getElementById('authMessage');
   msg.style.display='none';
@@ -2417,6 +2495,7 @@ function updateAuthUI(){
 }
 
 async function initAuth(){
+  authClient = createAuthClient();
   const {data,error}=await authClient.auth.getSession();
 
   if(error) console.error('Auth session error:',error);
@@ -2471,6 +2550,9 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
 
   const email=document.getElementById('loginEmail').value.trim();
   const password=document.getElementById('loginPassword').value;
+
+  setRememberMePreference(rememberMeEnabled());
+  authClient = createAuthClient();
 
   showAuthMessage('Signing in…','success');
 
@@ -3585,6 +3667,15 @@ requestAnimationFrame(()=>syncNavSlider());
 document.getElementById('accessDeniedLogin').addEventListener('click',()=>{
   showAuthModal('login');
 });
+
+
+const rememberMeInput=document.getElementById('rememberMe');
+if(rememberMeInput){
+  rememberMeInput.checked=getRememberMePreference();
+  rememberMeInput.addEventListener('change',()=>{
+    setRememberMePreference(rememberMeInput.checked);
+  });
+}
 
 initAuth();
 
