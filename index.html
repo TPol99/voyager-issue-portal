@@ -2451,6 +2451,27 @@ body.dark .testing-leave-card{
   .testing-leave-actions .btn{width:100%}
 }
 
+
+/* ===== iPad / mobile visual viewport sidebar fix ===== */
+@supports (height: 100dvh){
+  .app{min-height:100dvh !important;}
+  aside{
+    min-height:100dvh !important;
+    height:100dvh !important;
+  }
+}
+@media (min-width:701px) and (max-width:1366px) and (orientation:landscape){
+  html,body{min-height:100dvh !important;}
+  .app{min-height:100dvh !important;}
+  aside{
+    position:sticky !important;
+    top:0 !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+    align-self:start !important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -3790,6 +3811,7 @@ async function saveTestingRun(){
 
     const savedId=data?.id || 'test run';
     alert(`Testing saved successfully as ${savedId}.`);
+    clearTestingDraft();
 
     testingRows=[{id:++testingRowId,device:'',checks:{}}];
     document.getElementById('testingRunName').value='';
@@ -4778,6 +4800,7 @@ function closeTestingLeavePrompt(){
 }
 
 function confirmTestingLeave(){
+  clearTestingDraft();
   const action=testingLeavePendingAction;
   testingLeavePendingAction=null;
   const modal=document.getElementById('testingLeaveModal');
@@ -4967,6 +4990,96 @@ initAuth().then(()=>{
     updatePersonalDashboard();
   }
 });
+
+
+/* ===== iPad/Safari Testing recovery =====
+   iOS/iPadOS Safari may not show beforeunload confirmation on reload.
+   Keep a session-only recovery snapshot so an accidental reload does not lose Testing. */
+const TESTING_DRAFT_KEY='voyagerTestingDraftV1';
+
+function testingDraftPayload(){
+  if(typeof testingRows==='undefined' || typeof testingSystem==='undefined') return null;
+  if(typeof hasTestingInProgress==='function' && !hasTestingInProgress()) return null;
+
+  return {
+    savedAt:Date.now(),
+    system:testingSystem,
+    port:document.getElementById('testingPort')?.value || '',
+    reference:document.getElementById('testingRunName')?.value || '',
+    rows:testingRows.map(row=>({
+      device:row.device || '',
+      checks:{...(row.checks||{})}
+    }))
+  };
+}
+
+function saveTestingDraft(){
+  try{
+    const draft=testingDraftPayload();
+    if(draft) sessionStorage.setItem(TESTING_DRAFT_KEY,JSON.stringify(draft));
+    else sessionStorage.removeItem(TESTING_DRAFT_KEY);
+  }catch(error){
+    console.warn('Could not save Testing recovery draft',error);
+  }
+}
+
+function clearTestingDraft(){
+  try{sessionStorage.removeItem(TESTING_DRAFT_KEY);}catch(_){}
+}
+
+function restoreTestingDraft(){
+  try{
+    const raw=sessionStorage.getItem(TESTING_DRAFT_KEY);
+    if(!raw) return false;
+
+    const draft=JSON.parse(raw);
+    if(!draft || !Array.isArray(draft.rows) || !draft.rows.length) return false;
+
+    if(draft.system && testingCases[draft.system]){
+      testingSystem=draft.system;
+      window.currentTestingSystem=draft.system;
+    }
+
+    testingRows=draft.rows.map(row=>({
+      id:++testingRowId,
+      device:String(row.device||''),
+      checks:{...(row.checks||{})}
+    }));
+
+    const port=document.getElementById('testingPort');
+    if(port && draft.port) port.value=draft.port;
+
+    const reference=document.getElementById('testingRunName');
+    if(reference) reference.value=draft.reference || '';
+
+    if(typeof renderTestingTable==='function') renderTestingTable();
+    if(typeof setTestingSystem==='function') setTestingSystem(testingSystem);
+    if(typeof updateTestingProgress==='function') updateTestingProgress();
+    if(typeof attachDeviceAutocomplete==='function') attachDeviceAutocomplete();
+
+    return true;
+  }catch(error){
+    console.warn('Could not restore Testing recovery draft',error);
+    return false;
+  }
+}
+
+document.getElementById('testingPort')?.addEventListener('change',saveTestingDraft);
+document.getElementById('testingRunName')?.addEventListener('input',saveTestingDraft);
+document.getElementById('testingTableBody')?.addEventListener('input',()=>setTimeout(saveTestingDraft,0));
+document.getElementById('testingTableBody')?.addEventListener('change',()=>setTimeout(saveTestingDraft,0));
+document.getElementById('testingTableBody')?.addEventListener('click',()=>setTimeout(saveTestingDraft,0));
+
+/* pagehide is substantially more dependable on Safari than beforeunload. */
+window.addEventListener('pagehide',saveTestingDraft);
+
+/* Restore after the existing Testing code has initialised. */
+requestAnimationFrame(()=>{
+  if(restoreTestingDraft()){
+    console.info('Restored in-progress Testing after reload.');
+  }
+});
+
 
 /* ===== Dynamic runway cursor trail ===== */
 (function(){
