@@ -2098,7 +2098,9 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
       mode: 'cors',
       headers: apiHeaders({
         'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
+        // Anonymous users are intentionally not allowed to read tickets.
+        // Therefore public submissions must not request the inserted row back.
+        'Prefer': currentSession?.access_token ? 'return=representation' : 'return=minimal'
       }),
       body: JSON.stringify(item)
     });
@@ -2117,9 +2119,12 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
     let created = [];
     try { created = responseText ? JSON.parse(responseText) : []; } catch (_) {}
 
-    const issueNumber = created[0]?.issue_id || 'submitted issue';
+    const issueNumber = created[0]?.issue_id || 'your issue';
 
-    showStatus(`Success! ${issueNumber} has been saved.`, 'success');
+    showStatus(
+      `Success! ${issueNumber} has been saved.`,
+      'success'
+    );
 
     // Reset only after confirmed database success.
     document.getElementById('issue-form').reset();
