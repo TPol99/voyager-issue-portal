@@ -3409,6 +3409,54 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 }
 </style>
 
+<style>
+/* Final small-window fixes for Testing */
+.testing-system-grid,
+.testing-system-card,
+.testing-system-card > div,
+.testing-panel,
+.testing-header-row{
+  min-width:0 !important;
+  max-width:100% !important;
+}
+.testing-system-grid{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  width:100% !important;
+}
+.testing-system-card{
+  overflow:hidden !important;
+}
+.testing-system-card h3,
+.testing-system-card p{
+  overflow-wrap:anywhere;
+}
+.testing-table-wrap{
+  max-width:100% !important;
+  width:100% !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+}
+@media (max-width:1100px){
+  main{padding-left:24px !important;padding-right:24px !important;}
+  .layout{grid-template-columns:minmax(0,1fr) !important;}
+  .side{grid-template-columns:1fr !important;}
+  .testing-system-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;}
+}
+@media (max-width:800px){
+  .testing-system-grid{grid-template-columns:1fr !important;}
+  .testing-header-row{gap:12px !important;}
+  .testing-header-row .btn{width:100% !important;}
+}
+@media (max-width:600px){
+  aside nav{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+  aside nav .nav-item{font-size:11px !important;padding:8px 4px !important;}
+  main{padding-left:16px !important;padding-right:16px !important;}
+  .testing-system-card{padding:14px !important;}
+  .testing-system-card .system-icon{width:54px !important;height:54px !important;font-size:28px !important;flex:0 0 54px;}
+  .testing-system-card h3{font-size:14px !important;}
+  .testing-system-card p{font-size:11px !important;}
+}
+</style>
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -4120,13 +4168,13 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
 updateTestingAnalytics();
 
 document.querySelectorAll('[data-testing-system]').forEach(card=>card.addEventListener('click',()=>{
   window.currentTestingSystem=card.dataset.testingSystem;
 }));
-
 </script>
 
 <div id="testingRaiseModal" class="auth-backdrop testing-raise-backdrop" aria-hidden="true">
@@ -6733,8 +6781,11 @@ async function checkVoyagerConnection(){
     setVoyagerConnectionState(true);
     return true;
   }catch(error){
-    setVoyagerConnectionState(false);
-    return false;
+    // iOS Safari can abort/background network probes even when the next real
+    // request succeeds. Do not lock Voyager based on a probe failure.
+    console.warn('Voyager connectivity probe did not complete:',error);
+    document.getElementById('offlineBanner')?.classList.remove('show');
+    return null;
   }
 }
 
@@ -7761,53 +7812,23 @@ loadAdminData=async function(){
 })();
 </script>
 
+<button id="globalSearchBtn" class="top-icon-btn" type="button" title="Search Voyager">⌕</button>
+
+<script id="voyager-safari-load-safety">
+(function(){
+  const clearStaleNetworkState=()=>{
+    document.getElementById('offlineBanner')?.classList.remove('show');
+    document.querySelectorAll('#submitIssue,#saveTestingRun,#testingRaiseForm button[type="submit"]').forEach(b=>{
+      if(b){b.disabled=false;b.title='';}
+    });
+  };
+  window.addEventListener('pageshow',clearStaleNetworkState,{passive:true});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible') clearStaleNetworkState();
+  },{passive:true});
+  setTimeout(clearStaleNetworkState,1500);
+})();
+</script>
+
 </body>
 </html>
-<style>
-/* Final small-window fixes for Testing */
-.testing-system-grid,
-.testing-system-card,
-.testing-system-card > div,
-.testing-panel,
-.testing-header-row{
-  min-width:0 !important;
-  max-width:100% !important;
-}
-.testing-system-grid{
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
-  width:100% !important;
-}
-.testing-system-card{
-  overflow:hidden !important;
-}
-.testing-system-card h3,
-.testing-system-card p{
-  overflow-wrap:anywhere;
-}
-.testing-table-wrap{
-  max-width:100% !important;
-  width:100% !important;
-  overflow-x:auto !important;
-  overflow-y:hidden !important;
-}
-@media (max-width:1100px){
-  main{padding-left:24px !important;padding-right:24px !important;}
-  .layout{grid-template-columns:minmax(0,1fr) !important;}
-  .side{grid-template-columns:1fr !important;}
-  .testing-system-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;}
-}
-@media (max-width:800px){
-  .testing-system-grid{grid-template-columns:1fr !important;}
-  .testing-header-row{gap:12px !important;}
-  .testing-header-row .btn{width:100% !important;}
-}
-@media (max-width:600px){
-  aside nav{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
-  aside nav .nav-item{font-size:11px !important;padding:8px 4px !important;}
-  main{padding-left:16px !important;padding-right:16px !important;}
-  .testing-system-card{padding:14px !important;}
-  .testing-system-card .system-icon{width:54px !important;height:54px !important;font-size:28px !important;flex:0 0 54px;}
-  .testing-system-card h3{font-size:14px !important;}
-  .testing-system-card p{font-size:11px !important;}
-}
-</style><button id="globalSearchBtn" class="top-icon-btn" type="button" title="Search Voyager">⌕</button>
