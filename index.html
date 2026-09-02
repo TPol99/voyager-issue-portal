@@ -2916,6 +2916,194 @@ body.dark .admin-confirm-close{background:rgba(24,18,33,.58)}
   .admin-confirm-actions .btn{width:100%}
 }
 
+
+/* ===== Admin Testing Tasks ===== */
+.admin-testing-tasks-card{margin-top:16px}
+.admin-task-toolbar{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:13px 14px;border:1px solid var(--line);border-radius:15px;
+  background:rgba(255,255,255,.38);margin-bottom:12px;
+}
+.admin-task-toolbar strong,.admin-task-toolbar span{display:block}
+.admin-task-toolbar strong{font-size:11px}.admin-task-toolbar span{font-size:9px;color:var(--muted);margin-top:2px}
+.admin-task-system-tabs{display:flex;gap:8px;margin-bottom:10px;overflow:auto}
+.admin-task-tab{
+  flex:0 0 auto;border:1px solid var(--line);background:rgba(255,255,255,.42);
+  color:var(--ink);border-radius:11px;padding:8px 11px;font-size:10px;font-weight:850;cursor:pointer;
+}
+.admin-task-tab.active{
+  border-color:rgba(122,44,255,.35);background:rgba(122,44,255,.08);color:#7a2cff;
+}
+.admin-task-table{min-width:720px}
+.admin-task-table td,.admin-task-table th{vertical-align:middle}
+.admin-task-name{font-weight:850}
+.admin-task-description{color:var(--muted);max-width:420px}
+.admin-task-status{
+  display:inline-flex;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;
+}
+.admin-task-status.active{background:rgba(2,122,72,.08);color:#027A48}
+.admin-task-status.inactive{background:rgba(87,85,89,.08);color:#575559}
+.admin-task-actions{display:flex;justify-content:flex-end;gap:5px}
+.admin-task-actions button{
+  border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.54);
+  color:var(--ink);padding:6px 8px;font-size:9px;font-weight:850;cursor:pointer;
+}
+.admin-task-actions .delete{color:#C30922;border-color:rgba(195,9,34,.16)}
+.admin-task-modal-card{
+  position:relative;width:min(560px,94vw);padding:28px;border-radius:25px;
+  background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 30px 90px rgba(32,24,45,.28);
+  backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%);
+}
+.admin-task-modal-kicker{font-size:10px;font-weight:950;letter-spacing:.09em;color:#7a2cff}
+.admin-task-modal-card h2{margin:4px 0 5px}
+.admin-task-modal-card>p{margin:0;color:var(--muted);font-size:10px}
+.admin-task-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.admin-task-form .field{margin:0}
+.admin-task-form .full{grid-column:1/-1}
+@media(max-width:600px){
+  .admin-task-toolbar{flex-direction:column;align-items:stretch}
+  .admin-task-toolbar .btn{width:100%}
+  .admin-task-form{grid-template-columns:1fr}
+  .admin-task-form .full{grid-column:auto}
+  .admin-task-modal-card{width:100%;border-radius:25px 25px 0 0}
+}
+
+
+/* ===== Final iPhone navigation compaction ===== */
+@media (max-width:600px){
+  html,body{
+    width:100%;
+    min-width:0;
+    overflow-x:hidden;
+  }
+
+  .app{
+    display:block !important;
+    min-height:100dvh !important;
+    width:100% !important;
+    overflow-x:hidden !important;
+  }
+
+  aside{
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    padding:18px 16px 14px !important;
+    overflow:visible !important;
+    border-right:0 !important;
+    border-bottom:1px solid var(--line) !important;
+  }
+
+  .brand{
+    padding:4px 4px 14px !important;
+    margin:0 0 12px !important;
+  }
+
+  .brand-title{
+    font-size:17px !important;
+    line-height:1.08 !important;
+  }
+
+  aside nav{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    grid-template-rows:repeat(2,52px) !important;
+    grid-auto-rows:52px !important;
+    width:100% !important;
+    height:104px !important;
+    min-height:104px !important;
+    max-height:104px !important;
+    gap:0 !important;
+    align-items:stretch !important;
+    justify-items:stretch !important;
+    overflow:hidden !important;
+    border-radius:14px !important;
+    position:relative !important;
+  }
+
+  aside nav .nav-item{
+    width:100% !important;
+    min-width:0 !important;
+    width:auto !important;
+    height:52px !important;
+    min-height:52px !important;
+    max-height:52px !important;
+    padding:6px 4px !important;
+    margin:0 !important;
+    border-radius:13px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    line-height:1.1 !important;
+    white-space:normal !important;
+    overflow:hidden !important;
+  }
+
+  .nav-slider{
+    height:52px !important;
+    max-height:52px !important;
+    border-radius:13px !important;
+  }
+
+  .nav-item.active{
+    transform:none !important;
+  }
+
+  .appearance-card{
+    width:100% !important;
+    margin-top:12px !important;
+    padding:12px !important;
+    border-radius:16px !important;
+  }
+
+  .appearance-title{
+    font-size:11px !important;
+    margin-bottom:8px !important;
+  }
+
+  .theme-row{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:6px !important;
+    margin-bottom:8px !important;
+  }
+
+  .theme-btn{
+    min-height:42px !important;
+    height:42px !important;
+    padding:5px 3px !important;
+    border-radius:10px !important;
+    font-size:10px !important;
+  }
+
+  .pastel-row{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    gap:8px !important;
+    overflow:hidden !important;
+  }
+
+  .swatch{
+    width:22px !important;
+    height:22px !important;
+    flex:0 0 22px !important;
+  }
+
+  .sidebar-note{
+    display:none !important;
+  }
+
+  main{
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    padding:18px 14px 28px !important;
+  }
+}
+
 </style>
 </style>
 </head>
@@ -3390,7 +3578,101 @@ body.dark .admin-confirm-close{background:rgba(24,18,33,.58)}
     </section>
   </div>
 
-  <section class="panel admin-card admin-users-card">
+  
+<section class="panel admin-card admin-testing-tasks-card" id="adminTestingTasks">
+  <div class="admin-card-head">
+    <div>
+      <div class="admin-kicker">TEST CONFIGURATION</div>
+      <h2>Testing Tasks</h2>
+      <p>Control which test cases appear for each Voyager system.</p>
+    </div>
+    <span class="admin-count" id="adminTaskCount">0</span>
+  </div>
+
+  <div class="admin-task-toolbar">
+    <div>
+      <strong>Test tasks are configurable</strong>
+      <span>Changes affect future testing runs. Historical saved results keep their original task name.</span>
+    </div>
+    <button class="btn primary" id="adminAddTaskBtn" type="button">＋ Add Test Task</button>
+  </div>
+
+  <div class="admin-task-system-tabs" id="adminTaskSystemTabs">
+    <button class="admin-task-tab active" type="button" data-admin-task-system="Bag Tagger">🏷️ Bag Tagger</button>
+    <button class="admin-task-tab" type="button" data-admin-task-system="Auto Bag Drop">🧳 Auto Bag Drop</button>
+  </div>
+
+  <div class="admin-task-table-wrap">
+    <table class="admin-table admin-task-table">
+      <thead>
+        <tr><th>Task</th><th>Description</th><th>Order</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody id="adminTasksBody"></tbody>
+    </table>
+  </div>
+  <div id="adminTaskMessage" class="admin-message" style="display:none"></div>
+</section>
+
+<div id="adminTaskModal" class="admin-confirm-backdrop" aria-hidden="true">
+  <div class="admin-task-modal-card" role="dialog" aria-modal="true" aria-labelledby="adminTaskModalTitle">
+    <button id="adminTaskModalClose" class="admin-confirm-close" type="button" aria-label="Close">×</button>
+    <div class="admin-task-modal-kicker">TEST CONFIGURATION</div>
+    <h2 id="adminTaskModalTitle">Add Test Task</h2>
+    <p id="adminTaskModalSubtitle">This task will appear in future testing runs.</p>
+
+    <div class="admin-task-form">
+      <div class="field">
+        <label for="adminTaskSystem">System</label>
+        <select class="input" id="adminTaskSystem">
+          <option>Bag Tagger</option>
+          <option>Auto Bag Drop</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="adminTaskName">Task name</label>
+        <input class="input" id="adminTaskName" type="text" placeholder="e.g. Scan boarding pass">
+      </div>
+      <div class="field full">
+        <label for="adminTaskDescription">Description <small>(optional)</small></label>
+        <input class="input" id="adminTaskDescription" type="text" placeholder="Short explanation shown to admins only">
+      </div>
+      <div class="field">
+        <label for="adminTaskOrder">Display order</label>
+        <input class="input" id="adminTaskOrder" type="number" min="1" step="1" value="1">
+      </div>
+      <div class="field">
+        <label for="adminTaskActive">Status</label>
+        <select class="input" id="adminTaskActive">
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="adminTaskModalMessage" class="admin-message" style="display:none"></div>
+    <div class="admin-confirm-actions">
+      <button id="adminTaskCancel" class="btn" type="button">Cancel</button>
+      <button id="adminTaskSave" class="btn primary" type="button">Add Test Task</button>
+    </div>
+  </div>
+</div>
+
+<div id="adminTaskDeleteModal" class="admin-confirm-backdrop" aria-hidden="true">
+  <div class="admin-confirm-card" role="dialog" aria-modal="true" aria-labelledby="adminTaskDeleteTitle">
+    <button id="adminTaskDeleteClose" class="admin-confirm-close" type="button" aria-label="Close">×</button>
+    <div class="admin-confirm-icon">!</div>
+    <div class="admin-confirm-kicker">REMOVE TEST TASK</div>
+    <h2 id="adminTaskDeleteTitle">Remove this task?</h2>
+    <p id="adminTaskDeleteMessage">It will no longer appear in new testing runs. Historical testing results will be preserved.</p>
+    <div class="admin-confirm-warning"><span>⚠</span><span>Use Deactivate when you may need the task again.</span></div>
+    <div class="admin-confirm-actions">
+      <button id="adminTaskDeleteCancel" class="btn" type="button">Cancel</button>
+      <button id="adminTaskDeleteConfirm" class="btn admin-confirm-danger" type="button">Remove Task</button>
+    </div>
+  </div>
+</div>
+
+<section class="panel admin-card admin-users-card">
     <div class="admin-card-head">
       <div>
         <div class="admin-kicker">USER MANAGEMENT</div>
@@ -5116,7 +5398,39 @@ document.getElementById('saveTestingRun')?.addEventListener('click',saveTestingR
 
 
 /* ===== Testing workspace ===== */
-const testingCases = {
+
+let testingTaskRows=[];
+let testingTasksLoaded=false;
+
+async function loadTestingTasks(){
+  try{
+    const {data,error}=await authClient
+      .from('testing_tasks')
+      .select('id,system,name,description,sort_order,active,created_at,updated_at')
+      .order('system',{ascending:true})
+      .order('sort_order',{ascending:true})
+      .order('created_at',{ascending:true});
+    if(error) throw error;
+
+    testingTaskRows=data||[];
+    const next={ 'Bag Tagger':[], 'Auto Bag Drop':[] };
+    testingTaskRows.filter(t=>t.active!==false).forEach(t=>{
+      if(!next[t.system]) next[t.system]=[];
+      next[t.system].push(t.name);
+    });
+    if(Object.values(next).some(arr=>arr.length)){
+      testingCases=next;
+    }
+    testingTasksLoaded=true;
+    renderTestingTable();
+    return true;
+  }catch(error){
+    testingTasksLoaded=false;
+    console.warn('Testing task configuration unavailable; using built-in task list.',error);
+    return false;
+  }
+}
+let testingCases = {
   'Bag Tagger': [
     'Scan Paper Boarding Pass',
     'Scan Mobile Boarding pass',
@@ -6356,6 +6670,196 @@ if(oldRenderCommandPalette){
     box.querySelectorAll('[data-command-view]').forEach(b=>b.addEventListener('click',()=>{closeCommandPalette();document.querySelector(`.nav-item[data-view="${b.dataset.commandView}"]`)?.click()}));
   };
 }
+
+
+/* ===== Admin Testing Task Management ===== */
+let adminTaskSystem='Bag Tagger';
+let adminTaskEditingId=null;
+let adminTaskDeleteId=null;
+
+function adminTaskRowsForSystem(){
+  const builtIn={
+    'Bag Tagger':[
+      'Scan Paper Boarding Pass','Scan Mobile Boarding pass','Bag Tag Print',
+      'Agent Override Scan','Display QR Pay'
+    ],
+    'Auto Bag Drop':[
+      'Activate bag tag','Front Scan','Top Scan','Weight recognition','heavy tag print',
+      'front intrusion','side intrusion','tub detection','bag upright detection',
+      'Agent Override Scan','Display QR Pay'
+    ]
+  };
+  if(testingTaskRows.length) return testingTaskRows.filter(t=>t.system===adminTaskSystem).sort((a,b)=>a.sort_order-b.sort_order);
+  return (builtIn[adminTaskSystem]||[]).map((name,i)=>({id:null,system:adminTaskSystem,name,description:'',sort_order:i+1,active:true,builtIn:true}));
+}
+
+function renderAdminTasks(){
+  const body=document.getElementById('adminTasksBody'); if(!body)return;
+  const rows=adminTaskRowsForSystem();
+  const total=(testingTaskRows.length?testingTaskRows:[]).length || Object.values({
+    'Bag Tagger':adminTaskRowsForSystem().length,
+    'Auto Bag Drop':0
+  }).BagTagger;
+  const allCount=testingTaskRows.length || (adminTaskRowsForSystem().length);
+  document.getElementById('adminTaskCount').textContent=testingTaskRows.length ? testingTaskRows.length : '—';
+
+  body.innerHTML=rows.map((t,i)=>`<tr>
+    <td><div class="admin-task-name">${escapeHtml(t.name)}</div></td>
+    <td><div class="admin-task-description">${escapeHtml(t.description||'—')}</div></td>
+    <td>${Number(t.sort_order)||i+1}</td>
+    <td><span class="admin-task-status ${t.active?'active':'inactive'}">${t.active?'Active':'Inactive'}</span></td>
+    <td><div class="admin-task-actions">
+      <button type="button" data-admin-task-edit="${escapeHtml(t.id||'')}">Edit</button>
+      <button type="button" data-admin-task-toggle="${escapeHtml(t.id||'')}" data-admin-task-active="${t.active?'true':'false'}">${t.active?'Deactivate':'Activate'}</button>
+      <button type="button" class="delete" data-admin-task-delete="${escapeHtml(t.id||'')}">Delete</button>
+    </div></td>
+  </tr>`).join('');
+
+  if(!rows.length) body.innerHTML='<tr><td colspan="5" class="empty">No testing tasks configured for this system.</td></tr>';
+}
+
+function showAdminTaskMessage(text,type='ok'){
+  const el=document.getElementById('adminTaskMessage');
+  if(!el)return;
+  el.className='admin-message '+(type==='error'?'error':'ok');
+  el.style.display='block';
+  el.textContent=text;
+}
+
+function openAdminTaskModal(task=null){
+  const modal=document.getElementById('adminTaskModal');if(!modal)return;
+  adminTaskEditingId=task?.id||null;
+  document.getElementById('adminTaskModalTitle').textContent=task?'Edit Test Task':'Add Test Task';
+  document.getElementById('adminTaskModalSubtitle').textContent=task?'Changes affect future testing runs. Historical results are unchanged.':'This task will appear in future testing runs when active.';
+  document.getElementById('adminTaskSystem').value=task?.system||adminTaskSystem;
+  document.getElementById('adminTaskName').value=task?.name||'';
+  document.getElementById('adminTaskDescription').value=task?.description||'';
+  document.getElementById('adminTaskOrder').value=task?.sort_order||Math.max(1,adminTaskRowsForSystem().length+1);
+  document.getElementById('adminTaskActive').value=String(task?.active??true);
+  document.getElementById('adminTaskSave').textContent=task?'Save Changes':'Add Test Task';
+  document.getElementById('adminTaskModalMessage').style.display='none';
+  modal.classList.add('open');modal.setAttribute('aria-hidden','false');
+  setTimeout(()=>document.getElementById('adminTaskName')?.focus(),30);
+}
+function closeAdminTaskModal(){
+  const modal=document.getElementById('adminTaskModal');if(!modal)return;
+  modal.classList.remove('open');modal.setAttribute('aria-hidden','true');adminTaskEditingId=null;
+}
+async function refreshAdminTaskData(){
+  try{
+    const {data,error}=await authClient.from('testing_tasks').select('*').order('system').order('sort_order').order('created_at');
+    if(error) throw error;
+    testingTaskRows=data||[];
+    renderAdminTasks();
+    document.getElementById('adminTaskCount').textContent=testingTaskRows.length;
+    return true;
+  }catch(error){
+    console.error('Could not load testing tasks:',error);
+    showAdminTaskMessage('Testing Tasks database table is not configured yet. Run the supplied SQL first.','error');
+    renderAdminTasks();
+    return false;
+  }
+}
+
+document.getElementById('adminAddTaskBtn')?.addEventListener('click',()=>openAdminTaskModal());
+document.querySelectorAll('[data-admin-task-system]')?.forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('[data-admin-task-system]').forEach(x=>x.classList.remove('active'));
+  tab.classList.add('active');adminTaskSystem=tab.dataset.adminTaskSystem;renderAdminTasks();
+}));
+document.getElementById('adminTaskModalClose')?.addEventListener('click',closeAdminTaskModal);
+document.getElementById('adminTaskCancel')?.addEventListener('click',closeAdminTaskModal);
+document.getElementById('adminTaskModal')?.addEventListener('click',e=>{if(e.target.id==='adminTaskModal')closeAdminTaskModal();});
+
+document.getElementById('adminTaskSave')?.addEventListener('click',async()=>{
+  const name=document.getElementById('adminTaskName').value.trim();
+  const system=document.getElementById('adminTaskSystem').value;
+  const description=document.getElementById('adminTaskDescription').value.trim();
+  const sort_order=Math.max(1,Number(document.getElementById('adminTaskOrder').value)||1);
+  const active=document.getElementById('adminTaskActive').value==='true';
+  const msg=document.getElementById('adminTaskModalMessage');
+
+  if(!name){
+    msg.className='admin-message error';msg.style.display='block';msg.textContent='Enter a task name.';return;
+  }
+
+  const payload={system,name,description:description||null,sort_order,active,updated_at:new Date().toISOString()};
+  const button=document.getElementById('adminTaskSave');button.disabled=true;
+
+  try{
+    let response;
+    if(adminTaskEditingId){
+      response=await authClient.from('testing_tasks').update(payload).eq('id',adminTaskEditingId);
+    }else{
+      response=await authClient.from('testing_tasks').insert({...payload,created_at:new Date().toISOString()});
+    }
+    if(response.error)throw response.error;
+
+    await refreshAdminTaskData();
+    await loadTestingTasks();
+    closeAdminTaskModal();
+    showAdminTaskMessage(adminTaskEditingId?'Test task updated.':'Test task added.','ok');
+  }catch(error){
+    msg.className='admin-message error';msg.style.display='block';
+    msg.textContent='Could not save test task: '+(error.message||error);
+  }finally{button.disabled=false;}
+});
+
+document.getElementById('adminTasksBody')?.addEventListener('click',async e=>{
+  const edit=e.target.closest('[data-admin-task-edit]');
+  if(edit){
+    const task=testingTaskRows.find(t=>String(t.id)===String(edit.dataset.adminTaskEdit));
+    if(task)openAdminTaskModal(task);
+    return;
+  }
+
+  const toggle=e.target.closest('[data-admin-task-toggle]');
+  if(toggle){
+    const id=toggle.dataset.adminTaskToggle;
+    if(!id){showAdminTaskMessage('Built-in tasks become editable after you run the Testing Tasks SQL.','error');return;}
+    const active=toggle.dataset.adminTaskActive!=='true';
+    try{
+      const {error}=await authClient.from('testing_tasks').update({active,updated_at:new Date().toISOString()}).eq('id',id);
+      if(error)throw error;
+      await refreshAdminTaskData();await loadTestingTasks();
+    }catch(error){showAdminTaskMessage('Could not change task status: '+(error.message||error),'error');}
+    return;
+  }
+
+  const del=e.target.closest('[data-admin-task-delete]');
+  if(del){
+    const id=del.dataset.adminTaskDelete;
+    if(!id){showAdminTaskMessage('Built-in tasks cannot be permanently removed until they are stored in Testing Tasks.','error');return;}
+    const task=testingTaskRows.find(t=>String(t.id)===String(id));
+    if(!task)return;
+    adminTaskDeleteId=id;
+    document.getElementById('adminTaskDeleteTitle').textContent=`Remove “${task.name}”?`;
+    document.getElementById('adminTaskDeleteMessage').textContent=`It will no longer appear in future ${task.system} testing runs. Existing saved results keep the original task name.`;
+    const modal=document.getElementById('adminTaskDeleteModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');
+  }
+});
+
+function closeAdminTaskDelete(){const m=document.getElementById('adminTaskDeleteModal');if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true')}adminTaskDeleteId=null}
+document.getElementById('adminTaskDeleteClose')?.addEventListener('click',closeAdminTaskDelete);
+document.getElementById('adminTaskDeleteCancel')?.addEventListener('click',closeAdminTaskDelete);
+document.getElementById('adminTaskDeleteModal')?.addEventListener('click',e=>{if(e.target.id==='adminTaskDeleteModal')closeAdminTaskDelete();});
+document.getElementById('adminTaskDeleteConfirm')?.addEventListener('click',async()=>{
+  if(!adminTaskDeleteId)return;
+  const id=adminTaskDeleteId;const b=document.getElementById('adminTaskDeleteConfirm');b.disabled=true;
+  try{
+    const {error}=await authClient.from('testing_tasks').delete().eq('id',id);
+    if(error)throw error;
+    closeAdminTaskDelete();await refreshAdminTaskData();await loadTestingTasks();showAdminTaskMessage('Test task removed from future testing runs.','ok');
+  }catch(error){
+    showAdminTaskMessage('Could not remove test task: '+(error.message||error),'error');closeAdminTaskDelete();
+  }finally{b.disabled=false;}
+});
+
+/* Load Admin Tasks when Admin becomes active. */
+const existingLoadAdminData=loadAdminData;
+loadAdminData=async function(){
+  await existingLoadAdminData();
+  await refreshAdminTaskData();
+};
 
 /* ===== Dynamic runway cursor trail ===== */
 (function(){
