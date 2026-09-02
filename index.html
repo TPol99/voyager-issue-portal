@@ -3363,6 +3363,34 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 }
 </style>
 
+
+<style id="voyager-footer-style">
+.voyager-footer{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px 12px calc(20px + env(safe-area-inset-bottom));
+  margin-top:22px;
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:.01em;
+  text-align:center;
+  border-top:1px solid var(--line);
+}
+.voyager-footer strong{
+  color:var(--ink);
+  font-weight:850;
+}
+@media(max-width:600px){
+  .voyager-footer{
+    margin-top:16px;
+    padding:18px 10px calc(18px + env(safe-area-inset-bottom));
+    font-size:10px;
+  }
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -3990,6 +4018,11 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
       </div>
     </div>
   </section>
+
+
+<footer class="voyager-footer" aria-label="Site footer">
+  <span>Created by <strong>Tristan Pollock</strong></span>
+</footer>
 
 </main>
 </div>
