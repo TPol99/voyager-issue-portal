@@ -3333,6 +3333,36 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 }
 </style>
 
+
+<style id="voyager-admin-pending-style">
+.admin-pending-status{
+  background:rgba(204,71,0,.08) !important;
+  color:#CC4700 !important;
+}
+</style>
+
+
+<style id="voyager-testing-history-export">
+.testing-history-export-btn{
+  border:1px solid rgba(23,92,211,.18);
+  background:rgba(23,92,211,.05);
+  color:#175CD3;
+  border-radius:9px;
+  padding:6px 9px;
+  font-size:10px;
+  font-weight:850;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.16s ease;
+}
+.testing-history-export-btn:hover{
+  background:#175CD3;
+  color:#fff;
+  border-color:#175CD3;
+  transform:translateY(-1px);
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -4882,10 +4912,13 @@ function attachDeviceAutocomplete(){
   });
 }
 
+let testingHistoryResultsByRun={};
+
 async function loadTestingHistory(){
   const box=document.getElementById('testingHistory');
   if(!isAuthenticated()){
     if(box) box.innerHTML='<div class="empty">Sign in to view testing history.</div>';
+    testingHistoryResultsByRun={};
     return;
   }
 
@@ -4900,11 +4933,27 @@ async function loadTestingHistory(){
 
     if(error) throw error;
 
+    const runIds=(runs||[]).map(r=>r.id).filter(Boolean);
+    let results=[];
+    if(runIds.length){
+      const {data:resultRows,error:resultError}=await authClient
+        .from('testing_results')
+        .select('id,run_id,device_id,test_case,result,created_at')
+        .in('run_id',runIds)
+        .order('created_at',{ascending:true});
+      if(resultError) throw resultError;
+      results=resultRows||[];
+    }
+
+    testingHistoryResultsByRun={};
+    results.forEach(result=>{
+      (testingHistoryResultsByRun[result.run_id] ||= []).push(result);
+    });
+
     const {data:devices,error:deviceError}=await authClient
       .from('testing_results')
       .select('device_id')
       .limit(5000);
-
     if(deviceError) throw deviceError;
 
     testingKnownDeviceIds.clear();
@@ -4917,6 +4966,7 @@ async function loadTestingHistory(){
   }catch(error){
     console.error('Could not load testing history:',error);
     if(box) box.innerHTML='<div class="empty">Could not load testing history from Supabase.</div>';
+    testingHistoryResultsByRun={};
   }
 }
 
@@ -5015,6 +5065,7 @@ function renderTestingHistory(runs=[]){
             <th>Devices</th>
             <th>Completion</th>
             <th>Tested By</th>
+            <th>Export</th>
           </tr>
         </thead>
         <tbody>
@@ -5022,6 +5073,7 @@ function renderTestingHistory(runs=[]){
             const total=Number(r.total_tests||0);
             const completed=Number(r.completed_tests||0);
             const percent=total ? Math.round(completed/total*100) : 0;
+            const resultCount=(testingHistoryResultsByRun[r.id]||[]).length;
             return `
               <tr>
                 <td>${r.created_at ? new Date(r.created_at).toLocaleString('en-AU') : ''}</td>
@@ -5031,6 +5083,11 @@ function renderTestingHistory(runs=[]){
                 <td>${Number(r.device_count||0)}</td>
                 <td>${percent}%</td>
                 <td>${escapeHtml(r.tested_by_name||'')}</td>
+                <td><button class="testing-history-export-btn" type="button"
+                  data-export-testing-run="${escapeHtml(r.id)}"
+                  title="Export all results for this testing run to CSV">
+                  ⇩ Export CSV${resultCount ? ` (${resultCount})` : ''}
+                </button></td>
               </tr>`;
           }).join('')}
         </tbody>
@@ -6025,6 +6082,74 @@ function exportTestingCsv(){
   URL.revokeObjectURL(url);
 }
 
+
+function exportTestingHistoryRunCsv(runId){
+  if(!isAuthenticated()){
+    showAuthModal('login');
+    return;
+  }
+
+  const runIdText=String(runId||'');
+  const results=testingHistoryResultsByRun[runIdText]||[];
+  if(!results.length){
+    alert('No saved test results were found for this testing run.');
+    return;
+  }
+
+  // Match the main Testing CSV format:
+  // one row per device, one column per test case, "Yes" for a pass.
+  // Failed/untested results remain blank, matching the current live export.
+  const deviceOrder=[];
+  const testOrder=[];
+
+  results.forEach(result=>{
+    const device=String(result.device_id||'').trim();
+    const test=String(result.test_case||'').trim();
+    if(device && !deviceOrder.includes(device)) deviceOrder.push(device);
+    if(test && !testOrder.includes(test)) testOrder.push(test);
+  });
+
+  const resultMap=new Map();
+  results.forEach(result=>{
+    const key=`${String(result.device_id||'').trim()}||${String(result.test_case||'').trim()}`;
+    resultMap.set(key,result.result);
+  });
+
+  const escCsv=value=>{
+    const text=String(value ?? '');
+    return /[",\n]/.test(text) ? '"'+text.replace(/"/g,'""')+'"' : text;
+  };
+
+  const headers=['Device ID',...testOrder];
+
+  const rows=deviceOrder.map(device=>[
+    device,
+    ...testOrder.map(test=>{
+      const result=resultMap.get(`${device}||${test}`);
+      return result==='pass' ? 'Yes' : '';
+    })
+  ].map(escCsv).join(','));
+
+  const csv='\ufeff'+headers.map(escCsv).join(',')+'\n'+rows.join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const stamp=new Date().toISOString().slice(0,10);
+  const safe=`${testOrder.length?'testing':'run'}`
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  a.href=url;
+  a.download=`voyager-${safe}-${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('testingHistory')?.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-export-testing-run]');
+  if(btn) exportTestingHistoryRunCsv(btn.dataset.exportTestingRun);
+});
+
 document.getElementById('exportTestingCsv').addEventListener('click',exportTestingCsv);
 renderTestingTable();
 
@@ -6796,17 +6921,31 @@ function renderAdminTesting(runs,results){
 function renderAdminUsers(users){
   const body=document.getElementById('adminUsersBody');if(!body)return;
   document.getElementById('adminUserCount').textContent=users.length;
-  if(!users.length){body.innerHTML='<tr><td colspan="5" class="empty">No users found.</td></tr>';return;}
+  if(!users.length){
+    body.innerHTML='<tr><td colspan="5" class="empty">No users found.</td></tr>';
+    return;
+  }
+
   body.innerHTML=users.map(u=>{
     const role=u.role||'staff';
-    const status=u.email_confirmed_at?'Confirmed':'Pending email';
+    const approved=u.approval_status==='approved' || role==='admin';
+    const status=approved?'Approved':'Pending approval';
     const isSelf=u.id===currentUser?.id;
+
     return `<tr>
       <td><strong>${escapeHtml(u.email||'—')}</strong><small>${escapeHtml(u.name||'')}</small></td>
-      <td><span class="admin-status ${u.email_confirmed_at?'closed':''}">${status}</span></td>
-      <td><select class="admin-role-select" data-admin-role="${escapeHtml(u.id)}" ${isSelf?'disabled':''}><option value="staff" ${role==='staff'?'selected':''}>Staff</option><option value="admin" ${role==='admin'?'selected':''}>Admin</option></select></td>
+      <td><span class="admin-status ${approved?'closed':'admin-pending-status'}">${status}</span></td>
+      <td><select class="admin-role-select" data-admin-role="${escapeHtml(u.id)}" ${isSelf?'disabled':''}>
+        <option value="staff" ${role==='staff'?'selected':''}>Staff</option>
+        <option value="admin" ${role==='admin'?'selected':''}>Admin</option>
+      </select></td>
       <td>${adminFormatDate(u.created_at)}</td>
-      <td>${isSelf?'<small>Current user</small>':`<button class="admin-action" data-admin-delete-user="${escapeHtml(u.id)}">Delete</button>`}</td>
+      <td>
+        <div class="admin-user-actions">
+          ${!approved && role!=='admin' ? `<button class="admin-action admin-approve" data-admin-approve-user="${escapeHtml(u.id)}">Approve</button>` : ''}
+          ${isSelf ? '<small>Current user</small>' : `<button class="admin-action" data-admin-delete-user="${escapeHtml(u.id)}">Delete</button>`}
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }
