@@ -2761,6 +2761,162 @@ body.dark .command-palette-close{
   background:rgba(24,18,33,.56);
 }
 
+
+/* ===== Voyager Admin ===== */
+.admin-only-nav{position:relative}
+.admin-only-nav:before{
+  content:"";
+  width:7px;height:7px;border-radius:50%;
+  background:#C30922;
+  box-shadow:0 0 8px rgba(195,9,34,.55);
+  position:absolute;right:11px;top:10px;
+}
+.admin-hero{
+  display:flex!important;justify-content:space-between;align-items:center;gap:20px;
+}
+.admin-security-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 13px;border-radius:999px;
+  background:rgba(255,255,255,.58);
+  border:1px solid rgba(255,255,255,.78);
+  color:var(--ink);font-size:11px;font-weight:850;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+.admin-toolbar{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  margin:16px 0;
+  padding:14px 16px;border-radius:17px;
+  background:rgba(255,255,255,.42);
+  border:1px solid rgba(255,255,255,.68);
+  box-shadow:0 10px 26px rgba(35,28,48,.06);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+.admin-toolbar strong,.admin-toolbar span{display:block}
+.admin-toolbar strong{font-size:13px}.admin-toolbar span{font-size:10px;color:var(--muted);margin-top:3px}
+.admin-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:16px}
+.admin-card{padding:18px!important;min-width:0}
+.admin-card-head{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;
+}
+.admin-kicker{font-size:9px;font-weight:950;letter-spacing:.08em;color:#7a2cff}
+.admin-card-head h2{margin:3px 0 3px;font-size:19px}
+.admin-card-head p{margin:0;color:var(--muted);font-size:10px}
+.admin-count{
+  min-width:34px;height:34px;padding:0 10px;border-radius:12px;
+  display:grid;place-items:center;background:rgba(122,44,255,.07);
+  color:#7a2cff;font-weight:900;font-size:12px;
+}
+.admin-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
+.admin-table{width:100%;border-collapse:collapse;min-width:720px}
+.admin-table th,.admin-table td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:10px;vertical-align:middle}
+.admin-table th{background:rgba(247,247,248,.72);font-size:9px;text-transform:uppercase;letter-spacing:.04em}
+.admin-table tr:last-child td{border-bottom:0}
+.admin-table td strong{display:block;font-size:10px}
+.admin-table td small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
+.admin-status{display:inline-flex;padding:4px 7px;border-radius:999px;background:rgba(23,92,211,.07);color:#175CD3;font-size:9px;font-weight:900}
+.admin-status.closed{background:rgba(2,122,72,.08);color:#027A48}
+.admin-status.critical{background:rgba(195,9,34,.08);color:#C30922}
+.admin-action{
+  border:1px solid rgba(195,9,34,.18);color:#C30922;background:rgba(195,9,34,.04);
+  border-radius:8px;padding:6px 8px;font-size:9px;font-weight:900;cursor:pointer;
+}
+.admin-action:hover{background:#C30922;color:#fff}
+.admin-run-list{display:grid;gap:9px;max-height:500px;overflow:auto}
+.admin-run{
+  padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.35)
+}
+.admin-run-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.admin-run-head strong{font-size:11px}.admin-run-head span{font-size:9px;color:var(--muted)}
+.admin-run-meta{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+.admin-chip{padding:4px 7px;border:1px solid var(--line);border-radius:999px;font-size:9px;background:rgba(255,255,255,.48)}
+.admin-run-results{display:none;border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
+.admin-run.open .admin-run-results{display:block}
+.admin-test-result{
+  display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:9px;
+}
+.admin-test-result:last-child{border-bottom:0}
+.admin-result-pass{color:#027A48;font-weight:900}.admin-result-fail{color:#C30922;font-weight:900}
+.admin-run-actions{display:flex;gap:6px;margin-top:8px}
+.admin-run-actions button{flex:1}
+.admin-invite{
+  display:grid;grid-template-columns:1.3fr 1fr auto;gap:10px;align-items:end;
+  padding:13px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.38);margin-bottom:10px;
+}
+.admin-invite .field{margin:0}
+.admin-message{padding:9px 11px;border-radius:10px;margin-bottom:10px;font-size:10px;font-weight:750}
+.admin-message.ok{background:#eaf9f2;color:#128356}.admin-message.error{background:#fff0f1;color:#b4232e}
+.admin-role-select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.64);font-size:9px}
+.admin-warning{
+  margin-top:14px;padding:11px 13px;border-radius:13px;
+  background:rgba(204,71,0,.05);border:1px solid rgba(204,71,0,.14);
+  color:var(--muted);font-size:9px;
+}
+.admin-warning strong{color:#CC4700;margin-right:6px}
+@media(max-width:950px){.admin-grid{grid-template-columns:1fr}.admin-invite{grid-template-columns:1fr 1fr}.admin-invite .btn{grid-column:1/-1}}
+@media(max-width:600px){.admin-hero{align-items:flex-start;flex-direction:column}.admin-toolbar{align-items:stretch;flex-direction:column}.admin-invite{grid-template-columns:1fr}.admin-invite .btn{grid-column:auto;width:100%}}
+
+<style>.admin-only-nav[hidden]{display:none !important}
+/* Admin navigation: hidden by default, revealed only after a positive role check. */
+nav .admin-only-nav,
+nav .admin-only-nav[hidden]{
+  display:none !important;
+}
+nav .admin-only-nav.admin-visible{
+  display:flex !important;
+}
+
+
+/* ===== Admin confirmation modal ===== */
+.admin-confirm-backdrop{
+  position:fixed;inset:0;z-index:10060;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(20,14,28,.38);
+  backdrop-filter:blur(15px) saturate(125%);
+  -webkit-backdrop-filter:blur(15px) saturate(125%);
+}
+.admin-confirm-backdrop.open{display:flex}
+.admin-confirm-card{
+  position:relative;width:min(470px,94vw);padding:28px;border-radius:25px;
+  background:rgba(255,255,255,.86);
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 30px 90px rgba(32,24,45,.28),inset 0 1px 0 rgba(255,255,255,.9);
+  backdrop-filter:blur(28px) saturate(150%);
+  -webkit-backdrop-filter:blur(28px) saturate(150%);
+  transform:translateY(8px) scale(.98);transition:transform .18s ease,opacity .18s ease;opacity:0;
+}
+.admin-confirm-backdrop.open .admin-confirm-card{transform:none;opacity:1}
+.admin-confirm-close{
+  position:absolute;right:14px;top:14px;width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--line);background:rgba(255,255,255,.55);color:var(--ink);
+  font-size:22px;line-height:1;cursor:pointer;
+}
+.admin-confirm-icon{
+  width:52px;height:52px;display:grid;place-items:center;border-radius:16px;
+  background:rgba(195,9,34,.09);border:1px solid rgba(195,9,34,.16);
+  color:#C30922;font-weight:950;font-size:24px;margin-bottom:14px;
+}
+.admin-confirm-kicker{
+  color:#C30922;font-size:10px;font-weight:950;letter-spacing:.09em;margin-bottom:5px;
+}
+.admin-confirm-card h2{margin:0 0 7px;font-size:22px}
+.admin-confirm-card p{margin:0;color:var(--muted);line-height:1.55}
+.admin-confirm-warning{
+  display:flex;gap:8px;align-items:center;margin-top:17px;padding:10px 11px;
+  border-radius:12px;background:rgba(204,71,0,.06);border:1px solid rgba(204,71,0,.14);
+  color:#CC4700;font-size:10px;font-weight:800;
+}
+.admin-confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.admin-confirm-danger{background:#C30922 !important;border-color:#C30922 !important;box-shadow:0 9px 20px rgba(195,9,34,.20)!important}
+.admin-confirm-danger:hover{background:#a8071c !important;border-color:#a8071c !important}
+body.dark .admin-confirm-card{background:rgba(30,24,40,.92);border-color:rgba(255,255,255,.10)}
+body.dark .admin-confirm-close{background:rgba(24,18,33,.58)}
+@media(max-width:600px){
+  .admin-confirm-backdrop{align-items:flex-end;padding:0}
+  .admin-confirm-card{width:100%;max-width:none;border-radius:25px 25px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom))}
+  .admin-confirm-actions{flex-direction:column-reverse}
+  .admin-confirm-actions .btn{width:100%}
+}
+
+</style>
 </style>
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
@@ -2775,6 +2931,7 @@ body.dark .command-palette-close{
     <button class="nav-item" data-view="issues">My Issues</button>
     <button class="nav-item" data-view="testing">Testing</button>
     <button class="nav-item" data-view="knowledge">Knowledge Base</button>
+    <button class="nav-item admin-only-nav" data-view="admin" hidden aria-hidden="true">Admin</button>
   </nav>
   <div class="appearance-card">
     <div class="appearance-title">Appearance</div>
@@ -3181,7 +3338,98 @@ body.dark .command-palette-close{
     </div>
 </section>
 
-  <section id="view-access-denied" class="view">
+  
+<section id="view-admin" class="view">
+  <div class="hero admin-hero">
+    <div>
+      <div class="home-kicker">VOYAGER ADMINISTRATION</div>
+      <h1>Admin</h1>
+      <p>Manage tickets, testing data and Voyager staff access.</p>
+    </div>
+    <div class="admin-security-pill"><span class="online-dot"></span> Administrator</div>
+  </div>
+
+  <div class="admin-toolbar">
+    <div>
+      <strong id="adminSummary">Loading administration data…</strong>
+      <span>Changes made here affect production Voyager data.</span>
+    </div>
+    <button class="btn" id="adminRefresh" type="button">↻ Refresh</button>
+  </div>
+
+  <div class="admin-grid">
+    <section class="panel admin-card admin-tickets-card">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-kicker">TICKETS</div>
+          <h2>All Tickets</h2>
+          <p>Every ticket in Voyager, not just your own.</p>
+        </div>
+        <span class="admin-count" id="adminTicketCount">0</span>
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Ticket</th><th>Port</th><th>System</th><th>Device</th><th>Status</th><th>Raised by</th><th></th></tr>
+          </thead>
+          <tbody id="adminTicketsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel admin-card admin-testing-card">
+      <div class="admin-card-head">
+        <div>
+          <div class="admin-kicker">TESTING</div>
+          <h2>All Testing Runs</h2>
+          <p>Saved device test runs and their results.</p>
+        </div>
+        <span class="admin-count" id="adminRunCount">0</span>
+      </div>
+      <div id="adminTestingRuns" class="admin-run-list"></div>
+    </section>
+  </div>
+
+  <section class="panel admin-card admin-users-card">
+    <div class="admin-card-head">
+      <div>
+        <div class="admin-kicker">USER MANAGEMENT</div>
+        <h2>Voyager Staff</h2>
+        <p>Invite, remove or change the role of Voyager users.</p>
+      </div>
+      <span class="admin-count" id="adminUserCount">0</span>
+    </div>
+
+    <div class="admin-invite">
+      <div class="field">
+        <label for="adminInviteEmail">Virgin Australia email</label>
+        <input class="input" id="adminInviteEmail" type="email" placeholder="firstname.lastname@virginaustralia.com">
+      </div>
+      <div class="field">
+        <label for="adminInviteName">Name <small>(optional)</small></label>
+        <input class="input" id="adminInviteName" type="text" placeholder="First Last">
+      </div>
+      <button class="btn primary" id="adminInviteBtn" type="button">Invite User</button>
+    </div>
+    <div id="adminUserMessage" class="admin-message" style="display:none"></div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr><th>User</th><th>Status</th><th>Role</th><th>Created</th><th></th></tr>
+        </thead>
+        <tbody id="adminUsersBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="admin-warning">
+    <strong>⚠ Administrator area</strong>
+    <span>Deletion is permanent. Ticket deletion also removes its comments, activity history and attachment records.</span>
+  </div>
+</section>
+
+<section id="view-access-denied" class="view">
     <div class="hero">
       <div>
         <h1>Access Denied</h1>
@@ -3323,6 +3571,25 @@ document.querySelectorAll('[data-testing-system]').forEach(card=>card.addEventLi
  <div class="testing-celebration-card"><b>✓</b><div><strong>All tests passed</strong><span>Beautiful. This device is looking healthy.</span></div></div>
 </div>
 
+
+
+<div id="adminConfirmModal" class="admin-confirm-backdrop" aria-hidden="true">
+  <div class="admin-confirm-card" role="dialog" aria-modal="true" aria-labelledby="adminConfirmTitle">
+    <button id="adminConfirmClose" class="admin-confirm-close" type="button" aria-label="Close">×</button>
+    <div id="adminConfirmIcon" class="admin-confirm-icon">!</div>
+    <div class="admin-confirm-kicker">ADMIN ACTION</div>
+    <h2 id="adminConfirmTitle">Are you sure?</h2>
+    <p id="adminConfirmMessage">This action cannot be undone.</p>
+    <div class="admin-confirm-warning">
+      <span>⚠</span>
+      <span>This action is permanent.</span>
+    </div>
+    <div class="admin-confirm-actions">
+      <button id="adminConfirmCancel" class="btn" type="button">Cancel</button>
+      <button id="adminConfirmProceed" class="btn primary admin-confirm-danger" type="button">Delete</button>
+    </div>
+  </div>
+</div>
 
 <div id="commandPalette" class="command-palette-backdrop" aria-hidden="true">
   <div class="command-palette-card" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
@@ -5285,6 +5552,15 @@ async function performNav(view){
   const btn=document.querySelector(`.nav-item[data-view="${view}"]`);
   if(!btn) return;
 
+  if(view==='admin' && !currentIsAdmin){
+    window.__pendingProtectedNav=btn;
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    if(typeof moveNavSlider==='function') moveNavSlider(btn);
+    showAdminDenied();
+    return;
+  }
+
   if(!['home','log'].includes(view) && !isAuthenticated()){
     window.__pendingProtectedNav=btn;
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
@@ -5728,6 +6004,358 @@ document.addEventListener('keydown',e=>{
     }
   }
 });
+
+
+/* ===== Admin access + management ===== */
+let currentIsAdmin=false;
+const ADMIN_FUNCTION='admin-manage';
+
+async function refreshAdminAccess(){
+  currentIsAdmin=false;
+  const nav=document.querySelector('.admin-only-nav');
+
+  // Default: completely remove Admin from the navigation for everyone.
+  if(nav){
+    nav.hidden=true;
+    nav.setAttribute('aria-hidden','true');
+    nav.classList.remove('active');
+  }
+
+  if(!isAuthenticated()){
+    // A logged-out user can never keep an Admin view open.
+    if(document.getElementById('view-admin')?.classList.contains('active')){
+      performNav('home');
+    }
+    return false;
+  }
+
+  try{
+    const {data,error}=await authClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+
+    if(error) throw error;
+
+    currentIsAdmin=data?.role==='admin';
+
+    if(nav){
+      nav.hidden=!currentIsAdmin;
+      nav.setAttribute('aria-hidden',currentIsAdmin?'false':'true');
+
+      if(currentIsAdmin){
+        nav.classList.add('admin-visible');
+        nav.style.setProperty('display','flex','important');
+      }else{
+        nav.classList.remove('active','admin-visible');
+        nav.style.setProperty('display','none','important');
+      }
+    }
+
+    // If a non-admin somehow has /view-admin active, immediately eject them.
+    if(!currentIsAdmin && document.getElementById('view-admin')?.classList.contains('active')){
+      performNav('home');
+    }
+
+    if(typeof renderCommandPalette==='function' && document.getElementById('commandPalette')?.classList.contains('open')){
+      renderCommandPalette();
+    }
+  }catch(error){
+    // Fail closed: never reveal the Admin tab when the role lookup fails.
+    currentIsAdmin=false;
+    if(nav){
+      nav.hidden=true;
+      nav.setAttribute('aria-hidden','true');
+      nav.classList.remove('active','admin-visible');
+      nav.style.setProperty('display','none','important');
+    }
+    if(document.getElementById('view-admin')?.classList.contains('active')){
+      performNav('home');
+    }
+    console.warn('Admin role check failed; Admin hidden:',error);
+  }
+  return currentIsAdmin;
+}
+
+function showAdminDenied(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const denied=document.getElementById('view-access-denied');
+  if(denied){
+    denied.classList.add('active');
+    const h=denied.querySelector('h1'); if(h) h.textContent='Admin Access Required';
+    const p=denied.querySelector('p'); if(p) p.textContent='You need Administrator rights to access this section.';
+  }
+}
+
+async function adminInvoke(action,payload={}){
+  if(!currentIsAdmin) throw new Error('Administrator access required.');
+  const {data,error}=await authClient.functions.invoke(ADMIN_FUNCTION,{
+    body:{action,...payload}
+  });
+  if(error) throw error;
+  if(data?.error) throw new Error(data.error);
+  return data;
+}
+
+function adminFormatDate(value){
+  if(!value)return '—';
+  return new Date(value).toLocaleString('en-AU',{dateStyle:'medium',timeStyle:'short'});
+}
+
+function adminStatusClass(status){
+  if(status==='Closed'||status==='Resolved') return 'closed';
+  if(status==='Critical') return 'critical';
+  return '';
+}
+
+async function loadAdminData(){
+  if(!currentIsAdmin)return;
+
+  const summary=document.getElementById('adminSummary');
+  if(summary)summary.textContent='Loading administration data…';
+
+  try{
+    const [issuesResponse,runsResponse,resultsResponse]=await Promise.all([
+      authClient.from('issues').select('*').order('created_at',{ascending:false}).limit(1000),
+      authClient.from('testing_runs').select('id,created_at,port,system,run_reference,tested_by_user_id,tested_by_name,device_count,total_tests,completed_tests').order('created_at',{ascending:false}).limit(1000),
+      authClient.from('testing_results').select('id,run_id,device_id,test_case,result,created_at').order('created_at',{ascending:false}).limit(20000)
+    ]);
+
+    if(issuesResponse.error)throw issuesResponse.error;
+    if(runsResponse.error)throw runsResponse.error;
+    if(resultsResponse.error)throw resultsResponse.error;
+
+    renderAdminTickets(issuesResponse.data||[]);
+    renderAdminTesting(runsResponse.data||[],resultsResponse.data||[]);
+
+    try{
+      const userData=await adminInvoke('list_users');
+      renderAdminUsers(userData.users||[]);
+      if(summary)summary.textContent=`${issuesResponse.data?.length||0} tickets • ${runsResponse.data?.length||0} test runs • ${userData.users?.length||0} users`;
+      const msg=document.getElementById('adminUserMessage');
+      if(msg) { msg.style.display='none'; msg.dataset.adminError='false'; }
+    }catch(userError){
+      renderAdminUsers([]);
+      if(summary)summary.textContent=`${issuesResponse.data?.length||0} tickets • ${runsResponse.data?.length||0} test runs • user management unavailable`;
+      const msg=document.getElementById('adminUserMessage');
+      if(msg){
+        msg.className='admin-message error';
+        msg.style.display='block';
+        msg.dataset.adminError='true';
+        msg.textContent='User management could not connect to the admin service. Tickets and testing data are still available.';
+      }
+      console.error('Admin user service error:',userError);
+    }
+  }catch(error){
+    if(summary)summary.textContent='Could not load tickets or testing data.';
+    console.error('Admin data error:',error);
+  }
+}
+
+function renderAdminTickets(items){
+  const body=document.getElementById('adminTicketsBody');if(!body)return;
+  document.getElementById('adminTicketCount').textContent=items.length;
+  if(!items.length){body.innerHTML='<tr><td colspan="7" class="empty">No tickets found.</td></tr>';return;}
+  body.innerHTML=items.map(i=>`<tr>
+    <td><strong>${escapeHtml(i.issue_id||'—')}</strong><small>${adminFormatDate(i.created_at)}</small></td>
+    <td>${escapeHtml(i.port||'—')}</td>
+    <td>${escapeHtml(i.system||'—')}</td>
+    <td>${escapeHtml(i.device_id||'—')}</td>
+    <td><span class="admin-status ${adminStatusClass(i.status)}">${escapeHtml(i.status||'—')}</span></td>
+    <td>${escapeHtml(i.raised_by||'—')}</td>
+    <td><button class="admin-action" data-admin-delete-issue="${escapeHtml(i.id)}">Delete</button></td>
+  </tr>`).join('');
+}
+
+function renderAdminTesting(runs,results){
+  const box=document.getElementById('adminTestingRuns');if(!box)return;
+  document.getElementById('adminRunCount').textContent=runs.length;
+  if(!runs.length){box.innerHTML='<div class="empty">No saved testing runs found.</div>';return;}
+
+  const grouped={};
+  results.forEach(r=>(grouped[r.run_id] ||= []).push(r));
+
+  box.innerHTML=runs.map(run=>{
+    const list=grouped[run.id]||[];
+    const resultRows=list.map(r=>`<div class="admin-test-result"><span>${escapeHtml(r.device_id)} • ${escapeHtml(r.test_case)}</span><span class="${r.result==='pass'?'admin-result-pass':r.result==='fail'?'admin-result-fail':''}">${escapeHtml(r.result||'untested')}</span></div>`).join('');
+    return `<div class="admin-run">
+      <div class="admin-run-head">
+        <div><strong>${escapeHtml(run.run_reference||'Testing run')}</strong><span>${adminFormatDate(run.created_at)}</span></div>
+        <button class="admin-action" data-admin-delete-run="${escapeHtml(run.id)}">Delete Run</button>
+      </div>
+      <div class="admin-run-meta">
+        <span class="admin-chip">${escapeHtml(run.port||'—')}</span>
+        <span class="admin-chip">${escapeHtml(run.system||'—')}</span>
+        <span class="admin-chip">${escapeHtml(run.tested_by_name||'—')}</span>
+        <span class="admin-chip">${run.device_count||0} device${run.device_count==1?'':'s'}</span>
+        <span class="admin-chip">${run.completed_tests||0}/${run.total_tests||0} complete</span>
+      </div>
+      <div class="admin-run-actions">
+        <button type="button" class="btn" data-admin-toggle-run>View test cases (${list.length})</button>
+      </div>
+      <div class="admin-run-results">${resultRows||'<div class="empty">No test results recorded.</div>'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdminUsers(users){
+  const body=document.getElementById('adminUsersBody');if(!body)return;
+  document.getElementById('adminUserCount').textContent=users.length;
+  if(!users.length){body.innerHTML='<tr><td colspan="5" class="empty">No users found.</td></tr>';return;}
+  body.innerHTML=users.map(u=>{
+    const role=u.role||'staff';
+    const status=u.email_confirmed_at?'Confirmed':'Pending email';
+    const isSelf=u.id===currentUser?.id;
+    return `<tr>
+      <td><strong>${escapeHtml(u.email||'—')}</strong><small>${escapeHtml(u.name||'')}</small></td>
+      <td><span class="admin-status ${u.email_confirmed_at?'closed':''}">${status}</span></td>
+      <td><select class="admin-role-select" data-admin-role="${escapeHtml(u.id)}" ${isSelf?'disabled':''}><option value="staff" ${role==='staff'?'selected':''}>Staff</option><option value="admin" ${role==='admin'?'selected':''}>Admin</option></select></td>
+      <td>${adminFormatDate(u.created_at)}</td>
+      <td>${isSelf?'<small>Current user</small>':`<button class="admin-action" data-admin-delete-user="${escapeHtml(u.id)}">Delete</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+
+/* ===== Admin confirmation dialog ===== */
+let adminConfirmResolver=null;
+
+function showAdminConfirm({title,message,confirmLabel='Delete'}){
+  return new Promise(resolve=>{
+    adminConfirmResolver=resolve;
+    const modal=document.getElementById('adminConfirmModal');
+    if(!modal){resolve(false);return;}
+
+    document.getElementById('adminConfirmTitle').textContent=title;
+    document.getElementById('adminConfirmMessage').textContent=message;
+    document.getElementById('adminConfirmProceed').textContent=confirmLabel;
+
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    setTimeout(()=>document.getElementById('adminConfirmProceed')?.focus(),30);
+  });
+}
+
+function closeAdminConfirm(result=false){
+  const modal=document.getElementById('adminConfirmModal');
+  if(modal){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+  }
+  const resolver=adminConfirmResolver;
+  adminConfirmResolver=null;
+  if(resolver)resolver(result);
+}
+
+document.getElementById('adminConfirmClose')?.addEventListener('click',()=>closeAdminConfirm(false));
+document.getElementById('adminConfirmCancel')?.addEventListener('click',()=>closeAdminConfirm(false));
+document.getElementById('adminConfirmProceed')?.addEventListener('click',()=>closeAdminConfirm(true));
+document.getElementById('adminConfirmModal')?.addEventListener('click',e=>{
+  if(e.target.id==='adminConfirmModal')closeAdminConfirm(false);
+});
+document.addEventListener('keydown',e=>{
+  const modal=document.getElementById('adminConfirmModal');
+  if(!modal?.classList.contains('open'))return;
+  if(e.key==='Escape'){e.preventDefault();closeAdminConfirm(false);}
+  if(e.key==='Enter' && document.activeElement?.id==='adminConfirmProceed'){
+    e.preventDefault();closeAdminConfirm(true);
+  }
+});
+
+document.getElementById('adminRefresh')?.addEventListener('click',loadAdminData);
+
+document.getElementById('adminInviteBtn')?.addEventListener('click',async ()=>{
+  const email=document.getElementById('adminInviteEmail').value.trim().toLowerCase();
+  const name=document.getElementById('adminInviteName').value.trim();
+  const msg=document.getElementById('adminUserMessage');
+  if(!/^[^@\s]+@virginaustralia\.com$/i.test(email)){
+    msg.className='admin-message error';msg.style.display='block';msg.textContent='Please use a @virginaustralia.com address.';return;
+  }
+  const btn=document.getElementById('adminInviteBtn');btn.disabled=true;btn.textContent='Inviting…';
+  try{
+    await adminInvoke('invite_user',{email,name});
+    msg.className='admin-message ok';msg.style.display='block';msg.textContent='Invitation sent. The user will need to confirm their email before signing in.';
+    document.getElementById('adminInviteEmail').value='';
+    document.getElementById('adminInviteName').value='';
+    await loadAdminData();
+  }catch(error){
+    msg.className='admin-message error';msg.style.display='block';msg.textContent='Could not invite user: '+(error.message||error);
+  }finally{btn.disabled=false;btn.textContent='Invite User';}
+});
+
+document.getElementById('adminTicketsBody')?.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-admin-delete-issue]');if(!b)return;
+  if(!(await showAdminConfirm({
+  title:'Delete this ticket?',
+  message:'This permanently deletes the ticket, its comments, activity history and attachment records.',
+  confirmLabel:'Delete Ticket'
+}))) return;
+  try{await adminInvoke('delete_issue',{issueId:b.dataset.adminDeleteIssue});await loadAdminData();await loadIssues();}
+  catch(error){alert('Could not delete ticket: '+(error.message||error));}
+});
+
+document.getElementById('adminTestingRuns')?.addEventListener('click',async e=>{
+  const toggle=e.target.closest('[data-admin-toggle-run]');
+  if(toggle){toggle.closest('.admin-run')?.classList.toggle('open');return;}
+  const del=e.target.closest('[data-admin-delete-run]');
+  if(!del)return;
+  if(!(await showAdminConfirm({
+  title:'Delete this testing run?',
+  message:'This permanently deletes the saved testing run and every test result inside it.',
+  confirmLabel:'Delete Run'
+}))) return;
+  try{await adminInvoke('delete_test_run',{runId:del.dataset.adminDeleteRun});await loadAdminData();await loadTestingHistory();}
+  catch(error){alert('Could not delete testing run: '+(error.message||error));}
+});
+
+document.getElementById('adminUsersBody')?.addEventListener('change',async e=>{
+  const select=e.target.closest('[data-admin-role]');if(!select)return;
+  try{await adminInvoke('set_role',{userId:select.dataset.adminRole,role:select.value});await loadAdminData();}
+  catch(error){alert('Could not change role: '+(error.message||error));await loadAdminData();}
+});
+
+document.getElementById('adminUsersBody')?.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-admin-delete-user]');if(!b)return;
+  if(!(await showAdminConfirm({
+  title:'Delete this user?',
+  message:'This permanently removes the Voyager account. The user will no longer be able to sign in.',
+  confirmLabel:'Delete User'
+}))) return;
+  try{await adminInvoke('delete_user',{userId:b.dataset.adminDeleteUser});await loadAdminData();}
+  catch(error){alert('Could not delete user: '+(error.message||error));}
+});
+
+/* Re-run admin visibility after auth changes. */
+const oldUpdateAuthUI=updateAuthUI;
+updateAuthUI= function(){
+  oldUpdateAuthUI();
+  refreshAdminAccess().then(()=>{
+    if(currentIsAdmin && document.getElementById('view-admin')?.classList.contains('active')) loadAdminData();
+  });
+};
+
+/* Add Admin to the command palette only for admins. */
+const oldRenderCommandPalette=typeof renderCommandPalette==='function'?renderCommandPalette:null;
+if(oldRenderCommandPalette){
+  window.renderCommandPalette=function(filter=''){
+    const base=[
+      {label:'Log an Issue',desc:'Report a Voyager issue',icon:'!',view:'log'},
+      {label:'Test Device',desc:'Open device testing',icon:'✓',view:'testing'},
+      {label:'Find Ticket',desc:'Search your issues and tickets',icon:'⌕',view:'issues'},
+      {label:'Knowledge Base',desc:'Open support guidance',icon:'?',view:'knowledge'}
+    ];
+    if(currentIsAdmin) base.push({label:'Admin',desc:'Manage Voyager tickets, testing and users',icon:'⚙',view:'admin'});
+    const box=document.getElementById('commandPaletteList');if(!box)return;
+    const q=filter.trim().toLowerCase();
+    const items=base.filter(c=>(c.label+' '+c.desc).toLowerCase().includes(q));
+    commandPaletteIndex=Math.max(0,Math.min(commandPaletteIndex,Math.max(0,items.length-1)));
+    box.innerHTML=items.map((c,i)=>`<button type="button" class="command-item${i===commandPaletteIndex?' active':''}" data-command-view="${c.view}">
+      <div class="command-icon">${escapeHtml(c.icon)}</div><div><strong>${escapeHtml(c.label)}</strong><span>${escapeHtml(c.desc)}</span></div><span class="command-shortcut">${i+1}</span>
+    </button>`).join('');
+    box.querySelectorAll('[data-command-view]').forEach(b=>b.addEventListener('click',()=>{closeCommandPalette();document.querySelector(`.nav-item[data-view="${b.dataset.commandView}"]`)?.click()}));
+  };
+}
 
 /* ===== Dynamic runway cursor trail ===== */
 (function(){
