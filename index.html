@@ -2472,9 +2472,71 @@ body.dark .testing-leave-card{
   }
 }
 
+
+/* Feature Pack */
+.testing-celebration{position:fixed;inset:0;z-index:10010;pointer-events:none;display:grid;place-items:center;opacity:0;transition:.2s}.testing-celebration.show{opacity:1}.testing-celebration-card{display:flex;gap:12px;align-items:center;padding:15px 18px;border-radius:18px;background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 55px rgba(2,122,72,.22);backdrop-filter:blur(22px)}.testing-celebration-card>b{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:#027A48;color:#fff;font-size:22px}.testing-celebration-card strong,.testing-celebration-card span{display:block}.testing-celebration-card span{font-size:11px;color:var(--muted);margin-top:2px}
+.testing-device-input.duplicate-device{border-color:#CC4700!important;box-shadow:0 0 0 3px rgba(204,71,0,.10)!important}.duplicate-device-note{display:block;color:#CC4700;font-size:10px;font-weight:800;margin-top:4px}
+.quick-test-toggle{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:11px 13px;margin-bottom:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.35)}.quick-test-toggle strong,.quick-test-toggle span{display:block}.quick-test-toggle span{font-size:10px;color:var(--muted)}.switch-control input{position:absolute;opacity:0}.switch-track{display:block;position:relative;width:44px;height:25px;border-radius:99px;background:#CCCBCD}.switch-thumb{position:absolute;left:3px;top:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.18s}.switch-control input:checked+.switch-track{background:#027A48}.switch-control input:checked+.switch-track .switch-thumb{transform:translateX(19px)}
+.testing-history-analytics{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.34);padding:18px;margin:18px 0;backdrop-filter:blur(18px)}.testing-analytics-filters{display:flex;gap:8px}.testing-analytics-filters select{border:1px solid var(--line);border-radius:10px;padding:8px;background:rgba(255,255,255,.65)}.testing-analytics-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.testing-analytics-metrics>div{padding:13px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.46)}.testing-analytics-metrics span{font-size:9px;font-weight:900;color:var(--muted)}.testing-analytics-metrics strong{display:block;font-size:21px;margin:4px 0}.testing-analytics-metrics small{color:var(--muted);font-size:9px}.testing-trend{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px}.testing-trend-head{display:flex;justify-content:space-between;font-size:10px}.testing-trend-bars{height:70px;display:flex;align-items:flex-end;gap:5px;margin-top:10px}.testing-trend-bar{flex:1;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,#7a2cff,#175CD3);opacity:.8}
+.top-icon-btn{width:38px;height:38px;border:1px solid rgba(255,255,255,.65);border-radius:14px;background:rgba(255,255,255,.5);font-size:19px;cursor:pointer}.global-search-backdrop{position:fixed;inset:0;z-index:10020;display:none;align-items:flex-start;justify-content:center;padding:10vh 18px;background:rgba(20,14,28,.34);backdrop-filter:blur(12px)}.global-search-backdrop.open{display:flex}.global-search-card{width:min(680px,96vw);max-height:76vh;overflow:hidden;border-radius:24px;background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.9);box-shadow:0 30px 90px rgba(32,24,45,.25);backdrop-filter:blur(28px)}.global-search-head{display:flex;justify-content:space-between;padding:20px 20px 10px}.global-search-head small{color:#7a2cff;font-weight:900}.global-search-head h2{margin:3px 0}.global-search-input-wrap{display:flex;gap:8px;align-items:center;margin:0 20px 12px;padding:11px;border:1px solid var(--line);border-radius:14px}.global-search-input-wrap input{flex:1;border:0;outline:0;background:transparent}.global-search-results{max-height:52vh;overflow:auto;padding:0 12px 14px}.global-search-empty{padding:28px;text-align:center;color:var(--muted)}.global-search-result{width:100%;display:flex;justify-content:space-between;text-align:left;border:0;background:transparent;padding:11px;border-radius:13px;cursor:pointer}.global-search-result:hover{background:rgba(122,44,255,.07)}.global-search-result strong,.global-search-result span{display:block}.global-search-result span{font-size:10px;color:var(--muted)}.global-search-type{color:#7a2cff!important;font-size:9px!important;font-weight:900}
+.offline-banner{position:fixed;left:50%;top:12px;z-index:10030;transform:translate(-50%,-140%);display:flex;gap:8px;padding:10px 14px;border-radius:14px;background:rgba(40,42,44,.94);color:#fff;box-shadow:0 14px 35px rgba(0,0,0,.22);font-size:11px;transition:.25s}.offline-banner.show{transform:translate(-50%,0)}.offline-banner b{color:#ffd19a}
+@media(max-width:800px){.testing-analytics-metrics{grid-template-columns:1fr 1fr}}@media(max-width:600px){.testing-analytics-metrics{grid-template-columns:1fr}}
+
+
+/* ===== Quick Test switch fix ===== */
+.quick-test-toggle .switch-control{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:52px;
+  height:32px;
+  flex:0 0 auto;
+}
+.quick-test-toggle .switch-control input{
+  position:absolute;
+  opacity:0;
+  width:1px;
+  height:1px;
+}
+.quick-test-toggle .switch-track{
+  position:relative;
+  display:block;
+  width:52px;
+  height:32px;
+  border-radius:999px;
+  background:#CCCBCD;
+  border:1px solid rgba(65,64,66,.14);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.08);
+  transition:background .18s ease,box-shadow .18s ease;
+  cursor:pointer;
+}
+.quick-test-toggle .switch-thumb{
+  position:absolute;
+  left:3px;
+  top:3px;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.18),0 1px 2px rgba(0,0,0,.08);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1);
+}
+.quick-test-toggle .switch-control input:checked + .switch-track{
+  background:#027A48 !important;
+  border-color:#027A48 !important;
+  box-shadow:0 4px 12px rgba(2,122,72,.20);
+}
+.quick-test-toggle .switch-control input:checked + .switch-track .switch-thumb{
+  transform:translateX(20px) !important;
+}
+.quick-test-toggle .switch-control:focus-within .switch-track{
+  box-shadow:0 0 0 3px rgba(23,92,211,.18);
+}
+
 </style>
 </head>
-<body>
+<body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
 <div class="app">
 <aside>
@@ -2784,7 +2846,15 @@ body.dark .testing-leave-card{
     <div class="panel testing-panel">
       <div class="section-title">🧪 Which system are you testing?</div>
       
-    <div class="testing-run-meta">
+    
+<div class="quick-test-toggle">
+ <div><strong>Quick Test</strong><span>Press Enter after a Device ID to add and focus the next device.</span></div>
+ <label class="switch-control" title="Toggle Quick Test">
+  <input id="quickTestMode" type="checkbox" aria-label="Quick Test mode">
+  <span class="switch-track"><span class="switch-thumb"></span></span>
+</label>
+</div>
+<div class="testing-run-meta">
       <div class="field">
         <label for="testingPort">Port <span>*</span></label>
         <select class="select" id="testingPort" required>
@@ -2857,7 +2927,21 @@ body.dark .testing-leave-card{
       </div>
     </div>
   
-    <div class="testing-history-card">
+    
+<div class="testing-history-analytics" id="testingHistoryAnalytics">
+ <div class="analytics-card-head">
+  <div><h3>Testing Analytics</h3><p>Performance across saved Supabase testing runs.</p></div>
+  <div class="testing-analytics-filters"><select id="testingAnalyticsPort"><option value="">All ports</option></select><select id="testingAnalyticsSystem"><option value="">All systems</option><option>Bag Tagger</option><option>Auto Bag Drop</option></select></div>
+ </div>
+ <div class="testing-analytics-metrics">
+  <div><span>RUNS</span><strong id="taRuns">0</strong><small>Saved runs</small></div>
+  <div><span>DEVICES</span><strong id="taDevices">0</strong><small>Unique devices</small></div>
+  <div><span>PASS RATE</span><strong id="taPassRate">—</strong><small>Completed tests</small></div>
+  <div><span>TOP FAILURE</span><strong id="taTopFailure">—</strong><small id="taTopFailureCount">No failures</small></div>
+ </div>
+ <div class="testing-trend"><div class="testing-trend-head"><strong>Recent completion trend</strong><span id="taTrendLabel">No data</span></div><div id="testingTrendBars" class="testing-trend-bars"></div></div>
+</div>
+<div class="testing-history-card">
       <div class="analytics-card-head">
         <div><h3>Testing History</h3><p>Saved test runs from Supabase.</p></div>
       </div>
@@ -2993,6 +3077,16 @@ document.querySelectorAll('[data-testing-system]').forEach(card=>card.addEventLi
   </div>
 </div>
 
+
+<div id="testingCelebration" class="testing-celebration" aria-hidden="true">
+ <div class="testing-celebration-card"><b>✓</b><div><strong>All tests passed</strong><span>Beautiful. This device is looking healthy.</span></div></div>
+</div>
+
+<div id="globalSearchModal" class="global-search-backdrop" aria-hidden="true">
+ <div class="global-search-card"><div class="global-search-head"><div><small>VOYAGER SEARCH</small><h2>Find anything</h2></div><button id="globalSearchClose" class="auth-close" type="button">×</button></div>
+ <div class="global-search-input-wrap"><span>⌕</span><input id="globalSearchInput" type="search" placeholder="Search ticket, device, PNR, port, issue or knowledge…"><kbd>Esc</kbd></div>
+ <div id="globalSearchResults" class="global-search-results"><div class="global-search-empty">Start typing to search Voyager.</div></div></div>
+</div>
 <div id="testingLeaveModal" class="testing-leave-modal" aria-hidden="true">
   <div class="testing-leave-card" role="dialog" aria-modal="true" aria-labelledby="testingLeaveTitle">
     <button class="testing-leave-close" id="testingLeaveClose" type="button" aria-label="Close">×</button>
@@ -3264,20 +3358,9 @@ function updateAuthUI(){
 
 
 function updateHomeWelcome(){
-  const title=document.getElementById('homeWelcomeTitle');
-  if(!title) return;
-
-  if(isAuthenticated()){
-    const email=currentUser?.email || '';
-    const local=email.split('@')[0] || '';
-    const first=(local.split('.')[0] || '').trim();
-    const firstName=first
-      ? first.charAt(0).toUpperCase()+first.slice(1).toLowerCase()
-      : 'User';
-    title.textContent=`Welcome ${firstName}`;
-  }else{
-    title.textContent='Welcome User';
-  }
+ const title=document.getElementById('homeWelcomeTitle');if(!title)return;
+ const h=new Date().getHours(),g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+ if(isAuthenticated()){const local=(currentUser?.email||'').split('@')[0],f=(local.split('.')[0]||'').trim(),n=f?f.charAt(0).toUpperCase()+f.slice(1).toLowerCase():'User';title.textContent=`${g}, ${n}`}else title.textContent=g;
 }
 
 async function initAuth(){
@@ -4986,6 +5069,7 @@ if(rememberMeInput){
 initAuth().then(()=>{
   if(isAuthenticated()){
     loadTestingHistory();
+    if(typeof loadTestingAnalytics==='function') loadTestingAnalytics();
     attachDeviceAutocomplete();
     updatePersonalDashboard();
   }
@@ -5081,6 +5165,102 @@ requestAnimationFrame(()=>{
 });
 
 
+
+/* ===== Feature Pack ===== */
+let testingCelebrated='';
+function featureTestingRefresh(){
+ const inputs=[...document.querySelectorAll('.testing-device-input')],counts={};
+ inputs.forEach(i=>{const k=i.value.trim().toUpperCase();if(k)counts[k]=(counts[k]||0)+1});
+ inputs.forEach(i=>{const k=i.value.trim().toUpperCase(),dup=k&&counts[k]>1;i.classList.toggle('duplicate-device',!!dup);let n=i.closest('.testing-device-cell')?.querySelector('.duplicate-device-note');if(dup&&!n){n=document.createElement('span');n.className='duplicate-device-note';n.textContent='Duplicate Device ID';i.closest('.testing-device-cell')?.appendChild(n)}else if(!dup&&n)n.remove()});
+ const cases=testingCases[testingSystem]||[],rows=testingRows.filter(r=>String(r.device||'').trim());
+ const all=rows.length&&cases.length&&rows.every(r=>cases.every(c=>r.checks?.[c]==='pass'));
+ const sig=testingSystem+'|'+rows.map(r=>r.device).join('|');
+ if(all&&sig!==testingCelebrated){testingCelebrated=sig;const e=document.getElementById('testingCelebration');e?.classList.add('show');setTimeout(()=>e?.classList.remove('show'),2200)}
+ if(!all&&testingCelebrated===sig)testingCelebrated='';
+}
+['input','change','click'].forEach(ev=>document.getElementById('testingTableBody')?.addEventListener(ev,()=>setTimeout(featureTestingRefresh,0)));
+document.getElementById('testingTableBody')?.addEventListener('keydown',e=>{
+  if(e.key!=='Enter' || !e.target.matches('.testing-device-input')) return;
+  if(!document.getElementById('quickTestMode')?.checked) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const input=e.target;
+  const inputs=[...document.querySelectorAll('.testing-device-input')];
+  const index=inputs.indexOf(input);
+  const currentValue=input.value.trim();
+
+  // Don't create a blank row if the user presses Enter without a Device ID.
+  if(!currentValue) return;
+
+  // Move to the next existing device row when there is one.
+  if(index<inputs.length-1){
+    requestAnimationFrame(()=>{
+      const next=document.querySelectorAll('.testing-device-input')[index+1];
+      next?.focus();
+      next?.select();
+    });
+    return;
+  }
+
+  // We're at the last row: add a real Testing row directly.
+  // The Add Device button is deliberately not "clicked" because Quick Test
+  // should work even if the button's UI state/ID changes.
+  if(typeof testingRows!=='undefined'){
+    testingRows.push({id:++testingRowId,device:'',checks:{}});
+    if(typeof renderTestingTable==='function') renderTestingTable();
+    if(typeof attachDeviceAutocomplete==='function') attachDeviceAutocomplete();
+
+    requestAnimationFrame(()=>{
+      const all=[...document.querySelectorAll('.testing-device-input')];
+      const next=all[all.length-1];
+      next?.focus();
+      next?.select();
+    });
+  }
+});
+
+let taRuns=[],taResults=[];
+async function loadTestingAnalytics(){
+ if(!isAuthenticated())return;
+ try{
+  const [a,b]=await Promise.all([authClient.from('testing_runs').select('id,created_at,port,system,device_count,total_tests,completed_tests').order('created_at',{ascending:false}).limit(250),authClient.from('testing_results').select('run_id,device_id,test_case,result').limit(10000)]);
+  if(a.error)throw a.error;if(b.error)throw b.error;taRuns=a.data||[];taResults=b.data||[];
+  const ps=[...new Set(taRuns.map(r=>r.port).filter(Boolean))].sort(),s=document.getElementById('testingAnalyticsPort'),v=s?.value||'';
+  if(s){s.innerHTML='<option value="">All ports</option>'+ps.map(p=>`<option>${escapeHtml(p)}</option>`).join('');s.value=ps.includes(v)?v:''} renderTestingAnalytics();
+ }catch(e){console.error('Testing analytics',e)}
+}
+function renderTestingAnalytics(){
+ const p=document.getElementById('testingAnalyticsPort')?.value||'',s=document.getElementById('testingAnalyticsSystem')?.value||'',runs=taRuns.filter(r=>(!p||r.port===p)&&(!s||r.system===s)),ids=new Set(runs.map(r=>r.id)),res=taResults.filter(r=>ids.has(r.run_id)),done=res.filter(r=>['pass','fail'].includes(r.result)),pass=done.filter(r=>r.result==='pass').length,fail=res.filter(r=>r.result==='fail'),dev=new Set(res.map(r=>r.device_id).filter(Boolean)),fc={};
+ fail.forEach(r=>fc[r.test_case]=(fc[r.test_case]||0)+1);const top=Object.entries(fc).sort((a,b)=>b[1]-a[1])[0],set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+ set('taRuns',runs.length);set('taDevices',dev.size);set('taPassRate',done.length?Math.round(pass/done.length*100)+'%':'—');set('taTopFailure',top?top[0]:'—');set('taTopFailureCount',top?`${top[1]} failed result${top[1]===1?'':'s'}`:'No failures');
+ const trend=[...runs].reverse().slice(-12),box=document.getElementById('testingTrendBars');if(box)box.innerHTML=trend.map(r=>{const q=+r.total_tests?Math.round(+r.completed_tests/+r.total_tests*100):0;return `<div class="testing-trend-bar" style="height:${Math.max(4,q)}%" title="${q}%"></div>`}).join('');set('taTrendLabel',trend.length?`${trend.length} recent runs`:'No data');
+}
+document.getElementById('testingAnalyticsPort')?.addEventListener('change',renderTestingAnalytics);document.getElementById('testingAnalyticsSystem')?.addEventListener('change',renderTestingAnalytics);
+
+function openGlobalSearch(){const m=document.getElementById('globalSearchModal');m?.classList.add('open');m?.setAttribute('aria-hidden','false');setTimeout(()=>document.getElementById('globalSearchInput')?.focus(),30)}
+function closeGlobalSearch(){const m=document.getElementById('globalSearchModal');m?.classList.remove('open');m?.setAttribute('aria-hidden','true')}
+document.getElementById('globalSearchBtn')?.addEventListener('click',openGlobalSearch);document.getElementById('globalSearchClose')?.addEventListener('click',closeGlobalSearch);document.getElementById('globalSearchModal')?.addEventListener('click',e=>{if(e.target.id==='globalSearchModal')closeGlobalSearch()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGlobalSearch()});
+document.getElementById('globalSearchInput')?.addEventListener('input',e=>{const box=document.getElementById('globalSearchResults'),q=e.target.value.trim().toLowerCase();if(!q){box.innerHTML='<div class="global-search-empty">Start typing to search Voyager.</div>';return}const rr=[];if(isAuthenticated()){issues.forEach(i=>{const h=[i.issue_id,i.device_id,i.pnr,i.port,i.raised_by,i.category,i.description,i.system,i.status].filter(Boolean).join(' ').toLowerCase();if(h.includes(q))rr.push({t:'Issue',a:i.issue_id||i.device_id||'Issue',b:[i.port,i.device_id,i.status].filter(Boolean).join(' • '),v:'issues'})});knownDeviceIds().forEach(d=>{if(d.toLowerCase().includes(q))rr.push({t:'Device',a:d,b:'Known Voyager device',v:'testing'})})}document.querySelectorAll('#view-knowledge h1,#view-knowledge h2,#view-knowledge h3,#view-knowledge p,#view-knowledge li').forEach(x=>{const t=(x.textContent||'').trim();if(t&&t.toLowerCase().includes(q))rr.push({t:'Knowledge',a:t.slice(0,90),b:'Knowledge Base',v:'knowledge'})});const seen=new Set(),u=rr.filter(r=>{const k=r.t+r.a;if(seen.has(k))return false;seen.add(k);return true}).slice(0,30);box.innerHTML=u.length?'':'<div class="global-search-empty">No Voyager results found.</div>';u.forEach(r=>{const b=document.createElement('button');b.className='global-search-result';b.innerHTML=`<div><span class="global-search-type">${escapeHtml(r.t)}</span><strong>${escapeHtml(r.a)}</strong><span>${escapeHtml(r.b)}</span></div><b>›</b>`;b.onclick=()=>{closeGlobalSearch();document.querySelector(`.nav-item[data-view="${r.v}"]`)?.click()};box.appendChild(b)})});
+
+function updateOnlineState(){const off=!navigator.onLine;document.getElementById('offlineBanner')?.classList.toggle('show',off);document.querySelectorAll('#submitIssue,#saveTestingRun,#testingRaiseForm button[type="submit"]').forEach(b=>{if(b){b.disabled=off;b.title=off?'Voyager is offline. Reconnect before submitting.':''}})}
+window.addEventListener('online',updateOnlineState);window.addEventListener('offline',updateOnlineState);updateOnlineState();
+
+
+/* ===== Quick Test switch behaviour ===== */
+const quickTestMode=document.getElementById('quickTestMode');
+if(quickTestMode){
+  quickTestMode.checked=localStorage.getItem('voyagerQuickTest')==='1';
+  quickTestMode.addEventListener('change',()=>{
+    localStorage.setItem('voyagerQuickTest',quickTestMode.checked?'1':'0');
+    const hint=document.querySelector('.quick-test-toggle span + span');
+    if(hint) hint.textContent=quickTestMode.checked
+      ? 'Quick Test is on — press Enter after a Device ID.'
+      : 'Press Enter after a Device ID to add and focus the next device.';
+  });
+}
+
 /* ===== Dynamic runway cursor trail ===== */
 (function(){
   if(!window.matchMedia('(pointer:fine)').matches) return;
@@ -5092,8 +5272,8 @@ requestAnimationFrame(()=>{
 
   const ctx=canvas.getContext('2d');
   const points=[];
-  const maxAge=520;
-  const maxDistance=210;
+  const maxAge=360;
+  const maxDistance=150;
   let lastX=0,lastY=0,havePoint=false,lastMove=0;
 
   function resize(){
@@ -5119,7 +5299,7 @@ requestAnimationFrame(()=>{
     const dist=Math.hypot(dx,dy);
     if(dist<3) return;
 
-    const steps=Math.max(1,Math.ceil(dist/7));
+    const steps=Math.max(1,Math.ceil(dist/5));
     for(let i=1;i<=steps;i++){
       const p=i/steps;
       points.push({x:lastX+dx*p,y:lastY+dy*p,t:now-(steps-i)*5});
@@ -5346,4 +5526,4 @@ requestAnimationFrame(()=>{
   .testing-system-card h3{font-size:14px !important;}
   .testing-system-card p{font-size:11px !important;}
 }
-</style>
+</style><button id="globalSearchBtn" class="top-icon-btn" type="button" title="Search Voyager">⌕</button>
