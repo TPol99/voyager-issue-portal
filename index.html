@@ -2534,6 +2534,233 @@ body.dark .testing-leave-card{
   box-shadow:0 0 0 3px rgba(23,92,211,.18);
 }
 
+
+/* ===== Workflow, attachments and iOS polish ===== */
+.testing-row-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.testing-row-action{border:1px solid var(--line);background:rgba(255,255,255,.56);color:var(--ink);border-radius:9px;padding:5px 8px;font-size:10px;font-weight:800;cursor:pointer;transition:.16s}
+.testing-row-action:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(40,35,55,.08)}
+.testing-pass-all{color:#027A48;border-color:rgba(2,122,72,.20)}
+.testing-retest{color:#7a2cff;border-color:rgba(122,44,255,.20)}
+.testing-complete .cursor-runway-canvas{filter:saturate(1.18)}
+.ticket-status-actions{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.timeline-item{padding:11px 12px;border-left:3px solid #7a2cff;margin:0 0 9px;border-radius:0 11px 11px 0;background:rgba(122,44,255,.05)}
+.timeline-item strong{display:block}.timeline-item div{font-size:11px;color:var(--muted);margin-top:3px}.timeline-item small{display:block;font-size:9px;color:var(--muted);margin-top:6px}
+.attachment-field small,.attachment-section p{color:var(--muted);font-size:10px;font-weight:600}
+.attachment-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.attachment-section-head{margin-bottom:10px}.attachment-section-head h3{margin:0 0 3px}
+.attachment-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.attachment-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.44);font-size:11px}
+.attachment-item small{color:var(--muted)}.attachment-item a{font-weight:800;color:#175CD3}
+input[type=file]{max-width:100%;border:1px solid var(--line);border-radius:10px;padding:7px;background:rgba(255,255,255,.5)}
+.ticket-modal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+@media(max-width:900px){
+  .testing-save-row{position:sticky;bottom:10px;z-index:20;background:rgba(255,255,255,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:16px;padding:10px;margin-left:-2px;margin-right:-2px;box-shadow:0 10px 30px rgba(32,24,45,.10)}
+  .testing-system-grid{overflow-x:auto;scroll-snap-type:x proximity;display:flex !important;gap:12px;padding-bottom:5px}
+  .testing-system-card{min-width:min(82vw,420px);scroll-snap-align:start}
+}
+@media(max-width:640px){
+  .ticket-modal-backdrop{align-items:flex-end;padding:0}
+  .ticket-modal{width:100%;max-width:none;max-height:92vh;border-radius:24px 24px 0 0;padding:20px;animation:ticketSheetIn .22s ease}
+  @keyframes ticketSheetIn{from{transform:translateY(18px);opacity:.6}to{transform:none;opacity:1}}
+  .ticket-status-actions{flex-direction:column}.ticket-status-actions .btn{width:100%}
+  .testing-row-actions{gap:5px}.testing-row-action{padding:6px 8px}
+}
+
+
+/* ===== Refined Testing row actions ===== */
+.testing-device-cell{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  align-items:stretch !important;
+}
+.testing-device-input-row{
+  width:100%;
+}
+.testing-row-actions{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  gap:7px !important;
+  margin-top:0 !important;
+  flex-wrap:wrap !important;
+}
+.testing-row-action{
+  min-height:30px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:6px 10px !important;
+  border-radius:9px !important;
+  font-size:10px !important;
+  line-height:1 !important;
+  white-space:nowrap;
+  box-shadow:none !important;
+}
+.testing-pass-all{
+  color:#027A48 !important;
+  background:rgba(2,122,72,.055) !important;
+  border-color:rgba(2,122,72,.22) !important;
+}
+.testing-pass-all:hover{
+  background:rgba(2,122,72,.10) !important;
+}
+.testing-failure-strip{
+  width:100%;
+  min-height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 7px 6px 10px;
+  border:1px solid rgba(195,9,34,.18);
+  border-radius:10px;
+  background:rgba(195,9,34,.045);
+}
+.testing-failure-summary{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  color:#C30922;
+  font-size:10px;
+}
+.testing-failure-summary span{
+  font-size:11px;
+}
+.testing-failure-summary strong{
+  white-space:nowrap;
+}
+.testing-failure-raise{
+  flex:0 0 auto;
+  border:1px solid rgba(195,9,34,.22);
+  border-radius:8px;
+  background:rgba(255,255,255,.70);
+  color:#C30922;
+  font-size:10px;
+  font-weight:900;
+  padding:6px 9px;
+  cursor:pointer;
+  transition:.16s ease;
+}
+.testing-failure-raise:hover{
+  background:#C30922;
+  border-color:#C30922;
+  color:#fff;
+  transform:translateY(-1px);
+}
+body.dark .testing-failure-strip{
+  background:rgba(195,9,34,.09);
+  border-color:rgba(255,92,110,.18);
+}
+body.dark .testing-failure-raise{
+  background:rgba(255,255,255,.06);
+}
+@media(max-width:700px){
+  .testing-row-actions{
+    flex-wrap:nowrap !important;
+  }
+  .testing-row-action{
+    flex:1 1 0;
+  }
+  .testing-failure-strip{
+    align-items:center;
+  }
+}
+
+
+/* ===== Command Palette ===== */
+.command-palette-backdrop{
+  position:fixed;inset:0;z-index:10040;display:none;
+  align-items:flex-start;justify-content:center;padding:10vh 18px;
+  background:rgba(20,14,28,.34);
+  backdrop-filter:blur(14px) saturate(125%);
+  -webkit-backdrop-filter:blur(14px) saturate(125%);
+}
+.command-palette-backdrop.open{display:flex}
+.command-palette-card{
+  width:min(620px,96vw);overflow:hidden;border-radius:24px;
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 30px 90px rgba(32,24,45,.26);
+  backdrop-filter:blur(28px) saturate(150%);
+  -webkit-backdrop-filter:blur(28px) saturate(150%);
+}
+.command-palette-head{
+  display:flex;justify-content:space-between;gap:14px;padding:20px 20px 10px;
+}
+.command-palette-kicker{
+  font-size:10px;font-weight:900;letter-spacing:.08em;color:#7a2cff;
+}
+.command-palette-head h2{margin:3px 0 0;font-size:20px}
+.command-palette-head kbd{
+  border:1px solid var(--line);border-radius:7px;padding:4px 7px;
+  color:var(--muted);font-size:10px;
+}
+.command-palette-input-wrap{
+  display:flex;align-items:center;gap:9px;margin:0 20px 12px;padding:11px 13px;
+  border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.72);
+}
+.command-palette-input-wrap span{color:#7a2cff;font-weight:900}
+.command-palette-input-wrap input{
+  flex:1;border:0;outline:0;background:transparent;color:var(--ink);min-width:0;
+}
+.command-palette-input-wrap kbd{
+  font-size:9px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:3px 5px;
+}
+.command-palette-list{padding:0 10px 12px;max-height:52vh;overflow:auto}
+.command-item{
+  width:100%;display:flex;align-items:center;gap:12px;padding:12px 11px;
+  border:0;border-radius:13px;background:transparent;color:var(--ink);text-align:left;cursor:pointer;
+}
+.command-item:hover,.command-item.active{background:rgba(122,44,255,.08)}
+.command-icon{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(122,44,255,.08);color:#7a2cff;font-weight:900;
+}
+.command-item strong,.command-item span{display:block}
+.command-item span{color:var(--muted);font-size:10px;margin-top:2px}
+.command-shortcut{
+  margin-left:auto;font-size:10px;color:var(--muted);
+  border:1px solid var(--line);border-radius:7px;padding:3px 6px;
+}
+body.dark .command-palette-card{
+  background:rgba(30,24,40,.90);border-color:rgba(255,255,255,.10);
+}
+@media(max-width:600px){
+  .command-palette-backdrop{padding:5vh 10px}
+  .command-palette-card{width:100%}
+}
+
+
+/* Command palette close button */
+.command-palette-close{
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--line);
+  border-radius:50%;
+  background:rgba(255,255,255,.54);
+  color:var(--ink);
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  transition:.16s ease;
+}
+.command-palette-close:hover{
+  background:rgba(255,255,255,.78);
+  transform:scale(1.03);
+}
+.command-palette-close:active{
+  transform:scale(.96);
+}
+body.dark .command-palette-close{
+  background:rgba(24,18,33,.56);
+}
+
 </style>
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
@@ -2702,7 +2929,12 @@ body.dark .testing-leave-card{
             <div class="field full"><label>Issue description <span>*</span></label><textarea class="textarea" id="description" maxlength="1000" placeholder="Describe what happened, including any error messages, steps taken and impact." required></textarea><div class="hint"><span id="count">0</span>/1000</div></div>
             <div class="field full"><label>Urgency <span>*</span></label><div class="urgency" id="urgency"><button type="button" data-u="Low"><span class="u-dot u-low"></span>Low<small>Minor issue</small></button><button type="button" data-u="Medium"><span class="u-dot u-med"></span>Medium<small>Affects some</small></button><button type="button" data-u="High"><span class="u-dot u-high"></span>High<small>Affects many</small></button><button type="button" data-u="Critical"><span class="u-dot u-critical"></span>Critical<small>System down</small></button></div></div>
           </div>
-          <div class="actions"><button class="btn" type="button" id="clear">Clear Form</button><button class="btn primary" type="submit" id="submitIssueBtn">Submit Issue ✈</button></div>
+          <div class="field full attachment-field">
+  <label for="issueAttachments">Attachments <small>(optional; staff sign-in required)</small></label>
+  <input id="issueAttachments" type="file" multiple accept="image/*,.pdf,.txt,.log,.csv">
+  <div id="issueAttachmentList" class="attachment-list"></div>
+</div>
+<div class="actions"><button class="btn" type="button" id="clear">Clear Form</button><button class="btn primary" type="submit" id="submitIssueBtn">Submit Issue ✈</button></div>
           <div id="submit-status" style="display:none;margin-top:14px;padding:13px 15px;border-radius:13px;font-size:13px;font-weight:700;line-height:1.5"></div>
         </form>
       </div>
@@ -3008,17 +3240,25 @@ body.dark .testing-leave-card{
 
 
 
-    <div class="ticket-status-row">
+    <div class="attachment-section">
+  <div class="attachment-section-head"><div><h3>Attachments</h3><p>Photos, screenshots and log files for this ticket.</p></div></div>
+  <input id="ticketAttachmentInput" type="file" multiple accept="image/*,.pdf,.txt,.log,.csv">
+  <div id="ticketAttachmentList" class="attachment-list"></div>
+  <div id="ticketAttachments" class="attachment-list"><div class="comment-empty">No attachments loaded.</div></div>
+</div>
+<div class="ticket-status-row">
       <div>
         <label for="ticketStatus" style="display:block;font-weight:800;margin-bottom:8px">Status</label>
         <select id="ticketStatus" class="select">
           <option value="New">New</option>
+          <option value="Assigned">Assigned</option>
           <option value="Under Investigation">Under Investigation</option>
           <option value="Test">Test</option>
+          <option value="Resolved">Resolved</option>
           <option value="Closed">Closed</option>
         </select>
       </div>
-      <button id="saveTicketStatus" class="btn primary" type="button">Save Status</button>
+      <div class="ticket-status-actions"><button id="reopenTicketBtn" class="btn" type="button" style="display:none">↻ Reopen Ticket</button><button id="saveTicketStatus" class="btn primary" type="button">Save Status</button></div>
     </div>
 
     <div id="resolutionWrap" class="resolution-wrap">
@@ -3064,7 +3304,8 @@ document.querySelectorAll('[data-testing-system]').forEach(card=>card.addEventLi
         <div><label for="raiseBy">Raised By</label><input id="raiseBy" class="input" readonly></div>
         <div><label for="raiseCategory">Issue Category <span>*</span></label><select id="raiseCategory" class="select" required></select></div>
         <div class="full"><label for="raiseDescription">Issue Description <span>*</span></label><textarea id="raiseDescription" class="textarea" maxlength="1000" required></textarea></div>
-        <div class="full"><label>Urgency <span>*</span></label><div class="urgency" id="raiseUrgency">
+        <div class="full attachment-field"><label for="raiseAttachments">Attachments <small>(optional)</small></label><input id="raiseAttachments" type="file" multiple accept="image/*,.pdf,.txt,.log,.csv"><div id="raiseAttachmentList" class="attachment-list"></div></div>
+<div class="full"><label>Urgency <span>*</span></label><div class="urgency" id="raiseUrgency">
           <button type="button" data-u="Low"><span class="u-dot u-low"></span>Low<small>Minor issue</small></button>
           <button type="button" data-u="Medium" class="selected"><span class="u-dot u-med"></span>Medium<small>Affects some</small></button>
           <button type="button" data-u="High"><span class="u-dot u-high"></span>High<small>Affects many</small></button>
@@ -3082,6 +3323,24 @@ document.querySelectorAll('[data-testing-system]').forEach(card=>card.addEventLi
  <div class="testing-celebration-card"><b>✓</b><div><strong>All tests passed</strong><span>Beautiful. This device is looking healthy.</span></div></div>
 </div>
 
+
+<div id="commandPalette" class="command-palette-backdrop" aria-hidden="true">
+  <div class="command-palette-card" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
+    <div class="command-palette-head">
+      <div>
+        <div class="command-palette-kicker">VOYAGER COMMAND</div>
+        <h2 id="commandPaletteTitle">What do you want to do?</h2>
+      </div>
+      <button id="commandPaletteClose" class="command-palette-close" type="button" aria-label="Close command palette">×</button>
+    </div>
+    <div class="command-palette-input-wrap">
+      <span>⌘</span>
+      <input id="commandPaletteInput" type="search" autocomplete="off" placeholder="Search commands…">
+      <kbd>Ctrl K</kbd>
+    </div>
+    <div id="commandPaletteList" class="command-palette-list"></div>
+  </div>
+</div>
 <div id="globalSearchModal" class="global-search-backdrop" aria-hidden="true">
  <div class="global-search-card"><div class="global-search-head"><div><small>VOYAGER SEARCH</small><h2>Find anything</h2></div><button id="globalSearchClose" class="auth-close" type="button">×</button></div>
  <div class="global-search-input-wrap"><span>⌕</span><input id="globalSearchInput" type="search" placeholder="Search ticket, device, PNR, port, issue or knowledge…"><kbd>Esc</kbd></div>
@@ -3636,6 +3895,7 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
   const issueCategory = document.getElementById('category').value;
   const description = document.getElementById('description').value.trim();
   const raisedBy = document.getElementById('raisedBy').value.trim();
+  const issueAttachmentFiles=Array.from(document.getElementById('issueAttachments')?.files||[]);
 
   // Clear, human-readable validation instead of a button that appears to do nothing.
   if(!airportValue){
@@ -3725,8 +3985,13 @@ document.getElementById('issue-form').addEventListener('submit', async e => {
       'success'
     );
 
+    if(isAuthenticated() && created[0]?.id && issueAttachmentFiles.length && typeof uploadIssueAttachments==='function'){
+      const uploaded=await uploadIssueAttachments(created[0].id,issueAttachmentFiles);
+      if(uploaded.errors?.length) console.warn('Some attachments failed:',uploaded.errors);
+    }
     // Reset only after confirmed database success.
     document.getElementById('issue-form').reset();
+    if(document.getElementById('issueAttachmentList')) document.getElementById('issueAttachmentList').innerHTML='';
     selectedUrgency = '';
     document.querySelectorAll('#urgency button').forEach(x=>x.classList.remove('selected'));
     document.getElementById('count').textContent='0';
@@ -3958,14 +4223,29 @@ function renderTestingHistory(runs=[]){
 }
 
 
-function populateTimeline(issue){
+async function populateTimeline(issue){
   const box=document.getElementById('ticketTimeline');if(!box)return;
-  const events=[];
-  if(issue.created_at)events.push({date:issue.created_at,title:'Ticket raised',detail:`Raised by ${issue.raised_by||'Unknown'}`});
-  if(issue.status && issue.status!=='New')events.push({date:issue.updated_at||issue.created_at,title:`Status: ${issue.status}`,detail:'Current ticket status'});
-  if(issue.resolved_at)events.push({date:issue.resolved_at,title:'Ticket closed',detail:issue.resolution_notes||'Resolution recorded'});
-  events.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  box.innerHTML=events.map(e=>`<div class="timeline-item"><strong>${escapeHtml(e.title)}</strong>${escapeHtml(e.detail)}<br><small>${e.date?new Date(e.date).toLocaleString('en-AU'):''}</small></div>`).join('')||'<div class="comment-empty">No activity yet.</div>';
+  box.innerHTML='<div class="comment-empty">Loading activity…</div>';
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/issue_activity?issue_id=eq.${encodeURIComponent(issue.id)}&select=*&order=created_at.asc`,{headers:apiHeaders()});
+    const text=await response.text();
+    if(!response.ok) throw new Error(text||`HTTP ${response.status}`);
+    const events=text?JSON.parse(text):[];
+    if(!events.length) throw new Error('No activity recorded');
+    box.innerHTML=events.map(e=>{
+      let title=e.action||'Activity';
+      if(e.from_status && e.to_status) title=`${e.from_status} → ${e.to_status}`;
+      const detail=e.detail||e.actor_name||'';
+      return `<div class="timeline-item"><strong>${escapeHtml(title)}</strong>${detail?`<div>${escapeHtml(detail)}</div>`:''}<small>${e.created_at?new Date(e.created_at).toLocaleString('en-AU'):''}</small></div>`;
+    }).join('');
+  }catch(_){
+    const events=[];
+    if(issue.created_at) events.push({date:issue.created_at,title:'Ticket raised',detail:`Raised by ${issue.raised_by||'Unknown'}`});
+    if(issue.status&&issue.status!=='New') events.push({date:issue.updated_at||issue.created_at,title:`Status: ${issue.status}`,detail:'Current ticket status'});
+    if(issue.resolved_at) events.push({date:issue.resolved_at,title:'Resolved / closed',detail:issue.resolution_notes||'Resolution recorded'});
+    events.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    box.innerHTML=events.map(e=>`<div class="timeline-item"><strong>${escapeHtml(e.title)}</strong><div>${escapeHtml(e.detail)}</div><small>${e.date?new Date(e.date).toLocaleString('en-AU'):''}</small></div>`).join('')||'<div class="comment-empty">No activity yet.</div>';
+  }
 }
 
 let raiseIssueUrgency='Medium';
@@ -4042,7 +4322,7 @@ function getFilteredSortedIssues(){
   });
 
   const urgencyRank = {Critical:4, High:3, Medium:2, Low:1};
-  const statusRank = {'New':1, 'Under Investigation':2, 'Test':3, 'Closed':4};
+  const statusRank = {'New':1, 'Assigned':2, 'Under Investigation':3, 'Test':4, 'Resolved':5, 'Closed':6};
 
   result = [...result].sort((a,b)=>{
     switch(sort){
@@ -4176,6 +4456,8 @@ function openTicket(id){
   document.getElementById('ticketDescription').textContent = issue.description || '';
   populateTimeline(issue);
   document.getElementById('ticketStatus').value = issue.status || 'New';
+  const reopenBtn=document.getElementById('reopenTicketBtn');
+  if(reopenBtn) reopenBtn.style.display=issue.status==='Closed' ? 'inline-flex' : 'none';
   document.getElementById('resolutionNotes').value = issue.resolution_notes || '';
   toggleResolutionNotes();
 
@@ -4189,6 +4471,7 @@ function openTicket(id){
 
   document.getElementById('newComment').value = '';
   loadComments(id);
+  loadTicketAttachments?.(id);
 }
 
 function closeTicket(){
@@ -4338,6 +4621,35 @@ document.getElementById('ticketStatus').addEventListener('change', ()=>{
       }
     }, 80);
   }
+});
+
+
+document.getElementById('reopenTicketBtn')?.addEventListener('click',async ()=>{
+  if(!isAuthenticated()||!activeTicketId) return;
+  const btn=document.getElementById('reopenTicketBtn');
+  btn.disabled=true;
+  try{
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/issues?id=eq.${encodeURIComponent(activeTicketId)}`,{
+      method:'PATCH',
+      headers:apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
+      body:JSON.stringify({status:'New',resolved_at:null,resolution_notes:null})
+    });
+    if(!response.ok) throw new Error(await response.text());
+    await loadIssues();
+    const refreshed=issues.find(x=>x.id===activeTicketId);
+    if(refreshed){
+      document.getElementById('ticketStatus').value='New';
+      document.getElementById('resolutionNotes').value='';
+      toggleResolutionNotes();
+      populateTimeline(refreshed);
+    }
+    const msg=document.getElementById('ticketStatusMessage');
+    msg.style.display='block';msg.style.background='#eaf9f2';msg.style.color='#128356';msg.textContent='Ticket reopened.';
+    btn.style.display='none';
+  }catch(e){
+    const msg=document.getElementById('ticketStatusMessage');
+    msg.style.display='block';msg.style.background='#fff0f1';msg.style.color='#b4232e';msg.textContent='Could not reopen: '+(e.message||e);
+  }finally{btn.disabled=false;}
 });
 
 document.getElementById('saveTicketStatus').addEventListener('click', async ()=>{
@@ -4579,17 +4891,15 @@ function renderTestingTable(){
   const title=document.getElementById('testingTableTitle');
   if(!head || !body) return;
 
-  const cases=testingCases[testingSystem];
+  const cases=testingCases[testingSystem]||[];
   if(title) title.textContent=`${testingSystem} Test Cases`;
-
   head.innerHTML='<tr><th>Device ID</th>'+cases.map(name=>`<th>${escapeHtml(name)}</th>`).join('')+'</tr>';
 
   body.innerHTML=testingRows.map(row=>{
-    const checks=cases.map(name=>{
-      const result=row.checks[name] || '';
-      const checked=result==='pass' ? 'checked' : '';
-      const failed=result==='fail' ? 'selected' : '';
+    const hasFail=cases.some(name=>row.checks[name]==='fail');
 
+    const checks=cases.map(name=>{
+      const result=row.checks[name]||'';
       return `<td class="test-cell ${result==='fail'?'test-failed':''}">
         <div class="test-result-controls">
           <label class="pass-check" title="Mark Pass">
@@ -4597,10 +4907,10 @@ function renderTestingTable(){
               data-testing-row="${row.id}"
               data-testing-case="${escapeHtml(name)}"
               aria-label="Pass: ${escapeHtml(name)}"
-              ${checked}>
+              ${result==='pass'?'checked':''}>
             <span>✓</span>
           </label>
-          <button class="testing-fail ${failed}" type="button"
+          <button class="testing-fail ${result==='fail'?'selected':''}" type="button"
             data-testing-fail-row="${row.id}"
             data-testing-fail-case="${escapeHtml(name)}"
             aria-label="Fail: ${escapeHtml(name)}"
@@ -4613,10 +4923,17 @@ function renderTestingTable(){
       <td>
         <div class="testing-device-cell">
           <div class="testing-device-input-row">
-            <input class="testing-device-input" type="text" value="${escapeHtml(row.device)}" placeholder="e.g. SYDT3ABD001" data-testing-device="${row.id}" aria-label="Device ID" list="knownDevices">
+            <input class="testing-device-input" type="text" value="${escapeHtml(row.device||'')}" placeholder="e.g. SYDT3ABD001" data-testing-device="${row.id}" aria-label="Device ID" list="knownDevices">
             ${testingRows.length>1 ? `<button class="testing-remove" type="button" data-remove-testing-row="${row.id}" aria-label="Remove device">×</button>` : ''}
           </div>
-          <button class="raise-test-issue" type="button" data-raise-test-row="${row.id}" style="${Object.values(row.checks).includes('fail') ? '' : 'display:none'}">⚠ Raise Issue</button>
+          <div class="testing-row-actions">
+            <button class="testing-row-action testing-pass-all" type="button" data-pass-all-row="${row.id}">✓ Pass All</button>
+            <button class="testing-row-action" type="button" data-clear-row="${row.id}">↻ Reset</button>
+          </div>
+          ${hasFail ? `<div class="testing-failure-strip">
+            <div class="testing-failure-summary"><span>⚠</span><strong>${cases.filter(name=>row.checks[name]==='fail').length} test${cases.filter(name=>row.checks[name]==='fail').length===1?'':'s'} failed</strong></div>
+            <button class="testing-failure-raise" type="button" data-raise-test-row="${row.id}">Raise Issue →</button>
+          </div>` : ''}
         </div>
       </td>
       ${checks}
@@ -4625,6 +4942,8 @@ function renderTestingTable(){
 
   updateTestingDeviceCount();
   attachDeviceAutocomplete();
+  if(typeof updateTestingProgress==='function') updateTestingProgress();
+  if(typeof checkTestingComplete==='function') checkTestingComplete();
 }
 
 function setTestingSystem(system){
@@ -4677,7 +4996,55 @@ document.getElementById('testingTableBody').addEventListener('change',e=>{
   if(typeof updateTestingProgress==='function') updateTestingProgress();
 });
 
+
+function checkTestingComplete(){
+  const cases=testingCases[testingSystem]||[];
+  const rows=testingRows.filter(r=>String(r.device||'').trim());
+  const complete=rows.length>0 && cases.length>0 && rows.every(r=>cases.every(c=>r.checks[c]==='pass'));
+  document.body.classList.toggle('testing-complete',complete);
+  if(complete && window.__lastTestingCelebration!==(testingSystem+'|'+rows.map(r=>r.device).join('|'))){
+    window.__lastTestingCelebration=testingSystem+'|'+rows.map(r=>r.device).join('|');
+    document.getElementById('testingCelebration')?.classList.add('show');
+    setTimeout(()=>document.getElementById('testingCelebration')?.classList.remove('show'),2200);
+  }
+}
+
+function markTestingPassAll(rowId){
+  const row=testingRows.find(r=>r.id===rowId); if(!row) return;
+  (testingCases[testingSystem]||[]).forEach(name=>row.checks[name]='pass');
+  renderTestingTable();
+  saveTestingDraft?.();
+  checkTestingComplete();
+}
+
+function clearTestingRow(rowId){
+  const row=testingRows.find(r=>r.id===rowId); if(!row) return;
+  row.checks={};
+  renderTestingTable();
+  saveTestingDraft?.();
+}
+
+function retestFailedDevice(rowId){
+  const source=testingRows.find(r=>r.id===rowId); if(!source || !source.device) return;
+  const cases=testingCases[testingSystem]||[];
+  const failed=cases.filter(name=>source.checks[name]==='fail');
+  const retained={};
+  cases.forEach(name=>{if(source.checks[name]==='pass') retained[name]='pass';});
+  testingRows=[{id:++testingRowId,device:source.device,checks:retained}];
+  const ref=document.getElementById('testingRunName');
+  if(ref) ref.value=`Retest ${source.device}`;
+  renderTestingTable();
+  saveTestingDraft?.();
+  requestAnimationFrame(()=>document.querySelector('.testing-device-input')?.focus());
+}
+
 document.getElementById('testingTableBody').addEventListener('click',e=>{
+  const passAll=e.target.closest('[data-pass-all-row]');
+  if(passAll){ markTestingPassAll(Number(passAll.dataset.passAllRow)); return; }
+
+  const clear=e.target.closest('[data-clear-row]');
+  if(clear){ clearTestingRow(Number(clear.dataset.clearRow)); return; }
+
   const fail=e.target.closest('[data-testing-fail-row]');
   if(fail){
     const id=Number(fail.dataset.testingFailRow);
@@ -4748,6 +5115,7 @@ document.getElementById('testingRaiseForm')?.addEventListener('submit',async e=>
   const description=document.getElementById('raiseDescription').value.trim();
   const msg=document.getElementById('testingRaiseMessage');
   const submit=e.target.querySelector('button[type="submit"]');
+  const raiseAttachmentFiles=Array.from(document.getElementById('raiseAttachments')?.files||[]);
 
   if(!portValue || !device || !raisedBy || !category || !description || !raiseIssueUrgency){
     msg.style.display='block'; msg.className='auth-message error'; msg.textContent='Please complete all required fields.'; return;
@@ -4768,8 +5136,12 @@ document.getElementById('testingRaiseForm')?.addEventListener('submit',async e=>
       let detail=text; try{const parsed=JSON.parse(text);detail=parsed.message||parsed.details||parsed.hint||text;}catch(_){}
       throw new Error(`Supabase ${response.status}: ${detail}`);
     }
+    const createdRaise=await response.clone().json().catch(()=>[]);
     closeTestingRaiseModal();
     if(typeof loadIssues==='function') await loadIssues();
+    if(isAuthenticated() && createdRaise?.[0]?.id && raiseAttachmentFiles.length && typeof uploadIssueAttachments==='function'){
+      await uploadIssueAttachments(createdRaise[0].id,raiseAttachmentFiles);
+    }
   }catch(error){
     msg.className='auth-message error'; msg.textContent='Could not submit: '+(error.message||error);
   }finally{ submit.disabled=false; }
@@ -5261,6 +5633,102 @@ if(quickTestMode){
   });
 }
 
+
+document.getElementById('ticketAttachmentInput')?.addEventListener('change',async e=>{
+  const files=Array.from(e.target.files||[]);
+  if(!files.length||!activeTicketId)return;
+  const msg=document.getElementById('ticketStatusMessage');
+  if(msg){msg.style.display='block';msg.textContent='Uploading attachments…';}
+  const result=await uploadIssueAttachments(activeTicketId,files);
+  if(msg){msg.textContent=result.errors?.length?'Some attachments could not be uploaded.':'Attachments uploaded.';msg.style.background='#eaf9f2';msg.style.color='#128356';}
+  e.target.value='';
+  await loadTicketAttachments(activeTicketId);
+});
+
+
+/* ===== Command Palette: Ctrl/Cmd + K ===== */
+const voyagerCommands=[
+  {label:'Log an Issue',desc:'Report a Voyager issue',icon:'!',view:'log'},
+  {label:'Test Device',desc:'Open device testing',icon:'✓',view:'testing'},
+  {label:'Find Ticket',desc:'Search your issues and tickets',icon:'⌕',view:'issues'},
+  {label:'Knowledge Base',desc:'Open support guidance',icon:'?',view:'knowledge'}
+];
+let commandPaletteIndex=0;
+
+function commandPaletteItems(){
+  const q=(document.getElementById('commandPaletteInput')?.value||'').trim().toLowerCase();
+  return voyagerCommands.filter(c=>(c.label+' '+c.desc).toLowerCase().includes(q));
+}
+function renderCommandPalette(){
+  const box=document.getElementById('commandPaletteList');
+  if(!box)return;
+  const items=commandPaletteItems();
+  commandPaletteIndex=Math.max(0,Math.min(commandPaletteIndex,Math.max(0,items.length-1)));
+  box.innerHTML='';
+  if(!items.length){
+    box.innerHTML='<div class="global-search-empty">No commands found.</div>';
+    return;
+  }
+  items.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='command-item'+(i===commandPaletteIndex?' active':'');
+    b.innerHTML=`<div class="command-icon">${escapeHtml(c.icon)}</div><div><strong>${escapeHtml(c.label)}</strong><span>${escapeHtml(c.desc)}</span></div><span class="command-shortcut">${i+1}</span>`;
+    b.addEventListener('click',()=>{
+      closeCommandPalette();
+      document.querySelector(`.nav-item[data-view="${c.view}"]`)?.click();
+    });
+    box.appendChild(b);
+  });
+}
+function openCommandPalette(){
+  const m=document.getElementById('commandPalette');
+  if(!m)return;
+  commandPaletteIndex=0;
+  m.classList.add('open');
+  m.setAttribute('aria-hidden','false');
+  renderCommandPalette();
+  setTimeout(()=>{
+    const input=document.getElementById('commandPaletteInput');
+    input?.focus();
+    input?.select();
+  },20);
+}
+function closeCommandPalette(){
+  const m=document.getElementById('commandPalette');
+  if(!m)return;
+  m.classList.remove('open');
+  m.setAttribute('aria-hidden','true');
+}
+document.getElementById('commandPaletteClose')?.addEventListener('click',closeCommandPalette);
+
+document.getElementById('commandPaletteInput')?.addEventListener('input',renderCommandPalette);
+document.getElementById('commandPalette')?.addEventListener('click',e=>{
+  if(e.target.id==='commandPalette')closeCommandPalette();
+});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){
+    e.preventDefault();
+    e.stopPropagation();
+    openCommandPalette();
+    return;
+  }
+  const m=document.getElementById('commandPalette');
+  if(!m?.classList.contains('open'))return;
+  if(e.key==='Escape'){e.preventDefault();closeCommandPalette();return;}
+  if(e.key==='ArrowDown'){e.preventDefault();commandPaletteIndex++;renderCommandPalette();return;}
+  if(e.key==='ArrowUp'){e.preventDefault();commandPaletteIndex=Math.max(0,commandPaletteIndex-1);renderCommandPalette();return;}
+  if(e.key==='Enter'){
+    e.preventDefault();
+    const items=commandPaletteItems();
+    const item=items[commandPaletteIndex];
+    if(item){
+      closeCommandPalette();
+      document.querySelector(`.nav-item[data-view="${item.view}"]`)?.click();
+    }
+  }
+});
+
 /* ===== Dynamic runway cursor trail ===== */
 (function(){
   if(!window.matchMedia('(pointer:fine)').matches) return;
@@ -5448,8 +5916,11 @@ if(quickTestMode){
         const lx=p.x+n.x*(w*.84)*side;
         const ly=p.y+n.y*(w*.84)*side;
         ctx.globalAlpha=.9*alpha;
-        ctx.fillStyle='#ffd447';
-        ctx.shadowColor='rgba(255,212,71,.95)';
+        const celebratory=document.body.classList.contains('testing-complete');
+        ctx.fillStyle=celebratory ? (side===1 ? '#ffd447' : '#31c48d') : '#ffd447';
+        ctx.shadowColor=celebratory
+          ? (side===1 ? 'rgba(255,212,71,.95)' : 'rgba(49,196,141,.95)')
+          : 'rgba(255,212,71,.95)';
         ctx.shadowBlur=5;
         ctx.beginPath();
         ctx.arc(lx,ly,1.7,0,Math.PI*2);
