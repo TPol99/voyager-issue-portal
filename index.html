@@ -3195,6 +3195,71 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 }
 </style>
 
+
+<style id="voyager-admin-tasks-mobile-fix">
+@media (max-width:700px){
+  #adminTestingTasks .admin-task-table-wrap{
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action:pan-x !important;
+    overscroll-behavior-x:contain !important;
+    scrollbar-width:thin !important;
+  }
+
+  #adminTestingTasks .admin-task-table{
+    min-width:760px !important;
+  }
+
+  #adminTestingTasks .admin-task-table td,
+  #adminTestingTasks .admin-task-table th{
+    white-space:nowrap !important;
+  }
+
+  /* Keep the Actions column available without needing a long swipe. */
+  #adminTestingTasks .admin-task-table th:last-child,
+  #adminTestingTasks .admin-task-table td:last-child{
+    position:sticky !important;
+    right:0 !important;
+    z-index:3 !important;
+    background:rgba(255,255,255,.94) !important;
+    box-shadow:-8px 0 12px rgba(40,42,44,.07) !important;
+  }
+
+  body.dark #adminTestingTasks .admin-task-table th:last-child,
+  body.dark #adminTestingTasks .admin-task-table td:last-child{
+    background:rgba(31,24,42,.96) !important;
+    box-shadow:-8px 0 12px rgba(0,0,0,.16) !important;
+  }
+
+  #adminTestingTasks .admin-task-actions{
+    justify-content:flex-start !important;
+    flex-wrap:nowrap !important;
+  }
+
+  #adminTestingTasks .admin-task-actions button{
+    flex:0 0 auto !important;
+  }
+}
+</style>
+
+
+<style id="voyager-admin-task-hint-style">
+.admin-task-swipe-hint{
+  display:none;
+  margin:7px 0 8px;
+  color:var(--muted);
+  font-size:9px;
+  font-weight:750;
+  text-align:right;
+}
+@media (max-width:700px){
+  .admin-task-swipe-hint{display:block}
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -3695,7 +3760,8 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
     <button class="admin-task-tab" type="button" data-admin-task-system="Auto Bag Drop">🧳 Auto Bag Drop</button>
   </div>
 
-  <div class="admin-task-table-wrap">
+  <div id="adminTaskSwipeHint" class="admin-task-swipe-hint">↔ Swipe across to see all test-task controls</div>
+<div class="admin-task-table-wrap">
     <table class="admin-table admin-task-table">
       <thead>
         <tr><th>Task</th><th>Description</th><th>Order</th><th>Status</th><th></th></tr>
@@ -7317,6 +7383,25 @@ loadAdminData=async function(){
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',enforce,{once:true});
   }else enforce();
+})();
+</script>
+
+
+<script id="voyager-admin-task-touch">
+(function(){
+  const wrap=document.querySelector('#adminTestingTasks .admin-task-table-wrap');
+  if(!wrap)return;
+  let startX=0,startY=0;
+  wrap.addEventListener('touchstart',e=>{
+    const t=e.touches[0]; startX=t.clientX; startY=t.clientY;
+  },{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    const t=e.touches[0];
+    if(Math.abs(t.clientX-startX)>Math.abs(t.clientY-startY)){
+      // Explicitly allow horizontal panning inside the task table.
+      wrap.style.touchAction='pan-x';
+    }
+  },{passive:true});
 })();
 </script>
 
