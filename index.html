@@ -3480,6 +3480,41 @@ html.voyager-standalone body{
 }
 </style>
 
+
+<style id="voyager-iphone-admin-nav-fix">
+@media (max-width:600px){
+  .app > aside nav{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    grid-template-rows:none !important;
+    grid-auto-rows:44px !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+
+  /* Keep external link and Admin in the same compact visual language. */
+  .app > aside nav .nav-item,
+  .app > aside nav .nav-external{
+    min-width:0 !important;
+    width:100% !important;
+    height:44px !important;
+    min-height:44px !important;
+    max-height:44px !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  /* AOT is long; allow it to wrap neatly rather than cutting off the start. */
+  .app > aside nav .nav-external{
+    white-space:normal !important;
+    line-height:1.05 !important;
+    padding-left:5px !important;
+    padding-right:5px !important;
+  }
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -7862,6 +7897,40 @@ loadAdminData=async function(){
   apply();
   window.addEventListener('pageshow',apply,{passive:true});
   window.addEventListener('resize',apply,{passive:true});
+})();
+</script>
+
+
+<script id="voyager-iphone-admin-nav-runtime">
+(function(){
+  function fixMobileNav(){
+    if(window.innerWidth>600)return;
+    const nav=document.querySelector('.app > aside nav');
+    if(!nav)return;
+    nav.style.setProperty('height','auto','important');
+    nav.style.setProperty('min-height','0','important');
+    nav.style.setProperty('max-height','none','important');
+    nav.style.setProperty('overflow','visible','important');
+    nav.style.setProperty('grid-template-rows','none','important');
+    nav.style.setProperty('grid-auto-rows','44px','important');
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',fixMobileNav,{once:true});
+  }else fixMobileNav();
+
+  window.addEventListener('resize',fixMobileNav,{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(fixMobileNav,50),{passive:true});
+
+  // Admin is revealed asynchronously after Supabase verifies the role.
+  const nav=document.querySelector('.app > aside nav');
+  if(nav){
+    new MutationObserver(fixMobileNav).observe(nav,{
+      subtree:true,
+      attributes:true,
+      attributeFilter:['hidden','aria-hidden','class','style']
+    });
+  }
 })();
 </script>
 
