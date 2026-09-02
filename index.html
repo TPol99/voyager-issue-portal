@@ -4279,29 +4279,57 @@ function formatRaisedByFromEmail(email){
 }
 
 
-function isEmailConfirmed(user){
-  return !!user?.email_confirmed_at;
+function isUserApproved(profile){
+  return profile?.approval_status === 'approved' || profile?.role === 'admin';
 }
 
-async function enforceConfirmedUser(session){
+async function getCurrentUserApproval(){
+  if(!currentUser?.id) return {approved:false, role:null, status:'pending'};
+  try{
+    const {data,error}=await authClient
+      .from('user_roles')
+      .select('role,approval_status')
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+
+    if(error) throw error;
+
+    const role=data?.role || 'staff';
+    const status=data?.approval_status || (role==='admin'?'approved':'pending');
+    return {
+      approved: status==='approved' || role==='admin',
+      role,
+      status
+    };
+  }catch(error){
+    console.warn('Voyager approval check failed:',error);
+    // Fail closed: no row/error means no staff access.
+    return {approved:false, role:null, status:'pending'};
+  }
+}
+
+async function enforceApprovedUser(session){
   if(!session?.user) return false;
 
-  if(isEmailConfirmed(session.user)){
+  const previousUser=currentUser;
+  currentUser=session.user;
+  currentSession=session;
+
+  const approval=await getCurrentUserApproval();
+
+  if(approval.approved){
     return true;
   }
 
-  // Do not keep an unconfirmed user signed in.
-  try{
-    await authClient.auth.signOut();
-  }catch(_){}
-
+  // A valid Supabase session is not enough: Voyager requires explicit Admin approval.
+  try{ await authClient.auth.signOut(); }catch(_){}
   currentSession=null;
   currentUser=null;
   updateAuthUI();
 
   showAuthModal('login');
   showAuthMessage(
-    'Please confirm your Virgin Australia email address before signing in. Check your inbox for the confirmation email.',
+    'Your Voyager account is awaiting administrator approval. Please try again once an administrator has approved your access.',
     'error'
   );
 
@@ -4477,7 +4505,7 @@ async function initAuth(){
   currentSession=data?.session || null;
   currentUser=currentSession?.user || null;
 
-  if(currentSession?.user && !(await enforceConfirmedUser(currentSession))){
+  if(currentSession?.user && !(await enforceApprovedUser(currentSession))){
     return;
   }
 
@@ -4485,12 +4513,12 @@ async function initAuth(){
   updateHomeDashboard();
 
   authClient.auth.onAuthStateChange(async (event,session)=>{
-    if(session?.user && !(await enforceConfirmedUser(session))){
-      return;
+    if(session?.user){
+      if(!(await enforceApprovedUser(session))) return;
+    }else{
+      currentSession=null;
+      currentUser=null;
     }
-
-    currentSession=session || null;
-    currentUser=currentSession?.user || null;
     updateAuthUI();
     updateHomeDashboard();
 
@@ -4542,22 +4570,16 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
     return;
   }
 
-  if(!data.user?.email_confirmed_at){
-    try{ await authClient.auth.signOut(); }catch(_){}
-
-    currentSession=null;
-    currentUser=null;
-    updateAuthUI();
-
-    showAuthMessage(
-      'Please confirm your Virgin Australia email address before signing in. Check your inbox for the confirmation email.',
-      'error'
-    );
+  if(!data.session || !data.user){
+    showAuthMessage('Sign in could not be completed.');
     return;
   }
 
   currentSession=data.session;
   currentUser=data.user;
+
+  const approved=await enforceApprovedUser(data.session);
+  if(!approved) return;
 
   updateAuthUI();
   closeAuthModal();
@@ -4608,17 +4630,20 @@ document.getElementById('signupForm').addEventListener('submit',async e=>{
     return;
   }
 
-  if(!data.session){
-    showAuthMessage(
-      'Account created! Check your Virgin Australia email and click the confirmation link before signing in.',
-      'success'
-    );
-  }else{
+  // Regardless of whether Supabase has returned an auto-login session, Voyager
+  // requires an explicit Admin approval before granting staff access.
+  if(data.session && data.user){
     currentSession=data.session;
     currentUser=data.user;
-    updateAuthUI();
-    closeAuthModal();
+    try{ await authClient.auth.signOut(); }catch(_){}
+    currentSession=null;
+    currentUser=null;
   }
+
+  showAuthMessage(
+    'Account created. Your Voyager access is now pending administrator approval. You do not need to wait for an email once an administrator approves your account.',
+    'success'
+  );
 });
 
 
