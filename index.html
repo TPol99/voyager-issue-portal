@@ -3391,6 +3391,24 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 }
 </style>
 
+
+<style id="voyager-aot-link-style">
+.nav-external{
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.nav-external:hover{text-decoration:none}
+.nav-external::after{content:'↗';font-size:.9em;opacity:.6}
+@media(max-width:600px){
+  .nav-external{justify-content:center}
+  .nav-external::after{display:none}
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -3404,6 +3422,7 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
     <button class="nav-item" data-view="issues">My Issues</button>
     <button class="nav-item" data-view="testing">Testing</button>
     <button class="nav-item" data-view="knowledge">Knowledge Base</button>
+    <a class="nav-item nav-external" href="https://tpol99.github.io/AOT-Testing-Buddy/" target="_blank" rel="noopener noreferrer" title="Open AOT Testing Companion in a new window">AOT Testing Companion ↗</a>
     <button class="nav-item admin-only-nav" data-view="admin" hidden aria-hidden="true" style="display:none !important">Admin</button>
   </nav>
   <div class="appearance-card">
