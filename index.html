@@ -3458,134 +3458,24 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 }
 </style>
 
-<style id="voyager-disable-browser-offline-gate">
-#offlineBanner{display:none !important}
-</style>
+<meta name="theme-color" content="#282A2C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Voyager">
+<link rel="manifest" href="./manifest.webmanifest">
 
-<style id="voyager-ipad-portrait-layout-fix">
-/* iPad/tablet portrait: compact header rather than a full-height sidebar. */
-@media (min-width:601px) and (max-width:1100px) and (orientation:portrait){
-  html,body{
-    width:100% !important;
-    min-width:0 !important;
-    overflow-x:hidden !important;
-  }
 
-  .app{
-    display:block !important;
-    width:100% !important;
-    height:auto !important;
-    min-height:100dvh !important;
-  }
+<style id="voyager-ios-home-screen">
+/* iOS Home Screen / standalone mode */
+html.voyager-standalone body{
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
 
-  .app > aside{
-    position:relative !important;
-    width:100% !important;
-    height:auto !important;
-    min-height:0 !important;
-    max-height:none !important;
-    padding:16px 22px 14px !important;
-    border-right:0 !important;
-    border-bottom:1px solid var(--line) !important;
-    overflow:visible !important;
-    box-sizing:border-box !important;
-  }
-
-  .app > aside .brand{
-    padding:0 8px 14px !important;
-    margin:0 0 12px !important;
-  }
-
-  .app > aside .brand-title{
-    font-size:22px !important;
-    line-height:1.05 !important;
-  }
-
-  .app > aside .brand-title span{
-    display:inline !important;
-    margin-left:7px !important;
-  }
-
-  .app > aside nav{
-    display:grid !important;
-    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
-    grid-auto-rows:56px !important;
-    width:100% !important;
-    height:auto !important;
-    min-height:0 !important;
-    max-height:none !important;
-    gap:4px !important;
-    margin:0 !important;
-    overflow:visible !important;
-  }
-
-  .app > aside nav .nav-item{
-    width:100% !important;
-    min-width:0 !important;
-    height:56px !important;
-    min-height:56px !important;
-    max-height:56px !important;
-    padding:7px 8px !important;
-    margin:0 !important;
-    border-radius:13px !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    text-align:center !important;
-    font-size:14px !important;
-    line-height:1.05 !important;
-    white-space:normal !important;
-    box-sizing:border-box !important;
-  }
-
-  .app > aside nav .nav-slider{
-    height:56px !important;
-    max-height:56px !important;
-    border-radius:13px !important;
-  }
-
-  .app > aside .appearance-card{
-    width:100% !important;
-    max-width:none !important;
-    margin:12px 0 0 !important;
-    padding:12px 14px !important;
-    border-radius:16px !important;
-  }
-
-  .app > aside .theme-row{
-    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-    gap:8px !important;
-  }
-
-  .app > aside .theme-btn{
-    height:44px !important;
-    min-height:44px !important;
-  }
-
-  .app > aside .pastel-row{
-    display:flex !important;
-    flex-wrap:nowrap !important;
-    gap:8px !important;
-    margin-top:8px !important;
-  }
-
-  .app > aside .swatch{
-    width:25px !important;
-    height:25px !important;
-    flex:0 0 25px !important;
-  }
-
-  .app > aside .sidebar-note{
-    display:none !important;
-  }
-
-  .app > main{
-    display:block !important;
-    width:100% !important;
-    max-width:100% !important;
-    min-width:0 !important;
-    padding:20px 22px 32px !important;
-    box-sizing:border-box !important;
+@media(max-width:700px){
+  /* Do not let the standalone top bar become a dead-height region. */
+  html.voyager-standalone .app > aside{
+    margin-top:0 !important;
   }
 }
 </style>
@@ -4303,8 +4193,6 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-updateTestingAnalytics();
-
 document.querySelectorAll('[data-testing-system]').forEach(card=>card.addEventListener('click',()=>{
   window.currentTestingSystem=card.dataset.testingSystem;
 }));
@@ -6880,17 +6768,62 @@ function closeGlobalSearch(){const m=document.getElementById('globalSearchModal'
 document.getElementById('globalSearchBtn')?.addEventListener('click',openGlobalSearch);document.getElementById('globalSearchClose')?.addEventListener('click',closeGlobalSearch);document.getElementById('globalSearchModal')?.addEventListener('click',e=>{if(e.target.id==='globalSearchModal')closeGlobalSearch()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGlobalSearch()});
 document.getElementById('globalSearchInput')?.addEventListener('input',e=>{const box=document.getElementById('globalSearchResults'),q=e.target.value.trim().toLowerCase();if(!q){box.innerHTML='<div class="global-search-empty">Start typing to search Voyager.</div>';return}const rr=[];if(isAuthenticated()){issues.forEach(i=>{const h=[i.issue_id,i.device_id,i.pnr,i.port,i.raised_by,i.category,i.description,i.system,i.status].filter(Boolean).join(' ').toLowerCase();if(h.includes(q))rr.push({t:'Issue',a:i.issue_id||i.device_id||'Issue',b:[i.port,i.device_id,i.status].filter(Boolean).join(' • '),v:'issues'})});knownDeviceIds().forEach(d=>{if(d.toLowerCase().includes(q))rr.push({t:'Device',a:d,b:'Known Voyager device',v:'testing'})})}document.querySelectorAll('#view-knowledge h1,#view-knowledge h2,#view-knowledge h3,#view-knowledge p,#view-knowledge li').forEach(x=>{const t=(x.textContent||'').trim();if(t&&t.toLowerCase().includes(q))rr.push({t:'Knowledge',a:t.slice(0,90),b:'Knowledge Base',v:'knowledge'})});const seen=new Set(),u=rr.filter(r=>{const k=r.t+r.a;if(seen.has(k))return false;seen.add(k);return true}).slice(0,30);box.innerHTML=u.length?'':'<div class="global-search-empty">No Voyager results found.</div>';u.forEach(r=>{const b=document.createElement('button');b.className='global-search-result';b.innerHTML=`<div><span class="global-search-type">${escapeHtml(r.t)}</span><strong>${escapeHtml(r.a)}</strong><span>${escapeHtml(r.b)}</span></div><b>›</b>`;b.onclick=()=>{closeGlobalSearch();document.querySelector(`.nav-item[data-view="${r.v}"]`)?.click()};box.appendChild(b)})});
 
-/* ===== Connectivity =====
-   Do not pre-emptively block Voyager based on browser connectivity signals.
-   Safari/iOS can report stale or false network states. Real Supabase requests
-   remain the source of truth and will show their own error if a request fails. */
-function setVoyagerConnectionState(){
-  document.getElementById('offlineBanner')?.classList.remove('show');
+let voyagerConnectionCheckTimer=null;
+
+function setVoyagerConnectionState(connected){
+  const banner=document.getElementById('offlineBanner');
+  banner?.classList.toggle('show',!connected);
+
+  document.querySelectorAll('#submitIssue,#saveTestingRun,#testingRaiseForm button[type="submit"]').forEach(button=>{
+    if(!button)return;
+    button.disabled=!connected;
+    button.title=connected?'':'Voyager cannot reach its data service. Reconnect and try again.';
+  });
 }
+
+async function checkVoyagerConnection(){
+  // navigator.onLine is unreliable on iOS Safari and can report "offline"
+  // while fetch requests are working. Probe Voyager's actual Supabase backend.
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),6000);
+
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/`,{
+      method:'GET',
+      headers:{'apikey':SUPABASE_KEY},
+      cache:'no-store',
+      signal:controller.signal
+    });
+
+    clearTimeout(timeout);
+
+    // Any HTTP response proves the network/backend is reachable. A 4xx from
+    // the REST root is still "online"; only a network/timeout failure is offline.
+    setVoyagerConnectionState(true);
+    return true;
+  }catch(error){
+    // iOS Safari can abort/background network probes even when the next real
+    // request succeeds. Do not lock Voyager based on a probe failure.
+    console.warn('Voyager connectivity probe did not complete:',error);
+    document.getElementById('offlineBanner')?.classList.remove('show');
+    return null;
+  }
+}
+
 function updateOnlineState(){
-  setVoyagerConnectionState();
+  clearTimeout(voyagerConnectionCheckTimer);
+  voyagerConnectionCheckTimer=setTimeout(checkVoyagerConnection,120);
 }
-setVoyagerConnectionState();
+
+window.addEventListener('online',updateOnlineState);
+window.addEventListener('offline',updateOnlineState);
+window.addEventListener('focus',updateOnlineState);
+window.addEventListener('pageshow',updateOnlineState);
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible') updateOnlineState();
+});
+updateOnlineState();
+
 
 /* ===== Quick Test switch behaviour ===== */
 const quickTestMode=document.getElementById('quickTestMode');
@@ -7902,30 +7835,33 @@ loadAdminData=async function(){
 
 <button id="globalSearchBtn" class="top-icon-btn" type="button" title="Search Voyager">⌕</button>
 
-
-<script id="voyager-ipad-portrait-runtime-fix">
+<script id="voyager-safari-load-safety">
 (function(){
-  function applyIPadPortraitLayout(){
-    const tablet=window.matchMedia('(min-width:601px) and (max-width:1100px) and (orientation:portrait)').matches;
-    const aside=document.querySelector('.app > aside');
-    const app=document.querySelector('.app');
-    if(!aside||!app)return;
+  const clearStaleNetworkState=()=>{
+    document.getElementById('offlineBanner')?.classList.remove('show');
+    document.querySelectorAll('#submitIssue,#saveTestingRun,#testingRaiseForm button[type="submit"]').forEach(b=>{
+      if(b){b.disabled=false;b.title='';}
+    });
+  };
+  window.addEventListener('pageshow',clearStaleNetworkState,{passive:true});
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible') clearStaleNetworkState();
+  },{passive:true});
+  setTimeout(clearStaleNetworkState,1500);
+})();
+</script>
 
-    if(tablet){
-      aside.style.setProperty('position','relative','important');
-      aside.style.setProperty('height','auto','important');
-      aside.style.setProperty('min-height','0','important');
-      aside.style.setProperty('max-height','none','important');
-      aside.style.setProperty('width','100%','important');
-      app.style.setProperty('display','block','important');
-      app.style.setProperty('height','auto','important');
-    }
-  }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',applyIPadPortraitLayout,{once:true});
-  }else applyIPadPortraitLayout();
-  window.addEventListener('resize',applyIPadPortraitLayout,{passive:true});
-  window.addEventListener('orientationchange',()=>setTimeout(applyIPadPortraitLayout,80),{passive:true});
+
+<script id="voyagerStandaloneMode">
+(function voyagerStandaloneMode(){
+  const apply=()=>{
+    const standalone=window.navigator.standalone===true ||
+      window.matchMedia('(display-mode: standalone)').matches;
+    document.documentElement.classList.toggle('voyager-standalone',standalone);
+  };
+  apply();
+  window.addEventListener('pageshow',apply,{passive:true});
+  window.addEventListener('resize',apply,{passive:true});
 })();
 </script>
 
