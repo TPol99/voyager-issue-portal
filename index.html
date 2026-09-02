@@ -3260,6 +3260,79 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
 }
 </style>
 
+
+<style id="voyager-admin-tasks-mobile-compact">
+@media (max-width:700px){
+  /* On a phone, don't force the admin task table to behave like a desktop
+     spreadsheet. Keep the useful columns visible and remove the empty
+     horizontal canvas. */
+  #adminTestingTasks .admin-task-table-wrap{
+    overflow-x:hidden !important;
+    overflow-y:visible !important;
+    width:100% !important;
+    max-width:100% !important;
+    -webkit-overflow-scrolling:auto !important;
+    touch-action:auto !important;
+  }
+
+  #adminTestingTasks .admin-task-table{
+    min-width:0 !important;
+    width:100% !important;
+    table-layout:fixed !important;
+  }
+
+  #adminTestingTasks .admin-task-table th:nth-child(2),
+  #adminTestingTasks .admin-task-table td:nth-child(2),
+  #adminTestingTasks .admin-task-table th:nth-child(3),
+  #adminTestingTasks .admin-task-table td:nth-child(3){
+    display:none !important;
+  }
+
+  #adminTestingTasks .admin-task-table th:first-child,
+  #adminTestingTasks .admin-task-table td:first-child{
+    width:auto !important;
+  }
+
+  #adminTestingTasks .admin-task-table th:nth-child(4),
+  #adminTestingTasks .admin-task-table td:nth-child(4){
+    width:82px !important;
+  }
+
+  #adminTestingTasks .admin-task-table th:last-child,
+  #adminTestingTasks .admin-task-table td:last-child{
+    width:196px !important;
+    position:static !important;
+    right:auto !important;
+    box-shadow:none !important;
+    background:transparent !important;
+  }
+
+  #adminTestingTasks .admin-task-table td,
+  #adminTestingTasks .admin-task-table th{
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  #adminTestingTasks .admin-task-actions{
+    display:flex !important;
+    justify-content:flex-end !important;
+    gap:5px !important;
+    flex-wrap:nowrap !important;
+  }
+
+  #adminTestingTasks .admin-task-actions button{
+    flex:0 0 auto !important;
+    padding:6px 8px !important;
+  }
+
+  #adminTestingTasks .admin-task-swipe-hint,
+  #adminTestingTasks #adminTaskSwipeHint{
+    display:none !important;
+  }
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
