@@ -3457,6 +3457,10 @@ nav .admin-only-nav.admin-visible[aria-hidden="false"]{
   .testing-system-card p{font-size:11px !important;}
 }
 </style>
+
+<style id="voyager-disable-browser-offline-gate">
+#offlineBanner{display:none !important}
+</style>
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -6747,62 +6751,17 @@ function closeGlobalSearch(){const m=document.getElementById('globalSearchModal'
 document.getElementById('globalSearchBtn')?.addEventListener('click',openGlobalSearch);document.getElementById('globalSearchClose')?.addEventListener('click',closeGlobalSearch);document.getElementById('globalSearchModal')?.addEventListener('click',e=>{if(e.target.id==='globalSearchModal')closeGlobalSearch()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGlobalSearch()});
 document.getElementById('globalSearchInput')?.addEventListener('input',e=>{const box=document.getElementById('globalSearchResults'),q=e.target.value.trim().toLowerCase();if(!q){box.innerHTML='<div class="global-search-empty">Start typing to search Voyager.</div>';return}const rr=[];if(isAuthenticated()){issues.forEach(i=>{const h=[i.issue_id,i.device_id,i.pnr,i.port,i.raised_by,i.category,i.description,i.system,i.status].filter(Boolean).join(' ').toLowerCase();if(h.includes(q))rr.push({t:'Issue',a:i.issue_id||i.device_id||'Issue',b:[i.port,i.device_id,i.status].filter(Boolean).join(' • '),v:'issues'})});knownDeviceIds().forEach(d=>{if(d.toLowerCase().includes(q))rr.push({t:'Device',a:d,b:'Known Voyager device',v:'testing'})})}document.querySelectorAll('#view-knowledge h1,#view-knowledge h2,#view-knowledge h3,#view-knowledge p,#view-knowledge li').forEach(x=>{const t=(x.textContent||'').trim();if(t&&t.toLowerCase().includes(q))rr.push({t:'Knowledge',a:t.slice(0,90),b:'Knowledge Base',v:'knowledge'})});const seen=new Set(),u=rr.filter(r=>{const k=r.t+r.a;if(seen.has(k))return false;seen.add(k);return true}).slice(0,30);box.innerHTML=u.length?'':'<div class="global-search-empty">No Voyager results found.</div>';u.forEach(r=>{const b=document.createElement('button');b.className='global-search-result';b.innerHTML=`<div><span class="global-search-type">${escapeHtml(r.t)}</span><strong>${escapeHtml(r.a)}</strong><span>${escapeHtml(r.b)}</span></div><b>›</b>`;b.onclick=()=>{closeGlobalSearch();document.querySelector(`.nav-item[data-view="${r.v}"]`)?.click()};box.appendChild(b)})});
 
-let voyagerConnectionCheckTimer=null;
-
-function setVoyagerConnectionState(connected){
-  const banner=document.getElementById('offlineBanner');
-  banner?.classList.toggle('show',!connected);
-
-  document.querySelectorAll('#submitIssue,#saveTestingRun,#testingRaiseForm button[type="submit"]').forEach(button=>{
-    if(!button)return;
-    button.disabled=!connected;
-    button.title=connected?'':'Voyager cannot reach its data service. Reconnect and try again.';
-  });
+/* ===== Connectivity =====
+   Do not pre-emptively block Voyager based on browser connectivity signals.
+   Safari/iOS can report stale or false network states. Real Supabase requests
+   remain the source of truth and will show their own error if a request fails. */
+function setVoyagerConnectionState(){
+  document.getElementById('offlineBanner')?.classList.remove('show');
 }
-
-async function checkVoyagerConnection(){
-  // navigator.onLine is unreliable on iOS Safari and can report "offline"
-  // while fetch requests are working. Probe Voyager's actual Supabase backend.
-  try{
-    const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),6000);
-
-    const response=await fetch(`${SUPABASE_URL}/rest/v1/`,{
-      method:'GET',
-      headers:{'apikey':SUPABASE_KEY},
-      cache:'no-store',
-      signal:controller.signal
-    });
-
-    clearTimeout(timeout);
-
-    // Any HTTP response proves the network/backend is reachable. A 4xx from
-    // the REST root is still "online"; only a network/timeout failure is offline.
-    setVoyagerConnectionState(true);
-    return true;
-  }catch(error){
-    // iOS Safari can abort/background network probes even when the next real
-    // request succeeds. Do not lock Voyager based on a probe failure.
-    console.warn('Voyager connectivity probe did not complete:',error);
-    document.getElementById('offlineBanner')?.classList.remove('show');
-    return null;
-  }
-}
-
 function updateOnlineState(){
-  clearTimeout(voyagerConnectionCheckTimer);
-  voyagerConnectionCheckTimer=setTimeout(checkVoyagerConnection,120);
+  setVoyagerConnectionState();
 }
-
-window.addEventListener('online',updateOnlineState);
-window.addEventListener('offline',updateOnlineState);
-window.addEventListener('focus',updateOnlineState);
-window.addEventListener('pageshow',updateOnlineState);
-document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible') updateOnlineState();
-});
-updateOnlineState();
-
+setVoyagerConnectionState();
 
 /* ===== Quick Test switch behaviour ===== */
 const quickTestMode=document.getElementById('quickTestMode');
@@ -7813,22 +7772,6 @@ loadAdminData=async function(){
 </script>
 
 <button id="globalSearchBtn" class="top-icon-btn" type="button" title="Search Voyager">⌕</button>
-
-<script id="voyager-safari-load-safety">
-(function(){
-  const clearStaleNetworkState=()=>{
-    document.getElementById('offlineBanner')?.classList.remove('show');
-    document.querySelectorAll('#submitIssue,#saveTestingRun,#testingRaiseForm button[type="submit"]').forEach(b=>{
-      if(b){b.disabled=false;b.title='';}
-    });
-  };
-  window.addEventListener('pageshow',clearStaleNetworkState,{passive:true});
-  document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState==='visible') clearStaleNetworkState();
-  },{passive:true});
-  setTimeout(clearStaleNetworkState,1500);
-})();
-</script>
 
 </body>
 </html>
