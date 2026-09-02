@@ -6310,7 +6310,9 @@ async function performNav(view){
   document.body.setAttribute('data-view-theme',themeMap[view]||'report');
 
   if(view==='issues') await loadIssues();
+  if(view==='admin') await loadAdminData();
   if(view==='testing'){
+    if(typeof loadTestingTasks==='function') await loadTestingTasks();
     await loadTestingHistory();
     if(typeof attachDeviceAutocomplete==='function') attachDeviceAutocomplete();
     if(typeof updateTestingProgress==='function') updateTestingProgress();
@@ -6443,6 +6445,7 @@ if(rememberMeInput){
 
 initAuth().then(()=>{
   if(isAuthenticated()){
+    if(typeof loadTestingTasks==='function') loadTestingTasks();
     loadTestingHistory();
     if(typeof loadTestingAnalytics==='function') loadTestingAnalytics();
     attachDeviceAutocomplete();
@@ -6996,7 +6999,12 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-document.getElementById('adminRefresh')?.addEventListener('click',loadAdminData);
+document.getElementById('adminRefresh')?.addEventListener('click',async()=>{
+  await loadAdminData();
+  if(currentIsAdmin && typeof refreshAdminTaskData==='function'){
+    await refreshAdminTaskData();
+  }
+});
 
 document.getElementById('adminInviteBtn')?.addEventListener('click',async ()=>{
   const email=document.getElementById('adminInviteEmail').value.trim().toLowerCase();
@@ -7166,15 +7174,16 @@ function closeAdminTaskModal(){
 }
 async function refreshAdminTaskData(){
   try{
-    const {data,error}=await authClient.from('testing_tasks').select('*').order('system').order('sort_order').order('created_at');
-    if(error) throw error;
-    testingTaskRows=data||[];
+    const {tasks}=await adminInvoke('list_tasks');
+    testingTaskRows=Array.isArray(tasks)?tasks:[];
     renderAdminTasks();
-    document.getElementById('adminTaskCount').textContent=testingTaskRows.length;
+    const count=document.getElementById('adminTaskCount');
+    if(count) count.textContent=testingTaskRows.length;
     return true;
   }catch(error){
     console.error('Could not load testing tasks:',error);
-    showAdminTaskMessage('Testing Tasks database table is not configured yet. Run the supplied SQL first.','error');
+    showAdminTaskMessage('Could not load Testing Tasks from the admin service.','error');
+    testingTaskRows=[];
     renderAdminTasks();
     return false;
   }
@@ -7201,26 +7210,33 @@ document.getElementById('adminTaskSave')?.addEventListener('click',async()=>{
     msg.className='admin-message error';msg.style.display='block';msg.textContent='Enter a task name.';return;
   }
 
-  const payload={system,name,description:description||null,sort_order,active,updated_at:new Date().toISOString()};
-  const button=document.getElementById('adminTaskSave');button.disabled=true;
+  const button=document.getElementById('adminTaskSave');
+  const original=button.textContent;
+  button.disabled=true;button.textContent=adminTaskEditingId?'Saving…':'Adding…';
 
   try{
-    let response;
     if(adminTaskEditingId){
-      response=await authClient.from('testing_tasks').update(payload).eq('id',adminTaskEditingId);
+      await adminInvoke('update_task',{
+        taskId:adminTaskEditingId,
+        system,name,description:description||null,sort_order,active
+      });
     }else{
-      response=await authClient.from('testing_tasks').insert({...payload,created_at:new Date().toISOString()});
+      await adminInvoke('create_task',{
+        system,name,description:description||null,sort_order,active
+      });
     }
-    if(response.error)throw response.error;
 
+    const wasEditing=!!adminTaskEditingId;
+    closeAdminTaskModal();
     await refreshAdminTaskData();
     await loadTestingTasks();
-    closeAdminTaskModal();
-    showAdminTaskMessage(adminTaskEditingId?'Test task updated.':'Test task added.','ok');
+    showAdminTaskMessage(wasEditing?'Test task updated.':'Test task added.','ok');
   }catch(error){
     msg.className='admin-message error';msg.style.display='block';
     msg.textContent='Could not save test task: '+(error.message||error);
-  }finally{button.disabled=false;}
+  }finally{
+    button.disabled=false;button.textContent=original;
+  }
 });
 
 document.getElementById('adminTasksBody')?.addEventListener('click',async e=>{
@@ -7237,8 +7253,10 @@ document.getElementById('adminTasksBody')?.addEventListener('click',async e=>{
     if(!id){showAdminTaskMessage('Built-in tasks become editable after you run the Testing Tasks SQL.','error');return;}
     const active=toggle.dataset.adminTaskActive!=='true';
     try{
-      const {error}=await authClient.from('testing_tasks').update({active,updated_at:new Date().toISOString()}).eq('id',id);
-      if(error)throw error;
+      await adminInvoke('update_task',{
+        taskId:id,
+        active
+      });
       await refreshAdminTaskData();await loadTestingTasks();
     }catch(error){showAdminTaskMessage('Could not change task status: '+(error.message||error),'error');}
     return;
@@ -7265,8 +7283,7 @@ document.getElementById('adminTaskDeleteConfirm')?.addEventListener('click',asyn
   if(!adminTaskDeleteId)return;
   const id=adminTaskDeleteId;const b=document.getElementById('adminTaskDeleteConfirm');b.disabled=true;
   try{
-    const {error}=await authClient.from('testing_tasks').delete().eq('id',id);
-    if(error)throw error;
+    await adminInvoke('delete_task',{taskId:id});
     closeAdminTaskDelete();await refreshAdminTaskData();await loadTestingTasks();showAdminTaskMessage('Test task removed from future testing runs.','ok');
   }catch(error){
     showAdminTaskMessage('Could not remove test task: '+(error.message||error),'error');closeAdminTaskDelete();
