@@ -2971,6 +2971,157 @@ body.dark .admin-confirm-close{background:rgba(24,18,33,.58)}
 
 </style>
 </style>
+
+<style id="voyager-iphone-final-fix">
+/* FINAL iPhone layout:
+   The sidebar must wrap its content on iPhone. It must NOT inherit the
+   desktop/tablet 100dvh height rule, otherwise it pushes the entire app
+   content below the fold. */
+@media screen and (max-width: 600px){
+  html,body{
+    width:100% !important;
+    min-width:0 !important;
+    overflow-x:hidden !important;
+  }
+
+  .app{
+    display:block !important;
+    width:100% !important;
+    min-height:100dvh !important;
+    height:auto !important;
+    overflow-x:hidden !important;
+  }
+
+  .app > aside{
+    position:relative !important;
+    display:flex !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    padding:12px 12px 10px !important;
+    margin:0 !important;
+    border-right:0 !important;
+    border-bottom:1px solid var(--line) !important;
+    overflow:visible !important;
+    box-sizing:border-box !important;
+  }
+
+  .app > aside .brand{
+    width:100% !important;
+    padding:0 4px 8px !important;
+    margin:0 0 8px !important;
+  }
+
+  .app > aside .brand-title{
+    font-size:16px !important;
+    line-height:1.05 !important;
+  }
+
+  .app > aside nav{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    grid-template-rows:repeat(2,44px) !important;
+    grid-auto-rows:44px !important;
+    width:100% !important;
+    height:88px !important;
+    min-height:88px !important;
+    max-height:88px !important;
+    gap:2px !important;
+    margin:0 !important;
+    overflow:hidden !important;
+    box-sizing:border-box !important;
+  }
+
+  .app > aside nav .nav-item{
+    width:100% !important;
+    height:44px !important;
+    min-height:44px !important;
+    max-height:44px !important;
+    padding:4px 3px !important;
+    margin:0 !important;
+    border-radius:11px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+    font-size:12px !important;
+    font-weight:800 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  .app > aside nav .nav-slider{
+    height:44px !important;
+    max-height:44px !important;
+    border-radius:11px !important;
+  }
+
+  .app > aside .appearance-card{
+    width:100% !important;
+    max-width:none !important;
+    margin:8px 0 0 !important;
+    padding:9px 10px !important;
+    border-radius:14px !important;
+    box-sizing:border-box !important;
+  }
+
+  .app > aside .appearance-title{
+    font-size:10px !important;
+    line-height:1 !important;
+    margin:0 0 6px !important;
+  }
+
+  .app > aside .theme-row{
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:5px !important;
+    margin:0 !important;
+  }
+
+  .app > aside .theme-btn{
+    min-height:34px !important;
+    height:34px !important;
+    max-height:34px !important;
+    padding:3px 2px !important;
+    border-radius:8px !important;
+    font-size:9px !important;
+    line-height:1 !important;
+  }
+
+  .app > aside .pastel-row{
+    display:flex !important;
+    align-items:center !important;
+    flex-wrap:nowrap !important;
+    gap:7px !important;
+    margin-top:6px !important;
+    overflow:hidden !important;
+  }
+
+  .app > aside .pastel-row .swatch{
+    width:18px !important;
+    height:18px !important;
+    min-width:18px !important;
+    max-width:18px !important;
+    flex:0 0 18px !important;
+  }
+
+  .app > aside .sidebar-note{
+    display:none !important;
+  }
+
+  .app > main{
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    padding:14px 12px 24px !important;
+    box-sizing:border-box !important;
+  }
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
