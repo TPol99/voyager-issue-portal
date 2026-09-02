@@ -3157,6 +3157,44 @@ body.dark .admin-confirm-close{background:rgba(24,18,33,.58)}
 }
 </style>
 
+
+<style id="voyager-mobile-auth-fix">
+.mobile-auth-wrap{display:none}
+.mobile-auth-btn{width:100%;justify-content:center}
+.mobile-user-pill{margin-top:6px;text-align:center;font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:600px){
+  .mobile-auth-wrap{
+    display:block !important;
+    margin-top:8px !important;
+  }
+  .mobile-auth-btn{
+    min-height:38px !important;
+    height:38px !important;
+    padding:6px 10px !important;
+    border-radius:10px !important;
+    font-size:11px !important;
+  }
+}
+</style>
+
+
+<style id="voyager-admin-default-hide">
+nav .admin-only-nav{display:none !important}
+nav .admin-only-nav.admin-visible{display:flex !important}
+</style>
+
+
+<style id="voyager-admin-absolute-hide">
+nav .admin-only-nav[hidden],
+nav .admin-only-nav[aria-hidden="true"],
+nav .admin-only-nav:not(.admin-visible){
+  display:none !important;
+}
+nav .admin-only-nav.admin-visible[aria-hidden="false"]{
+  display:flex !important;
+}
+</style>
+
 </head>
 <body><div id="offlineBanner" class="offline-banner"><b>● Offline</b><span>Voyager can't submit or refresh data until your connection returns.</span></div>
 
@@ -3170,7 +3208,7 @@ body.dark .admin-confirm-close{background:rgba(24,18,33,.58)}
     <button class="nav-item" data-view="issues">My Issues</button>
     <button class="nav-item" data-view="testing">Testing</button>
     <button class="nav-item" data-view="knowledge">Knowledge Base</button>
-    <button class="nav-item admin-only-nav" data-view="admin" hidden aria-hidden="true">Admin</button>
+    <button class="nav-item admin-only-nav" data-view="admin" hidden aria-hidden="true" style="display:none !important">Admin</button>
   </nav>
   <div class="appearance-card">
     <div class="appearance-title">Appearance</div>
@@ -3188,6 +3226,10 @@ body.dark .admin-confirm-close{background:rgba(24,18,33,.58)}
       <button class="swatch" type="button" data-bg="#f2e7bf" title="Vanilla" style="background:#f2e7bf"></button>
       <button class="swatch" type="button" data-bg="#f4d7cc" title="Peach" style="background:#f4d7cc"></button>
     </div>
+  </div>
+  <div class="mobile-auth-wrap">
+    <button class="btn mobile-auth-btn" id="mobileStaffAuthBtn" type="button">Staff Login</button>
+    <div class="mobile-user-pill" id="mobileUserPill" style="display:none"></div>
   </div>
   <div class="sidebar-note"><strong>Keeping airport tech moving ✈️</strong>Virgin Australia Voyager Portal for airport systems support, testing and issue management.</div>
 </aside>
@@ -4130,6 +4172,15 @@ function closeAuthModal(){
   modal.setAttribute('aria-hidden','true');
 }
 
+
+document.getElementById('mobileStaffAuthBtn')?.addEventListener('click',async ()=>{
+  if(isAuthenticated()){
+    await authClient.auth.signOut();
+  }else{
+    showAuthModal('login');
+  }
+});
+
 function setAuthMode(mode){
   const login=mode!=='signup';
 
@@ -4171,6 +4222,16 @@ function showAccessDenied(){
 
 function updateAuthUI(){
   const signedIn=isAuthenticated();
+
+  // Admin must never remain visible while logged out, even for a single render.
+  const adminNav=document.querySelector('.admin-only-nav');
+  if(!signedIn && adminNav){
+    adminNav.hidden=true;
+    adminNav.setAttribute('aria-hidden','true');
+    adminNav.classList.remove('active','admin-visible');
+    adminNav.style.setProperty('display','none','important');
+  }
+
   updateHomeWelcome();
 
   const raisedBy=document.getElementById('raisedBy');
@@ -4195,6 +4256,22 @@ function updateAuthUI(){
   if(userPill){
     userPill.textContent=signedIn ? (currentUser?.email || 'Signed in') : '';
     userPill.style.display=signedIn ? '' : 'none';
+  }
+
+  const mobileAuthBtn=document.getElementById('mobileStaffAuthBtn');
+  if(mobileAuthBtn){
+    mobileAuthBtn.textContent=signedIn ? 'Sign Out' : 'Staff Login';
+  }
+
+  const mobileUserPill=document.getElementById('mobileUserPill');
+  if(mobileUserPill){
+    mobileUserPill.textContent=signedIn ? (currentUser?.email || 'Signed in') : '';
+    mobileUserPill.style.display=signedIn ? '' : 'none';
+  }
+
+  // Admin visibility must be recalculated whenever the authentication state changes.
+  if(typeof refreshAdminAccess==='function'){
+    refreshAdminAccess();
   }
 
   if(!signedIn){
@@ -6400,20 +6477,26 @@ async function refreshAdminAccess(){
   currentIsAdmin=false;
   const nav=document.querySelector('.admin-only-nav');
 
-  // Default: completely remove Admin from the navigation for everyone.
-  if(nav){
+  const hideAdmin=()=>{
+    document.documentElement.dataset.voyagerAdminVerified='false';
+    if(!nav)return;
     nav.hidden=true;
     nav.setAttribute('aria-hidden','true');
-    nav.classList.remove('active');
-  }
+    nav.classList.remove('active','admin-visible');
+    nav.style.setProperty('display','none','important');
+  };
+  const showAdmin=()=>{
+    if(!nav)return;
+    nav.hidden=false;
+    nav.setAttribute('aria-hidden','false');
+    nav.classList.add('admin-visible');
+    nav.style.removeProperty('display');
+  };
 
-  if(!isAuthenticated()){
-    // A logged-out user can never keep an Admin view open.
-    if(document.getElementById('view-admin')?.classList.contains('active')){
-      performNav('home');
-    }
-    return false;
-  }
+  // Fail closed immediately.
+  hideAdmin();
+
+  if(!isAuthenticated()) return false;
 
   try{
     const {data,error}=await authClient
@@ -6426,41 +6509,27 @@ async function refreshAdminAccess(){
 
     currentIsAdmin=data?.role==='admin';
 
-    if(nav){
-      nav.hidden=!currentIsAdmin;
-      nav.setAttribute('aria-hidden',currentIsAdmin?'false':'true');
-
-      if(currentIsAdmin){
-        nav.classList.add('admin-visible');
-        nav.style.setProperty('display','flex','important');
-      }else{
-        nav.classList.remove('active','admin-visible');
-        nav.style.setProperty('display','none','important');
+    if(currentIsAdmin){
+      document.documentElement.dataset.voyagerAdminVerified='true';
+      showAdmin();
+    }else{
+      hideAdmin();
+      if(document.getElementById('view-admin')?.classList.contains('active')){
+        await performNav('home');
       }
-    }
-
-    // If a non-admin somehow has /view-admin active, immediately eject them.
-    if(!currentIsAdmin && document.getElementById('view-admin')?.classList.contains('active')){
-      performNav('home');
     }
 
     if(typeof renderCommandPalette==='function' && document.getElementById('commandPalette')?.classList.contains('open')){
       renderCommandPalette();
     }
   }catch(error){
-    // Fail closed: never reveal the Admin tab when the role lookup fails.
-    currentIsAdmin=false;
-    if(nav){
-      nav.hidden=true;
-      nav.setAttribute('aria-hidden','true');
-      nav.classList.remove('active','admin-visible');
-      nav.style.setProperty('display','none','important');
-    }
+    hideAdmin();
     if(document.getElementById('view-admin')?.classList.contains('active')){
-      performNav('home');
+      await performNav('home');
     }
     console.warn('Admin role check failed; Admin hidden:',error);
   }
+
   return currentIsAdmin;
 }
 
@@ -7213,6 +7282,43 @@ loadAdminData=async function(){
   }
 }
 </style>
+
+
+<script id="voyagerInitialAdminCheck">
+(function voyagerInitialAdminCheck(){
+  const run=()=>{
+    if(typeof refreshAdminAccess==='function') refreshAdminAccess();
+  };
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',run,{once:true});
+  }else{
+    setTimeout(run,0);
+  }
+})();
+</script>
+
+
+<script id="voyagerAdminVisibilityGuard">
+(function voyagerAdminVisibilityGuard(){
+  const enforce=()=>{
+    const nav=document.querySelector('.admin-only-nav');
+    if(!nav)return;
+    if(!window.currentIsAdmin && !document.documentElement.dataset.voyagerAdminVerified){
+      nav.hidden=true;
+      nav.setAttribute('aria-hidden','true');
+      nav.classList.remove('active','admin-visible');
+      nav.style.setProperty('display','none','important');
+    }
+  };
+  try{
+    const observer=new MutationObserver(enforce);
+    observer.observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','style','hidden','aria-hidden']});
+  }catch(_){}
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',enforce,{once:true});
+  }else enforce();
+})();
+</script>
 
 </body>
 </html>
