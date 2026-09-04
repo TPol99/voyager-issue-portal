@@ -15,17 +15,8 @@ function setMessage(id,text,kind='error'){const el=$(id);if(!el)return;el.textCo
 function isLoggedIn(){return !!state.user;}
 function isAdmin(){return state.role==='admin';}
 
-let pendingTestingLeaveView=null;
-function hasTestingDeviceInput(){return state.testingDevices.some(d=>String(d?.id||'').trim().length>0);}
-function openLeaveTestingPrompt(nextView){pendingTestingLeaveView=nextView;const count=state.testingDevices.filter(d=>String(d?.id||'').trim()).length;$('#leaveTestingSummary').textContent=`${count} device${count===1?'':'s'} entered. Any unsaved test results will be discarded.`;openModal('#leaveTestingModal');}
-function confirmLeaveTesting(){const next=pendingTestingLeaveView;pendingTestingLeaveView=null;closeModal('#leaveTestingModal');state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderTesting();if(next)showView(next,true);}
-function showView(view,bypassLeaveGuard=false){
+function showView(view){
   const protectedViews=new Set(['issues','my-issues','testing','go-live','knowledge','admin']);
-  const testingIsActuallyVisible=!!$('#view-testing')?.classList.contains('active');
-  if(!bypassLeaveGuard&&view!=='testing'&&(state.view==='testing'||testingIsActuallyVisible)&&hasTestingDeviceInput()){
-    openLeaveTestingPrompt(view);
-    return;
-  }
   if(protectedViews.has(view)&&!isLoggedIn()){openModal('#authModal');return;}
   if(view==='admin'&&!isAdmin()){openModal('#authModal');return;}
   state.view=view;
@@ -38,51 +29,7 @@ function showView(view,bypassLeaveGuard=false){
   if(view==='admin')refreshAdmin();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-$('#raiseIssueClose')?.addEventListener('click',()=>closeModal('#raiseIssueModal'));
-$('#raiseIssueCancel')?.addEventListener('click',()=>closeModal('#raiseIssueModal'));
-$('#raiseIssueModal')?.addEventListener('click',e=>{if(e.target.id==='raiseIssueModal')closeModal('#raiseIssueModal')});
-$('#stayTestingBtn')?.addEventListener('click',()=>closeModal('#leaveTestingModal'));
-$('#leaveTestingClose')?.addEventListener('click',()=>{pendingTestingLeaveView=null;closeModal('#leaveTestingModal')});
-$('#leaveTestingModal')?.addEventListener('click',e=>{if(e.target.id==='leaveTestingModal'){pendingTestingLeaveView=null;closeModal('#leaveTestingModal')}});
-$('#leaveTestingBtn')?.addEventListener('click',confirmLeaveTesting);
-
-$('#raiseIssueForm')?.addEventListener('submit',async e=>{
-  e.preventDefault();
-  if(!isLoggedIn()){closeModal('#raiseIssueModal');openModal('#authModal');return;}
-  const payload={
-    system:$('#raiseIssueSystem').value,port:$('#raiseIssuePort').value.split(' - ')[0],
-    terminal:$('#raiseIssueTerminal').value.trim()||null,device_id:$('#raiseIssueDevice').value.trim()||null,
-    environment:$('#raiseIssueEnvironment').value,urgency:$('#raiseIssueUrgency').value,
-    category:$('#raiseIssueCategory').value,description:$('#raiseIssueDescription').value.trim(),
-    pnr:$('#raiseIssuePnr').value.trim().toUpperCase()||null,raised_by:state.user.email,status:'New'
-  };
-  if(!payload.port||!payload.category||!payload.description){setMessage('#raiseIssueMessage','Please complete Port, Issue Category and Description.');return;}
-  const btn=$('#raiseIssueSubmit');if(btn){btn.disabled=true;btn.textContent='Raising…';}
-  try{
-    const {data,error}=await sb.from('issues').insert(payload).select('issue_id').single();
-    if(error)throw error;
-    closeModal('#raiseIssueModal');
-    setMessage('#testingMessage',`Issue ${data?.issue_id||''} submitted successfully.`,'success');
-    await loadMyIssues();
-  }catch(err){setMessage('#raiseIssueMessage','Could not submit issue: '+(err.message||err));}
-  finally{if(btn){btn.disabled=false;btn.textContent='Raise Issue';}}
-});
-
 $$('[data-view]').forEach(el=>el.addEventListener('click',e=>{if(el.tagName==='A')return;e.preventDefault();showView(el.dataset.view);}));
-// Hard guard for Testing navigation. This runs in capture phase before the
-// normal navigation listener, so changing tabs can never bypass the warning.
-document.addEventListener('click',e=>{
-  const target=e.target.closest?.('[data-view]');
-  if(!target || target.tagName==='A') return;
-  const nextView=target.dataset.view;
-  const testingVisible=!!$('#view-testing')?.classList.contains('active');
-  if(nextView!=='testing' && (state.view==='testing'||testingVisible) && hasTestingDeviceInput()){
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    openLeaveTestingPrompt(nextView);
-  }
-},true);
-
 $('#mobileMenuBtn')?.addEventListener('click',()=>$('#mainNav')?.classList.toggle('open'));
 $('#authBtn')?.addEventListener('click',()=>state.user?signOut():openModal('#authModal'));
 $('#authClose')?.addEventListener('click',()=>closeModal('#authModal'));$('#authModal')?.addEventListener('click',e=>{if(e.target.id==='authModal')closeModal('#authModal')});
@@ -114,10 +61,7 @@ $('#authForm')?.addEventListener('submit',async e=>{e.preventDefault();const ema
     const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await setUser(data.user);if(state.user)closeModal('#authModal');
   }catch(err){setMessage('#authMessage',err.message||'Unable to complete sign in.');}
 });
-async function signOut(){
-  if(state.view==='testing'&&hasTestingDeviceInput()){openLeaveTestingPrompt('home');return;}
-  try{await sb.auth.signOut();}finally{state.user=null;state.role=null;state.approval=null;updateAuthUI();showView('home',true);}
-}
+async function signOut(){try{await sb.auth.signOut();}finally{state.user=null;state.role=null;state.approval=null;updateAuthUI();showView('home');}}
 
 async function loadAllData(){await Promise.all([loadTasks(),loadGoLiveTasks(),loadMyIssues(),loadTestingRuns()]);if(isAdmin())await refreshAdmin();updateAuthUI();}
 
@@ -127,36 +71,14 @@ function renderSystemTabs(){const box=$('#systemTabs');if(!box)return;box.innerH
 function activeTestingTasks(){return state.tasks.filter(t=>t.system===state.testingSystem&&t.active).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));}
 function renderTesting(){const table=$('#testingTable');if(!table)return;const tasks=activeTestingTasks();$('#testingTitle').textContent=`${state.testingSystem} Test Cases`;let head=`<thead><tr><th>Device ID</th>${tasks.map(t=>`<th>${esc(t.name)}</th>`).join('')}</tr></thead><tbody>`;for(const [i,d] of state.testingDevices.entries()){const failed=tasks.filter(t=>d.results[t.id]==='fail');head+=`<tr><td><input class="device-input" data-device="${i}" value="${esc(d.id)}" placeholder="e.g. SYDT3ABD001"><div class="device-actions"><button class="mini" data-pass-all="${i}">✓ Pass All</button><button class="mini" data-reset-row="${i}">↻ Reset</button>${state.testingDevices.length>1?`<button class="mini" data-remove-row="${i}">Remove</button>`:''}</div>${failed.length?`<div class="raise-row"><span>${failed.length} failed test${failed.length===1?'':'s'}</span><button class="raise-btn" data-raise-device="${i}">⚠ Raise Issue</button></div>`:''}</td>`;for(const t of tasks){const r=d.results[t.id]||'';head+=`<td><div class="check-set"><button class="check pass ${r==='pass'?'sel':''}" title="Pass" data-result="${i}|${t.id}|pass">✓</button><button class="check fail ${r==='fail'?'sel':''}" title="Fail" data-result="${i}|${t.id}|fail">✕</button></div></td>`;}head+='</tr>';}table.innerHTML=head+'</tbody>';updateTestingSummary();
   $$('.device-input').forEach(inp=>{
-    inp.addEventListener('input',()=>{
-      state.testingDevices[+inp.dataset.device].id=inp.value.trim();
-      state.testingRunDirty=true;
-    });
-    inp.addEventListener('keydown',e=>{
-      if(e.key!=='Enter') return;
-      e.preventDefault();
-      e.stopPropagation();
-      const index=+inp.dataset.device;
-      if(!state.testingDevices[index]?.id?.trim()) return;
-      state.testingDevices.push({id:'',results:{}});
-      state.testingRunDirty=true;
-      renderTesting();
-      requestAnimationFrame(()=>{
-        document.querySelector(`.device-input[data-device=\"${index+1}\"]`)?.focus();
-      });
-    });
-  });
-  $$('[data-result]').forEach(btn=>btn.addEventListener('click',e=>{
-    e.preventDefault();
-    e.stopPropagation();
-    const [i,id,r]=btn.dataset.result.split('|');
-    state.testingDevices[+i].results[id]=r;
-    state.testingRunDirty=true;
-    renderTesting();
-  }));
-  $$('[data-pass-all]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const d=state.testingDevices[+btn.dataset.passAll];tasks.forEach(t=>d.results[t.id]='pass');state.testingRunDirty=true;renderTesting();}));
-  $$('[data-reset-row]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();state.testingDevices[+btn.dataset.resetRow].results={};state.testingRunDirty=true;renderTesting();}));
-  $$('[data-remove-row]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();state.testingDevices.splice(+btn.dataset.removeRow,1);state.testingDevices=state.testingDevices.length?state.testingDevices:[{id:'',results:{}}];state.testingRunDirty=true;renderTesting();}));
-  $$('[data-raise-device]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openIssueFromFailedDevice(+btn.dataset.raiseDevice);}));
+  inp.addEventListener('input',()=>{state.testingDevices[+inp.dataset.device].id=inp.value.trim();state.testingRunDirty=true;});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const i=+inp.dataset.device;const nextIndex=i+1;if(!state.testingDevices[nextIndex]){state.testingDevices.push({id:'',results:{}});}state.testingRunDirty=true;renderTesting();requestAnimationFrame(()=>document.querySelector(`.device-input[data-device=\"${nextIndex}\"]`)?.focus());}});
+});
+  $$('[data-result]').forEach(btn=>btn.addEventListener('click',()=>{const [i,id,r]=btn.dataset.result.split('|');state.testingDevices[+i].results[id]=r;state.testingRunDirty=true;renderTesting();}));
+  $$('[data-pass-all]').forEach(btn=>btn.addEventListener('click',()=>{const d=state.testingDevices[+btn.dataset.passAll];tasks.forEach(t=>d.results[t.id]='pass');state.testingRunDirty=true;renderTesting();}));
+  $$('[data-reset-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices[+btn.dataset.resetRow].results={};state.testingRunDirty=true;renderTesting();}));
+  $$('[data-remove-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices.splice(+btn.dataset.removeRow,1);state.testingDevices=state.testingDevices.length?state.testingDevices:[{id:'',results:{}}];state.testingRunDirty=true;renderTesting();}));
+  $$('[data-raise-device]').forEach(btn=>btn.addEventListener('click',()=>openIssueFromFailedDevice(+btn.dataset.raiseDevice)));
 }
 function updateTestingSummary(){const tasks=activeTestingTasks(),total=tasks.length*state.testingDevices.length,complete=state.testingDevices.reduce((n,d)=>n+tasks.filter(t=>d.results[t.id]).length,0);$('#testingSummary').textContent=`${complete} / ${total} tests complete`;}
 $('#addDeviceBtn')?.addEventListener('click',()=>{state.testingDevices.push({id:'',results:{}});state.testingRunDirty=true;renderTesting();});
@@ -164,32 +86,58 @@ $('#resetTestingBtn')?.addEventListener('click',()=>{state.testingDevices=[{id:'
 $('#testingReference')?.addEventListener('input',()=>{if(state.testingRunDirty===false)state.testingRunDirty=true;});
 $('#testingPort')?.addEventListener('change',()=>{state.testingRunDirty=true;});
 function openIssueFromFailedDevice(index){
-  if(!isLoggedIn()){openModal('#authModal');return;}
-  const device=state.testingDevices[index], tasks=activeTestingTasks();
-  const failed=tasks.filter(t=>device.results[t.id]==='fail');
+  const tasks=activeTestingTasks(),failed=tasks.filter(t=>state.testingDevices[index].results[t.id]==='fail');
   if(!failed.length)return;
-  $('#raiseIssueSystem').value=state.testingSystem;
-  $('#raiseIssuePort').value=$('#testingPort').value||'';
-  $('#raiseIssueTerminal').value='';
-  $('#raiseIssueDevice').value=device.id||'';
-  $('#raiseIssueEnvironment').value='Testing/CERT';
-  $('#raiseIssueUrgency').value='High';
-  $('#raiseIssuePnr').value='';
-  $('#raiseIssueCategory').value='Other issues';
-  $('#raiseIssueFailedTests').innerHTML=failed.map(t=>`<span class="failed-test-pill">${esc(t.name)}</span>`).join('');
-  $('#raiseIssueDescription').value=failed.map(t=>`${t.name} failed.`).join('\n');
-  setMessage('#raiseIssueMessage','');
-  openModal('#raiseIssueModal');
+  $('#issueSystem').value=state.testingSystem;
+  $('#issuePort').value=$('#testingPort').value||'';
+  $('#issueDevice').value=state.testingDevices[index].id||'';
+  $('#issueTerminal').value='';
+  $('#issueEnvironment').value='Testing/CERT';
+  $('#issueUrgency').value='High';
+  $('#issueCategory').value='Other issues';
+  $('#issuePnr').value='';
+  $('#issueDescription').value=failed.map(t=>`${t.name} failed.`).join('\n');
+  const modal=$('#issuePreviewModal');
+  if(modal){
+    $('#issuePreviewSummary').textContent=`${failed.length} failed test${failed.length===1?'':'s'} on ${state.testingDevices[index].id||'this device'}`;
+    modal.hidden=false;
+  }
 }
 
-$('#saveTestingBtn')?.addEventListener('click',async()=>{if(!isLoggedIn())return openModal('#authModal');const tasks=activeTestingTasks();const port=$('#testingPort').value;if(!port){setMessage('#testingMessage','Select a port before saving.');return;}if(!state.testingDevices.some(d=>d.id.trim())){setMessage('#testingMessage','Enter at least one Device ID.');return;}const complete=state.testingDevices.reduce((n,d)=>n+tasks.filter(t=>d.results[t.id]).length,0);try{const {data:run,error}=await sb.from('testing_runs').insert({port,system:state.testingSystem,run_reference:$('#testingReference').value.trim()||null,tested_by_user_id:state.user.id,tested_by_name:formatName(state.user.email),device_count:state.testingDevices.length,total_tests:tasks.length*state.testingDevices.length,completed_tests:complete}).select('id').single();if(error)throw error;const resultRows=[];state.testingDevices.forEach((d,di)=>tasks.forEach(t=>resultRows.push({run_id:run.id,device_id:d.id,test_case:t.name,result:d.results[t.id]||'untested',device_index:di+1})));if(resultRows.length){const {error:rerr}=await sb.from('testing_results').insert(resultRows);if(rerr)throw rerr;}state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderTesting();await loadTestingRuns();setMessage('#testingMessage',`Testing run saved as ${run.id}.`,'success');}catch(err){setMessage('#testingMessage','Could not save testing: '+(err.message||err));}});
+$('#saveTestingBtn')?.addEventListener('click',async()=>{
+  if(!isLoggedIn())return openModal('#authModal');
+  const tasks=activeTestingTasks(),port=$('#testingPort').value;
+  if(!port){setMessage('#testingMessage','Select a port before saving.');return;}
+  const named=state.testingDevices.filter(d=>d.id.trim());
+  if(!named.length){setMessage('#testingMessage','Enter at least one Device ID.');return;}
+  const complete=state.testingDevices.reduce((n,d)=>n+tasks.filter(t=>d.results[t.id]).length,0);
+  const results=[];
+  state.testingDevices.forEach(d=>tasks.forEach(t=>results.push({device_id:d.id.trim(),test_case:t.name,result:d.results[t.id]||'untested'})));
+  try{
+    const {data,error}=await sb.rpc('save_testing_run',{
+      p_port:port,
+      p_system:state.testingSystem,
+      p_run_reference:$('#testingReference').value.trim()||null,
+      p_tested_by_name:formatName(state.user.email),
+      p_results:results
+    });
+    if(error)throw error;
+    state.testingDevices=[{id:'',results:{}}];
+    state.testingRunDirty=false;
+    renderTesting();
+    await loadTestingRuns();
+    setMessage('#testingMessage',`Testing run saved as ${data?.id||'successfully'}.`,'success');
+  }catch(err){
+    setMessage('#testingMessage','Could not save testing: '+(err.message||err));
+  }
+});
 
 function csvEscape(v){const s=String(v??'');return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s;}
 $('#exportTestingBtn')?.addEventListener('click',()=>{const tasks=activeTestingTasks();const rows=[['Device ID',...tasks.map(t=>t.name)],...state.testingDevices.map(d=>[d.id,...tasks.map(t=>d.results[t.id]==='pass'?'Yes':'')])];const csv='\ufeff'+rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`va-fax-${state.testingSystem.toLowerCase().replaceAll(' ','-')}-testing.csv`;a.click();});
 
 async function loadTestingRuns(){if(!state.user)return;const {data,error}=await sb.from('testing_runs').select('id,created_at,port,system,run_reference,tested_by_name,device_count,total_tests,completed_tests').eq('tested_by_user_id',state.user.id).order('created_at',{ascending:false}).limit(100);if(error){console.warn(error);return;}const table=$('#testingHistoryTable');if(!table)return;const rows=data||[];table.innerHTML=rows.length?`<thead><tr><th>Date</th><th>Port</th><th>System</th><th>Reference</th><th>Devices</th><th>Completion</th><th>Export</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(new Date(r.created_at).toLocaleString('en-AU'))}</td><td>${esc(r.port)}</td><td>${esc(r.system)}</td><td>${esc(r.run_reference||'')}</td><td>${r.device_count||0}</td><td>${r.total_tests?Math.round((r.completed_tests||0)/r.total_tests*100):0}%</td><td><button class="mini" data-export-run="${esc(r.id)}">⇩ CSV</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td colspan="7" style="text-align:left;color:var(--muted)">No saved testing runs yet.</td></tr></tbody>';$('[data-export-run]')&&$$('[data-export-run]').forEach(b=>b.addEventListener('click',()=>exportSavedRun(b.dataset.exportRun)));}
 $('#refreshTestingHistory')?.addEventListener('click',loadTestingRuns);
-async function exportSavedRun(runId){const {data,error}=await sb.from('testing_results').select('device_id,test_case,result,device_index').eq('run_id',runId).order('device_index');if(error){alert(error.message);return;}const tests=[];const devices=[];for(const r of data||[]){if(!tests.includes(r.test_case))tests.push(r.test_case);if(!devices.includes(r.device_id))devices.push(r.device_id);}const lines=[['Device ID',...tests],...devices.map(d=>{const rows=(data||[]).filter(r=>r.device_id===d);const map=new Map(rows.map(r=>[r.test_case,r.result]));return [d,...tests.map(t=>map.get(t)==='pass'?'Yes':'')]} )];const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+lines.map(r=>r.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv'}));a.download=`va-fax-${runId}.csv`;a.click();}
+async function exportSavedRun(runId){const {data,error}=await sb.from('testing_results').select('device_id,test_case,result,created_at').eq('run_id',runId).order('created_at');if(error){alert(error.message);return;}const tests=[];const devices=[];for(const r of data||[]){if(!tests.includes(r.test_case))tests.push(r.test_case);if(!devices.includes(r.device_id))devices.push(r.device_id);}const lines=[['Device ID',...tests],...devices.map(d=>{const rows=(data||[]).filter(r=>r.device_id===d);const map=new Map(rows.map(r=>[r.test_case,r.result]));return [d,...tests.map(t=>map.get(t)==='pass'?'Yes':'')]} )];const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+lines.map(r=>r.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv'}));a.download=`va-fax-${runId}.csv`;a.click();}
 
 function activeGoLive(){return state.goLiveTasks.filter(t=>t.active).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));}
 function renderGoLive(){const box=$('#goLiveTaskList');if(!box)return;const tasks=activeGoLive(),complete=tasks.filter(t=>state.goLiveChecks[t.id]).length;$('#goLiveProgressText').textContent=`${complete} / ${tasks.length} complete`;$('#goLiveProgressFill').style.width=tasks.length?`${Math.round(complete/tasks.length*100)}%`:'0%';box.innerHTML=tasks.length?tasks.map((t,i)=>`<label class="go-live-item ${state.goLiveChecks[t.id]?'checked':''}"><input type="checkbox" data-go-live="${esc(t.id)}" ${state.goLiveChecks[t.id]?'checked':''}><span class="go-live-check">✓</span><span class="go-live-copy"><strong>${i+1}. ${esc(t.name)}</strong><small>${esc(t.description||'No completion criteria supplied.')}</small></span>${state.goLiveChecks[t.id]?'<span class="status">Complete</span>':''}</label>`).join(''):'<div class="card placeholder"><strong>No active checklist tasks.</strong><span>An administrator can add them from Admin.</span></div>';
@@ -215,11 +163,47 @@ $('#goLiveSave')?.addEventListener('click',async()=>{if(!isAdmin())return;const 
 async function toggleGoLive(id){const t=state.goLiveTasks.find(x=>String(x.id)===String(id));if(!t)return;const {error}=await sb.from('go_live_tasks').update({active:!t.active,updated_at:new Date().toISOString()}).eq('id',id);if(error){alert(error.message);return;}await loadGoLiveTasks();}
 async function deleteGoLive(id){const t=state.goLiveTasks.find(x=>String(x.id)===String(id));if(!t)return;openConfirm('Delete checklist task?',`Delete "${t.name}" permanently?`,async()=>{const {error}=await sb.from('go_live_tasks').delete().eq('id',id);if(error)throw error;delete state.goLiveChecks[id];await loadGoLiveTasks();});}
 
+
+async function saveGoLiveChecklist(){
+  if(!isLoggedIn()){openModal('#authModal');return;}
+  const tasks=activeGoLive();
+  if(!tasks.length){setMessage('#goLiveMessage','There are no active checklist tasks to save.');return;}
+  const completed=tasks.filter(t=>state.goLiveChecks[t.id]).length;
+  try{
+    const portValue=$('#goLivePort')?.value||'';
+    const port=portValue.split(' - ')[0]||'';
+    if(!port){setMessage('#goLiveMessage','Please select a port before saving the checklist.');return;}
+    const {data:run,error}=await sb.from('go_live_runs').insert({tested_by_user_id:state.user.id,tested_by_name:formatName(state.user.email),port,total_tasks:tasks.length,completed_tasks:completed,status:completed===tasks.length?'completed':'incomplete',completed_at:completed===tasks.length?new Date().toISOString():null}).select('id').single();
+    if(error)throw error;
+    const rows=tasks.map(t=>({run_id:run.id,task_id:t.id,task_name:t.name,completed:!!state.goLiveChecks[t.id]}));
+    const {error:rerr}=await sb.from('go_live_results').insert(rows);
+    if(rerr)throw rerr;
+    state.goLiveChecks={};
+    renderGoLive();
+    setMessage('#goLiveMessage',`Go Live checklist saved as ${run.id}.`,'success');
+    await loadAdminGoLiveRuns();
+  }catch(e){
+    setMessage('#goLiveMessage','Could not save checklist: '+(e.message||e));
+  }
+}
+$('#saveGoLiveBtn')?.addEventListener('click',saveGoLiveChecklist);
+
+async function loadAdminGoLiveRuns(){
+  if(!isAdmin())return;
+  const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});
+  if(error)throw error;
+  const box=$('#adminGoLiveRunList');if(!box)return;
+  const runs=data?.runs||[];
+  box.innerHTML=runs.length?runs.map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port||'No port')} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tasks||0} / ${r.total_tasks||0} complete · ${esc(r.status||'incomplete')}</div></div><div class="run-actions"><button class="mini" data-delete-go-live-run="${esc(r.id)}">Delete</button></div></div>`).join(''):'<div class="placeholder small"><strong>No saved Go Live checklists.</strong></div>';
+  $$('[data-delete-go-live-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete Go Live checklist?','This permanently removes the saved checklist results.',async()=>{const {error:e}=await sb.functions.invoke('admin-manage',{body:{action:'delete_go_live_run',runId:b.dataset.deleteGoLiveRun}});if(e)throw e;await loadAdminGoLiveRuns();})));
+}
+$('#refreshAdminGoLiveRuns')?.addEventListener('click',loadAdminGoLiveRuns);
+
 async function loadMyIssues(){if(!state.user){$('#myIssuesList').innerHTML='<div class="card placeholder"><strong>Sign in required.</strong><span>Sign in to view your issues.</span></div>';return;}const {data,error}=await sb.from('issues').select('id,issue_id,system,port,terminal,device_id,category,description,urgency,status,created_at,environment,pnr').eq('raised_by',state.user.email).order('created_at',{ascending:false}).limit(100);if(error){setMessage('#issueMessage',error.message);return;}const box=$('#myIssuesList');box.innerHTML=(data||[]).map(i=>`<div class="card ticket-row"><div><strong>${esc(i.issue_id||i.id)}</strong><div class="row-meta">${esc(i.system)} · ${esc(i.port)} · ${esc(i.device_id||'No device')} · ${esc(i.category)}</div><div class="row-meta">${esc(new Date(i.created_at).toLocaleString('en-AU'))}</div></div><div class="ticket-actions"><span class="status">${esc(i.status||'New')}</span></div></div>`).join('')||'<div class="card placeholder"><strong>No issues yet.</strong><span>Your submitted issues will appear here.</span></div>';}
 $('#refreshMyIssues')?.addEventListener('click',loadMyIssues);
 $('#issueForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!state.user){openModal('#authModal');return;}const port=$('#issuePort').value.split(' - ')[0];const payload={system:$('#issueSystem').value,port,terminal:$('#issueTerminal').value.trim()||null,device_id:$('#issueDevice').value.trim()||null,environment:$('#issueEnvironment').value,urgency:$('#issueUrgency').value,category:$('#issueCategory').value,description:$('#issueDescription').value.trim(),pnr:$('#issuePnr').value.trim().toUpperCase()||null,raised_by:state.user.email,status:'New'};if(!payload.port||!payload.category||!payload.description){setMessage('#issueMessage','Please complete Port, Issue Category and Description.');return;}try{const {data,error}=await sb.from('issues').insert(payload).select('issue_id').single();if(error)throw error;$('#issueForm').reset();setMessage('#issueMessage',`Issue ${data?.issue_id||''} submitted successfully.`,'success');await loadMyIssues();}catch(err){setMessage('#issueMessage','Could not submit issue: '+(err.message||err));}});
 
-async function loadAdminUsers(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_all'}});if(error)throw error;renderAdminUsers(data?.users||[]);return data;}
+async function loadAdminUsers(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_users'}});if(error)throw error;renderAdminUsers(data?.users||[]);return data;}
 function renderAdminUsers(users){const box=$('#adminUserList');if(!box)return;box.innerHTML=users.length?users.map(u=>{const pending=u.approval_status!=='approved'&&u.role!=='admin';return `<div class="user-row"><div><strong>${esc(u.email)}</strong><div class="row-meta">${esc(u.name||'')} · Created ${esc(new Date(u.created_at).toLocaleString('en-AU'))}</div></div><div class="user-actions"><span class="status ${pending?'inactive':''}">${pending?'Pending approval':'Approved'}</span>${pending?`<button class="mini" data-approve-user="${esc(u.id)}">Approve</button>`:''}<button class="mini" data-role-user="${esc(u.id)}" data-role="${u.role==='admin'?'staff':'admin'}">Make ${u.role==='admin'?'Staff':'Admin'}</button>${u.id!==state.user.id?`<button class="mini" data-delete-user="${esc(u.id)}">Delete</button>`:'<span class="row-meta">Current user</span>'}</div></div>`}).join(''):'<div class="placeholder small"><strong>No users found.</strong></div>';$$('[data-approve-user]').forEach(b=>b.addEventListener('click',()=>adminAction('approve_user',b.dataset.approveUser)));$$('[data-role-user]').forEach(b=>b.addEventListener('click',()=>adminAction('set_role',b.dataset.roleUser,{role:b.dataset.role})));$$('[data-delete-user]').forEach(b=>b.addEventListener('click',()=>adminAction('delete_user',b.dataset.deleteUser)));}
 async function adminAction(action,userId,extra={}){try{const {error}=await sb.functions.invoke('admin-manage',{body:{action,userId,...extra}});if(error)throw error;await loadAdminUsers();}catch(e){alert(e.message||e);}}
 $('#refreshUsersBtn')?.addEventListener('click',loadAdminUsers);
@@ -229,11 +213,17 @@ async function loadAdminTickets(){if(!isAdmin())return;const {data,error}=await 
 $('#refreshAdminTickets')?.addEventListener('click',loadAdminTickets);
 async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_all'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete</div></div><div class="run-actions"><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
 $('#refreshAdminRuns')?.addEventListener('click',loadAdminRuns);
-async function refreshAdmin(){if(!isAdmin())return;try{await loadTasks();await loadGoLiveTasks();await loadAdminUsers();await loadAdminTickets();await loadAdminRuns();}catch(e){console.error(e);}}
+async function refreshAdmin(){if(!isAdmin())return;try{await loadTasks();await loadGoLiveTasks();await loadAdminUsers();await loadAdminTickets();await loadAdminRuns();await loadAdminGoLiveRuns();}catch(e){console.error(e);}}
 
 let confirmFn=null;function openConfirm(title,copy,fn){$('#confirmTitle').textContent=title;$('#confirmCopy').textContent=copy;confirmFn=fn;openModal('#confirmModal');}function closeConfirm(){confirmFn=null;closeModal('#confirmModal');}$('#confirmClose')?.addEventListener('click',closeConfirm);$('#confirmCancel')?.addEventListener('click',closeConfirm);$('#confirmAction')?.addEventListener('click',async()=>{const fn=confirmFn;closeConfirm();if(!fn)return;try{await fn();}catch(e){alert(e.message||e);}});
 
 sb.auth.onAuthStateChange(async(_event,session)=>{if(session?.user){if(!state.user||state.user.id!==session.user.id)await setUser(session.user);}else{state.user=null;state.role=null;state.approval=null;updateAuthUI();}});
 (async()=>{try{const {data}=await sb.auth.getSession();if(data.session?.user)await setUser(data.session.user);else{updateAuthUI();setConnected(true);$('#homeTaskCount').textContent='Sign in to load';$('#homeGoLiveCount').textContent='Sign in to load';}}catch(e){console.error(e);setConnected(false);}})();
-
-window.addEventListener('beforeunload',e=>{if(state.view==='testing'&&hasTestingDeviceInput()){e.preventDefault();e.returnValue='';}});
+$('#issuePreviewClose')?.addEventListener('click',()=>closeModal('#issuePreviewModal'));
+$('#issuePreviewCancel')?.addEventListener('click',()=>closeModal('#issuePreviewModal'));
+$('#issuePreviewModal')?.addEventListener('click',e=>{if(e.target.id==='issuePreviewModal')closeModal('#issuePreviewModal');});
+$('#issuePreviewSubmit')?.addEventListener('click',async()=>{
+  closeModal('#issuePreviewModal');
+  const form=$('#issueForm');
+  if(form){form.requestSubmit();}
+});

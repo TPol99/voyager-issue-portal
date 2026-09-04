@@ -11,6 +11,26 @@
 <link rel="stylesheet" href="./styles.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <title>VA FAX Testing Companion</title>
+
+<style id="vafax-fix3-style">
+.page-head-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media(max-width:700px){.page-head-actions{width:100%}.page-head-actions .btn{flex:1}}
+</style>
+
+
+<style id="vafax-fix3-issue-style">
+.issue-preview-copy{margin:14px 0;padding:12px 14px;border-radius:12px;background:#fff7f8;border:1px solid #efb5bf;color:#a70f2a;font-size:12px;line-height:1.45}
+</style>
+
+<style id="go-live-port-style">
+.checklist-context{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:14px;padding:14px 16px;}
+.checklist-context>div{display:flex;flex-direction:column;gap:3px;}
+.checklist-context label{font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.06em;}
+.checklist-context span{color:var(--muted);font-size:11px;}
+.context-select{min-width:250px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink);padding:10px 12px;outline:none;}
+.context-select:focus{border-color:var(--purple);box-shadow:0 0 0 3px #6b2df214;}
+@media(max-width:620px){.checklist-context{align-items:stretch;flex-direction:column;}.context-select{width:100%;min-width:0;}}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -115,9 +135,30 @@
     </section>
 
     <section id="view-go-live" class="view">
-      <div class="page-head"><div><div class="eyebrow">Operations</div><h2>Go Live Checklist</h2><p>Work through the current operational readiness checks.</p></div><button class="btn secondary" id="resetGoLiveBtn">↻ Reset</button></div>
+      <div class="page-head"><div><div class="eyebrow">Operations</div><h2>Go Live Checklist</h2><p>Work through the current operational readiness checks.</p></div><div class="page-head-actions"><button class="btn secondary" id="resetGoLiveBtn">↻ Reset</button><button class="btn primary" id="saveGoLiveBtn">Save Checklist</button></div></div><div class="card checklist-context">
+        <div>
+          <label for="goLivePort">Port</label>
+          <span>Select the airport this go-live checklist applies to.</span>
+        </div>
+        <select id="goLivePort" class="context-select">
+          <option value="">Select port</option>
+          <option>LST - Launceston</option>
+          <option>MEL - Melbourne</option>
+          <option>SYD - Sydney</option>
+          <option>BNE - Brisbane</option>
+          <option>MCY - Sunshine Coast</option>
+          <option>MKY - Mackay</option>
+          <option>ADL - Adelaide</option>
+          <option>PER - Perth</option>
+          <option>DRW - Darwin</option>
+          <option>ZQN - Queenstown</option>
+          <option>NAN - Nadi</option>
+        </select>
+      </div>
+      
       <div class="card progress-card"><div><strong id="goLiveProgressText">0 / 0 complete</strong><span>Current checklist progress</span></div><div class="progress-track"><div id="goLiveProgressFill"></div></div></div>
       <div id="goLiveTaskList" class="stack"></div>
+      <div id="goLiveMessage" class="message" hidden></div>
     </section>
 
     <section id="view-knowledge" class="view">
@@ -133,42 +174,11 @@
         <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>User Management</h3><p>Approve staff, change roles or remove access.</p></div><button class="btn secondary" id="refreshUsersBtn">↻ Refresh</button></div><div class="invite-grid"><input id="inviteEmail" type="email" placeholder="firstname.lastname@virginaustralia.com"><input id="inviteName" placeholder="Name (optional)"><button class="btn primary" id="inviteBtn">Invite User</button></div><div id="adminUserList" class="admin-list"></div></div>
         <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Tickets</h3><p>Administrator view of every issue.</p></div><button class="btn secondary" id="refreshAdminTickets">↻ Refresh</button></div><div id="adminTicketList" class="admin-list"></div></div>
         <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Testing Runs</h3><p>Administrator view of saved testing sessions.</p></div><button class="btn secondary" id="refreshAdminRuns">↻ Refresh</button></div><div id="adminRunList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Go Live Checklists</h3><p>Administrator view of saved go-live readiness checks.</p></div><button class="btn secondary" id="refreshAdminGoLiveRuns">↻ Refresh</button></div><div id="adminGoLiveRunList" class="admin-list"></div></div>
       </div>
     </section>
   </main>
   <footer>Created by <strong>Tristan Pollock</strong></footer>
-</div>
-
-<div id="raiseIssueModal" class="modal-backdrop" hidden>
-  <div class="modal wide issue-modal" role="dialog" aria-modal="true" aria-labelledby="raiseIssueTitle">
-    <button class="modal-close" id="raiseIssueClose" type="button" aria-label="Close">×</button>
-    <div class="eyebrow">Testing</div><h3 id="raiseIssueTitle">Log an Issue</h3>
-    <p class="modal-subtitle">Raise an issue without leaving the current testing run.</p>
-    <form id="raiseIssueForm" class="form-grid">
-      <label>System<input id="raiseIssueSystem" readonly></label>
-      <label>Port<select id="raiseIssuePort" required><option value="">Select port</option><option>BNE - Brisbane</option><option>MEL - Melbourne</option><option>SYD - Sydney</option><option>OOL - Gold Coast</option><option>MCY - Sunshine Coast</option><option>MKY - Mackay</option><option>ADL - Adelaide</option><option>PER - Perth</option><option>DRW - Darwin</option><option>LST - Launceston</option><option>ZQN - Queenstown</option><option>NAN - Nadi</option></select></label>
-      <label>Terminal<input id="raiseIssueTerminal" placeholder="e.g. T3 / Domestic"></label>
-      <label>Device ID<input id="raiseIssueDevice" readonly></label>
-      <label>Environment<select id="raiseIssueEnvironment"><option>Testing/CERT</option><option>Production</option></select></label>
-      <label>Urgency<select id="raiseIssueUrgency"><option>Low</option><option>Medium</option><option selected>High</option><option>Critical</option></select></label>
-      <label class="full">PNR<input id="raiseIssuePnr" maxlength="6" placeholder="Optional"></label>
-      <label class="full">Issue category<select id="raiseIssueCategory" required><option value="">Select a category</option><option>Error Printing</option><option>Unable to read bag tags</option><option>Unable to retrieve booking</option><option>Incorrect allowance</option><option>Incorrect fees</option><option>Other issues</option></select></label>
-      <div class="full"><div class="field-label">Failed test(s)</div><div id="raiseIssueFailedTests" class="failed-test-list"></div></div>
-      <label class="full">Description<textarea id="raiseIssueDescription" rows="5" required placeholder="Describe what happened…"></textarea></label>
-      <div class="full modal-message" id="raiseIssueMessage" aria-live="polite"></div>
-      <div class="full modal-actions"><button class="btn secondary" type="button" id="raiseIssueCancel">Cancel</button><button class="btn primary" type="submit" id="raiseIssueSubmit">Raise Issue</button></div>
-    </form>
-  </div>
-</div>
-
-<div id="leaveTestingModal" class="modal-backdrop" hidden>
-  <div class="modal small leave-modal" role="dialog" aria-modal="true" aria-labelledby="leaveTestingTitle">
-    <button class="modal-close" id="leaveTestingClose" type="button" aria-label="Close">×</button>
-    <div class="eyebrow">Testing in progress</div><h3 id="leaveTestingTitle">Leave testing?</h3>
-    <p class="modal-subtitle">You've entered a device ID. Leaving this page will discard the current testing run and its unsaved results.</p>
-    <div class="leave-summary" id="leaveTestingSummary"></div>
-    <div class="modal-actions"><button class="btn secondary" type="button" id="stayTestingBtn">Stay on Testing</button><button class="btn danger" type="button" id="leaveTestingBtn">Leave &amp; Discard</button></div>
-  </div>
 </div>
 
 <div id="authModal" class="modal-backdrop" hidden><div class="modal" role="dialog" aria-modal="true"><button class="modal-close" id="authClose" aria-label="Close">×</button><div class="eyebrow">Staff access</div><h3 id="authTitle">Sign in</h3><p id="authSubtitle">Sign in to use staff features.</p><form id="authForm"><label>Email<input id="authEmail" type="email" required autocomplete="email"></label><label>Password<input id="authPassword" type="password" required autocomplete="current-password"></label><label class="remember-line"><input id="rememberMe" type="checkbox"> Remember me</label><div class="modal-actions"><button class="btn primary" type="submit">Sign in</button><button class="btn secondary" id="switchToCreate" type="button">Create account</button></div></form><div id="authMessage" class="message" hidden></div></div></div>
@@ -176,6 +186,9 @@
 <div id="taskModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="taskClose">×</button><div class="eyebrow">Testing configuration</div><h3 id="taskModalTitle">Add test case</h3><p>Create or edit a test case.</p><label>Test name<input id="taskName" maxlength="120" required></label><label>System<select id="taskSystem"><option>Bag Tagger</option><option>Auto Bag Drop</option></select></label><label>Description / tester instructions<textarea id="taskDescription" rows="4"></textarea></label><label>Order<input id="taskOrder" type="number" min="1" value="1"></label><div class="modal-actions"><button class="btn secondary" id="taskCancel">Cancel</button><button class="btn primary" id="taskSave">Save test case</button></div></div></div>
 
 <div id="goLiveModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="goLiveClose">×</button><div class="eyebrow">Go Live Checklist</div><h3 id="goLiveModalTitle">Add checklist task</h3><p>Create or edit a checklist item.</p><label>Task name<input id="goLiveName" maxlength="120" required></label><label>Description / completion criteria<textarea id="goLiveDescription" rows="4"></textarea></label><label>Order<input id="goLiveOrder" type="number" min="1" value="1"></label><div class="modal-actions"><button class="btn secondary" id="goLiveCancel">Cancel</button><button class="btn primary" id="goLiveSave">Save task</button></div></div></div>
+
+
+<div id="issuePreviewModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="issuePreviewClose" aria-label="Close">×</button><div class="eyebrow">Failed testing</div><h3>Raise an Issue</h3><p id="issuePreviewSummary">A failed test has been detected.</p><div class="issue-preview-copy">Review the details below, then submit the issue without leaving Testing.</div><div class="modal-actions"><button class="btn secondary" id="issuePreviewCancel">Cancel</button><button class="btn danger" id="issuePreviewSubmit">Raise Issue</button></div></div></div>
 
 <div id="confirmModal" class="modal-backdrop" hidden><div class="modal small"><button class="modal-close" id="confirmClose">×</button><div class="eyebrow">Confirm action</div><h3 id="confirmTitle">Are you sure?</h3><p id="confirmCopy">This cannot be undone.</p><div class="modal-actions"><button class="btn secondary" id="confirmCancel">Cancel</button><button class="btn danger" id="confirmAction">Confirm</button></div></div></div>
 
