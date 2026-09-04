@@ -15,10 +15,31 @@ function setMessage(id,text,kind='error'){const el=$(id);if(!el)return;el.textCo
 function isLoggedIn(){return !!state.user;}
 function isAdmin(){return state.role==='admin';}
 
-function showView(view){
+function discardTestingState(){
+  state.testingDevices=[{id:'',results:{}}];
+  state.testingRunDirty=false;
+  const port=$('#testingPort'); if(port) port.value='';
+  const ref=$('#testingReference'); if(ref) ref.value='';
+  renderTesting();
+}
+
+function showView(view,force=false){
   const protectedViews=new Set(['issues','my-issues','testing','go-live','knowledge','admin']);
   if(protectedViews.has(view)&&!isLoggedIn()){openModal('#authModal');return;}
   if(view==='admin'&&!isAdmin()){openModal('#authModal');return;}
+
+  if(!force && state.view==='testing' && view!=='testing' && state.testingRunDirty){
+    openConfirm(
+      'Leave Testing?',
+      'Your unsaved testing results will be discarded. Are you sure you want to leave?',
+      async()=>{
+        discardTestingState();
+        showView(view,true);
+      }
+    );
+    return;
+  }
+
   state.view=view;
   $$('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${view}`));
   $$('.nav-link[data-view]').forEach(v=>v.classList.toggle('active',v.dataset.view===view));
@@ -31,6 +52,13 @@ function showView(view){
 }
 $$('[data-view]').forEach(el=>el.addEventListener('click',e=>{if(el.tagName==='A')return;e.preventDefault();showView(el.dataset.view);}));
 $('#mobileMenuBtn')?.addEventListener('click',()=>$('#mainNav')?.classList.toggle('open'));
+window.addEventListener('beforeunload',function vafaxTestingBeforeUnload(event){
+  if(state.view==='testing' && state.testingRunDirty){
+    event.preventDefault();
+    event.returnValue='';
+  }
+});
+
 $('#authBtn')?.addEventListener('click',()=>state.user?signOut():openModal('#authModal'));
 $('#authClose')?.addEventListener('click',()=>closeModal('#authModal'));$('#authModal')?.addEventListener('click',e=>{if(e.target.id==='authModal')closeModal('#authModal')});
 $('#switchToCreate')?.addEventListener('click',()=>toggleAuthMode(true));
