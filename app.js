@@ -43,7 +43,7 @@ function showView(view,force=false){
   state.view=view;
   $$('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${view}`));
   $$('.nav-link[data-view]').forEach(v=>v.classList.toggle('active',v.dataset.view===view));
-  $('#mainNav')?.classList.remove('open');
+  $('#mainNav')?.classList.remove('open');$('#mobileMenuBtn')?.setAttribute('aria-expanded','false');
   if(view==='testing')renderTesting();
   if(view==='go-live')renderGoLive();
   if(view==='my-issues')loadMyIssues();
@@ -51,7 +51,12 @@ function showView(view,force=false){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 $$('[data-view]').forEach(el=>el.addEventListener('click',e=>{if(el.tagName==='A')return;e.preventDefault();showView(el.dataset.view);}));
-$('#mobileMenuBtn')?.addEventListener('click',()=>$('#mainNav')?.classList.toggle('open'));
+$('#mobileMenuBtn')?.addEventListener('click',()=>{
+  const nav=$('#mainNav');
+  if(!nav)return;
+  const open=nav.classList.toggle('open');
+  $('#mobileMenuBtn').setAttribute('aria-expanded',open?'true':'false');
+});
 window.addEventListener('beforeunload',function vafaxTestingBeforeUnload(event){
   if(state.view==='testing' && state.testingRunDirty){
     event.preventDefault();
@@ -61,7 +66,7 @@ window.addEventListener('beforeunload',function vafaxTestingBeforeUnload(event){
 
 $('#authBtn')?.addEventListener('click',()=>state.user?signOut():openModal('#authModal'));
 $('#authClose')?.addEventListener('click',()=>closeModal('#authModal'));$('#authModal')?.addEventListener('click',e=>{if(e.target.id==='authModal')closeModal('#authModal')});
-$('#switchToCreate')?.addEventListener('click',()=>toggleAuthMode(true));
+$('#switchToCreate')?.addEventListener('click',()=>toggleAuthMode(!authCreateMode));
 let authCreateMode=false;
 function toggleAuthMode(create){authCreateMode=create;$('#authTitle').textContent=create?'Create account':'Sign in';$('#authSubtitle').textContent=create?'Create an account. An administrator must approve access before you can use staff features.':'Sign in to use staff features.';$('#authPassword').autocomplete=create?'new-password':'current-password';$('#rememberMe').parentElement.style.display=create?'none':'flex';$('#authForm button[type="submit"]').textContent=create?'Create account':'Sign in';$('#switchToCreate').textContent=create?'Back to sign in':'Create account';setMessage('#authMessage','');}
 
