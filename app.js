@@ -110,7 +110,7 @@ function renderTesting(){const table=$('#testingTable');if(!table)return;const t
 }
 function updateTestingSummary(){const tasks=activeTestingTasks(),total=tasks.length*state.testingDevices.length,complete=state.testingDevices.reduce((n,d)=>n+tasks.filter(t=>d.results[t.id]).length,0);$('#testingSummary').textContent=`${complete} / ${total} tests complete`;}
 $('#addDeviceBtn')?.addEventListener('click',()=>{state.testingDevices.push({id:'',results:{}});state.testingRunDirty=true;renderTesting();});
-$('#resetTestingBtn')?.addEventListener('click',()=>{state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderTesting();});
+$('#resetTestingBtn')?.addEventListener('click',()=>{openConfirm('Reset Testing?','This will clear all device IDs and pass/fail results in the current testing run. This cannot be undone.',()=>{discardTestingState();});});
 $('#testingReference')?.addEventListener('input',()=>{if(state.testingRunDirty===false)state.testingRunDirty=true;});
 $('#testingPort')?.addEventListener('change',()=>{state.testingRunDirty=true;});
 function openIssueFromFailedDevice(index){
