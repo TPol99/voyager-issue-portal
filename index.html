@@ -45,6 +45,10 @@
 @media(max-width:700px){.failed-issue-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:480px){.failed-issue-grid{grid-template-columns:1fr;}}
 </style>
+<style id="admin-export-actions-style">
+.section-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+@media(max-width:620px){.section-actions{width:100%;}.section-actions .btn{flex:1;}}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -186,9 +190,9 @@
         <div class="card admin-panel"><div class="section-head"><div><h3>Testing Tasks</h3><p>Create, edit, activate, deactivate and reorder testing tasks.</p></div><button class="btn primary" id="addTaskBtn">+ Add Test Task</button></div><div class="admin-tabs" id="adminTestingTabs"><button class="admin-filter active" data-admin-system="Bag Tagger">Bag Tagger</button><button class="admin-filter" data-admin-system="Auto Bag Drop">Auto Bag Drop</button></div><div id="adminTaskList" class="admin-list"></div></div>
         <div class="card admin-panel"><div class="section-head"><div><h3>Go Live Checklist</h3><p>Manage the checklist used by testers.</p></div><button class="btn primary" id="addGoLiveTaskBtn">+ Add Checklist Task</button></div><div id="adminGoLiveTaskList" class="admin-list"></div></div>
         <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>User Management</h3><p>Approve staff, change roles or remove access.</p></div><button class="btn secondary" id="refreshUsersBtn">↻ Refresh</button></div><div class="invite-grid"><input id="inviteEmail" type="email" placeholder="firstname.lastname@virginaustralia.com"><input id="inviteName" placeholder="Name (optional)"><button class="btn primary" id="inviteBtn">Invite User</button></div><div id="adminUserList" class="admin-list"></div></div>
-        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Tickets</h3><p>Administrator view of every issue.</p></div><button class="btn secondary" id="refreshAdminTickets">↻ Refresh</button></div><div id="adminTicketList" class="admin-list"></div></div>
-        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Testing Runs</h3><p>Administrator view of saved testing sessions.</p></div><button class="btn secondary" id="refreshAdminRuns">↻ Refresh</button></div><div id="adminRunList" class="admin-list"></div></div>
-        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Go Live Checklists</h3><p>Administrator view of saved go-live readiness checks.</p></div><button class="btn secondary" id="refreshAdminGoLiveRuns">↻ Refresh</button></div><div id="adminGoLiveRunList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Tickets</h3><p>Administrator view of every issue.</p></div><div class="section-actions"><button class="btn secondary" id="refreshAdminTickets">↻ Refresh</button><button class="btn secondary" id="exportAdminTickets">⇩ Export CSV</button></div></div><div id="adminTicketList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Testing Runs</h3><p>Administrator view of saved testing sessions.</p></div><div class="section-actions"><button class="btn secondary" id="refreshAdminRuns">↻ Refresh</button><button class="btn secondary" id="exportAdminRuns">⇩ Export CSV</button></div></div><div id="adminRunList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Go Live Checklists</h3><p>Administrator view of saved go-live readiness checks.</p></div><div class="section-actions"><button class="btn secondary" id="refreshAdminGoLiveRuns">↻ Refresh</button><button class="btn secondary" id="exportAdminGoLiveRuns">⇩ Export CSV</button></div></div><div id="adminGoLiveRunList" class="admin-list"></div></div>
       </div>
     </section>
   </main>

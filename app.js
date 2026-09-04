@@ -169,6 +169,15 @@ $('#saveTestingBtn')?.addEventListener('click',async()=>{
 });
 
 function csvEscape(v){const s=String(v??'');return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s;}
+function downloadCsv(filename,rows){
+  const csv='\ufeff'+rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
 $('#exportTestingBtn')?.addEventListener('click',()=>{const tasks=activeTestingTasks();const rows=[['Device ID',...tasks.map(t=>t.name)],...state.testingDevices.map(d=>[d.id,...tasks.map(t=>d.results[t.id]==='pass'?'Yes':'')])];const csv='\ufeff'+rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`va-fax-${state.testingSystem.toLowerCase().replaceAll(' ','-')}-testing.csv`;a.click();});
 
 async function loadTestingRuns(){if(!state.user)return;const {data,error}=await sb.from('testing_runs').select('id,created_at,port,system,run_reference,tested_by_name,device_count,total_tests,completed_tests').eq('tested_by_user_id',state.user.id).order('created_at',{ascending:false}).limit(100);if(error){console.warn(error);return;}const table=$('#testingHistoryTable');if(!table)return;const rows=data||[];table.innerHTML=rows.length?`<thead><tr><th>Date</th><th>Port</th><th>System</th><th>Reference</th><th>Devices</th><th>Completion</th><th>Export</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(new Date(r.created_at).toLocaleString('en-AU'))}</td><td>${esc(r.port)}</td><td>${esc(r.system)}</td><td>${esc(r.run_reference||'')}</td><td>${r.device_count||0}</td><td>${r.total_tests?Math.round((r.completed_tests||0)/r.total_tests*100):0}%</td><td><button class="mini" data-export-run="${esc(r.id)}">⇩ CSV</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td colspan="7" style="text-align:left;color:var(--muted)">No saved testing runs yet.</td></tr></tbody>';$('[data-export-run]')&&$$('[data-export-run]').forEach(b=>b.addEventListener('click',()=>exportSavedRun(b.dataset.exportRun)));}
@@ -248,6 +257,78 @@ async function loadAdminTickets(){if(!isAdmin())return;const {data,error}=await 
 $('#refreshAdminTickets')?.addEventListener('click',loadAdminTickets);
 async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_testing_runs'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete</div></div><div class="run-actions"><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
 $('#refreshAdminRuns')?.addEventListener('click',loadAdminRuns);
+
+async function exportAdminTicketsCsv(){
+  if(!isAdmin())return;
+  try{
+    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_issues'}});
+    if(error)throw error;
+    const rows=[
+      ['Ticket','System','Port','Device ID','Raised By','Status','Description','Created At'],
+      ...(data?.issues||[]).map(i=>[
+        i.issue_id||i.id,i.system,i.port,i.device_id,i.raised_by,i.status,i.description,
+        i.created_at?new Date(i.created_at).toLocaleString('en-AU'):''
+      ])
+    ];
+    downloadCsv(`va-fax-admin-tickets-${new Date().toISOString().slice(0,10)}.csv`,rows);
+  }catch(e){alert('Could not export tickets: '+(e.message||e));}
+}
+
+async function exportAdminRunsCsv(){
+  if(!isAdmin())return;
+  try{
+    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'export_testing_runs'}});
+    if(error)throw error;
+    const rows=[['Run ID','Port','System','Tested By','Device Count','Total Tests','Completed Tests','Created At','Device ID','Test Case','Result']];
+    (data?.runs||[]).forEach(run=>{
+      const results=run.results||[];
+      if(results.length){
+        results.forEach(r=>rows.push([
+          run.id,run.port,run.system,run.tested_by_name,run.device_count,run.total_tests,run.completed_tests,
+          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'',
+          r.device_id,r.test_case,r.result
+        ]));
+      }else{
+        rows.push([
+          run.id,run.port,run.system,run.tested_by_name,run.device_count,run.total_tests,run.completed_tests,
+          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'',
+          '','',''
+        ]);
+      }
+    });
+    downloadCsv(`va-fax-admin-testing-runs-${new Date().toISOString().slice(0,10)}.csv`,rows);
+  }catch(e){alert('Could not export testing runs: '+(e.message||e));}
+}
+
+async function exportAdminGoLiveRunsCsv(){
+  if(!isAdmin())return;
+  try{
+    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});
+    if(error)throw error;
+    const rows=[['Run ID','Port','Tested By','Total Tasks','Completed Tasks','Status','Created At','Task ID','Task Name','Completed']];
+    (data?.runs||[]).forEach(run=>{
+      const results=run.go_live_results||[];
+      if(results.length){
+        results.forEach(r=>rows.push([
+          run.id,run.port,run.tested_by_name,run.total_tasks,run.completed_tasks,run.status,
+          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'',
+          r.task_id,r.task_name,r.completed?'Yes':'No'
+        ]));
+      }else{
+        rows.push([
+          run.id,run.port,run.tested_by_name,run.total_tasks,run.completed_tasks,run.status,
+          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'','',''
+        ]);
+      }
+    });
+    downloadCsv(`va-fax-admin-go-live-checklists-${new Date().toISOString().slice(0,10)}.csv`,rows);
+  }catch(e){alert('Could not export Go Live checklists: '+(e.message||e));}
+}
+
+$('#exportAdminTickets')?.addEventListener('click',exportAdminTicketsCsv);
+$('#exportAdminRuns')?.addEventListener('click',exportAdminRunsCsv);
+$('#exportAdminGoLiveRuns')?.addEventListener('click',exportAdminGoLiveRunsCsv);
+
 async function refreshAdmin(){
   if(!isAdmin())return;
   const jobs=[
