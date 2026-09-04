@@ -31,6 +31,20 @@
 .context-select:focus{border-color:var(--purple);box-shadow:0 0 0 3px #6b2df214;}
 @media(max-width:620px){.checklist-context{align-items:stretch;flex-direction:column;}.context-select{width:100%;min-width:0;}}
 </style>
+<style id="failed-issue-modal-style">
+.failed-issue-modal{max-height:min(88vh,760px);overflow:auto;}
+.failed-test-panel{margin:14px 0;padding:12px;border:1px solid #efb9bf;border-radius:13px;background:#fff7f8;}
+.failed-test-heading{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c51d33;margin-bottom:8px;}
+.failed-test-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.failed-test-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid #efb9bf;border-radius:999px;background:#fff;color:#b51f36;font-size:11px;font-weight:800;}
+.failed-issue-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0;}
+.failed-issue-grid label,.failed-issue-description{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.04em;}
+.failed-issue-grid input,.failed-issue-grid select,.failed-issue-description textarea{font:inherit;text-transform:none;letter-spacing:normal;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 12px;outline:none;}
+.failed-issue-grid input[readonly]{background:var(--surface-2,#f7f7f8);}
+.failed-issue-description textarea{resize:vertical;min-height:110px;font-size:13px;}
+@media(max-width:700px){.failed-issue-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.failed-issue-grid{grid-template-columns:1fr;}}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -188,7 +202,46 @@
 <div id="goLiveModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="goLiveClose">×</button><div class="eyebrow">Go Live Checklist</div><h3 id="goLiveModalTitle">Add checklist task</h3><p>Create or edit a checklist item.</p><label>Task name<input id="goLiveName" maxlength="120" required></label><label>Description / completion criteria<textarea id="goLiveDescription" rows="4"></textarea></label><label>Order<input id="goLiveOrder" type="number" min="1" value="1"></label><div class="modal-actions"><button class="btn secondary" id="goLiveCancel">Cancel</button><button class="btn primary" id="goLiveSave">Save task</button></div></div></div>
 
 
-<div id="issuePreviewModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="issuePreviewClose" aria-label="Close">×</button><div class="eyebrow">Failed testing</div><h3>Raise an Issue</h3><p id="issuePreviewSummary">A failed test has been detected.</p><div class="issue-preview-copy">Review the details below, then submit the issue without leaving Testing.</div><div class="modal-actions"><button class="btn secondary" id="issuePreviewCancel">Cancel</button><button class="btn danger" id="issuePreviewSubmit">Raise Issue</button></div></div></div>
+<div id="issuePreviewModal" class="modal-backdrop" hidden>
+  <div class="modal wide failed-issue-modal" role="dialog" aria-modal="true" aria-labelledby="failedIssueTitle">
+    <button class="modal-close" id="issuePreviewClose" aria-label="Close">×</button>
+    <div class="eyebrow">Failed testing</div>
+    <h3 id="failedIssueTitle">Raise an Issue</h3>
+    <p id="issuePreviewSummary">A failed test has been detected.</p>
+
+    <div class="failed-test-panel">
+      <div class="failed-test-heading">Failed tests</div>
+      <div id="previewFailedTests" class="failed-test-chips"></div>
+    </div>
+
+    <div class="failed-issue-grid">
+      <label>System<input id="previewIssueSystem" readonly></label>
+      <label>Port<input id="previewIssuePort" readonly></label>
+      <label>Device ID<input id="previewIssueDevice" readonly></label>
+      <label>Environment<select id="previewIssueEnvironment"><option selected>Testing/CERT</option><option>Production</option></select></label>
+      <label>Urgency<select id="previewIssueUrgency"><option>Low</option><option>Medium</option><option selected>High</option><option>Critical</option></select></label>
+      <label>Issue Category<select id="previewIssueCategory">
+        <option>Error Printing</option>
+        <option>Unable to read bag tags</option>
+        <option>Unable to retrieve booking</option>
+        <option>Incorrect allowance</option>
+        <option>Incorrect fees</option>
+        <option>Other issues</option>
+      </select></label>
+    </div>
+
+    <label class="failed-issue-description">Description
+      <textarea id="previewIssueDescription" rows="5" placeholder="Describe what failed and any useful context..."></textarea>
+    </label>
+
+    <div id="previewIssueMessage" class="message" hidden></div>
+
+    <div class="modal-actions">
+      <button class="btn secondary" id="issuePreviewCancel" type="button">Cancel</button>
+      <button class="btn danger" id="issuePreviewSubmit" type="button">Raise Issue</button>
+    </div>
+  </div>
+</div>
 
 <div id="confirmModal" class="modal-backdrop" hidden><div class="modal small"><button class="modal-close" id="confirmClose">×</button><div class="eyebrow">Confirm action</div><h3 id="confirmTitle">Are you sure?</h3><p id="confirmCopy">This cannot be undone.</p><div class="modal-actions"><button class="btn secondary" id="confirmCancel">Cancel</button><button class="btn danger" id="confirmAction">Confirm</button></div></div></div>
 

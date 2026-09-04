@@ -86,24 +86,32 @@ $('#resetTestingBtn')?.addEventListener('click',()=>{state.testingDevices=[{id:'
 $('#testingReference')?.addEventListener('input',()=>{if(state.testingRunDirty===false)state.testingRunDirty=true;});
 $('#testingPort')?.addEventListener('change',()=>{state.testingRunDirty=true;});
 function openIssueFromFailedDevice(index){
-  const tasks=activeTestingTasks(),failed=tasks.filter(t=>state.testingDevices[index].results[t.id]==='fail');
+  const tasks=activeTestingTasks(),device=state.testingDevices[index];
+  if(!device)return;
+  const failed=tasks.filter(t=>device.results[t.id]==='fail');
   if(!failed.length)return;
-  $('#issueSystem').value=state.testingSystem;
-  $('#issuePort').value=$('#testingPort').value||'';
-  $('#issueDevice').value=state.testingDevices[index].id||'';
-  $('#issueTerminal').value='';
-  $('#issueEnvironment').value='Testing/CERT';
-  $('#issueUrgency').value='High';
-  $('#issueCategory').value='Other issues';
-  $('#issuePnr').value='';
-  $('#issueDescription').value=failed.map(t=>`${t.name} failed.`).join('\n');
+  if(!isLoggedIn()){openModal('#authModal');return;}
+
+  const portValue=$('#testingPort')?.value||'';
+  const port=portValue.split(' - ')[0]||'';
+
+  $('#previewIssueSystem').value=state.testingSystem;
+  $('#previewIssuePort').value=port;
+  $('#previewIssueDevice').value=device.id||'';
+  $('#previewIssueEnvironment').value='Testing/CERT';
+  $('#previewIssueUrgency').value='High';
+  $('#previewIssueCategory').value='Other issues';
+  $('#previewIssueDescription').value=failed.map(t=>`${t.name} failed.`).join('\\n');
+
+  const chips=$('#previewFailedTests');
+  if(chips)chips.innerHTML=failed.map(t=>`<span class="failed-test-chip">✕ ${esc(t.name)}</span>`).join('');
+
   const modal=$('#issuePreviewModal');
   if(modal){
-    $('#issuePreviewSummary').textContent=`${failed.length} failed test${failed.length===1?'':'s'} on ${state.testingDevices[index].id||'this device'}`;
+    $('#issuePreviewSummary').textContent=`${failed.length} failed test${failed.length===1?'':'s'} on ${device.id||'this device'}`;
     modal.hidden=false;
   }
 }
-
 $('#saveTestingBtn')?.addEventListener('click',async()=>{
   if(!isLoggedIn())return openModal('#authModal');
   const tasks=activeTestingTasks(),port=$('#testingPort').value;
@@ -234,7 +242,45 @@ $('#issuePreviewClose')?.addEventListener('click',()=>closeModal('#issuePreviewM
 $('#issuePreviewCancel')?.addEventListener('click',()=>closeModal('#issuePreviewModal'));
 $('#issuePreviewModal')?.addEventListener('click',e=>{if(e.target.id==='issuePreviewModal')closeModal('#issuePreviewModal');});
 $('#issuePreviewSubmit')?.addEventListener('click',async()=>{
-  closeModal('#issuePreviewModal');
-  const form=$('#issueForm');
-  if(form){form.requestSubmit();}
-});
+  if(!isLoggedIn())return;
+  const port=$('#previewIssuePort').value.trim();
+  const description=$('#previewIssueDescription').value.trim();
+  const category=$('#previewIssueCategory').value;
+  const urgency=$('#previewIssueUrgency').value;
+  const environment=$('#previewIssueEnvironment').value;
+
+  if(!port||!category||!description){
+    const msg=$('#previewIssueMessage');
+    if(msg){msg.hidden=false;msg.textContent='Please complete the issue details before submitting.';}
+    return;
+  }
+
+  const btn=$('#issuePreviewSubmit');
+  if(btn){btn.disabled=true;btn.textContent='Raising Issue…';}
+
+  try{
+    const payload={
+      system:$('#previewIssueSystem').value,
+      port,
+      terminal:null,
+      device_id:$('#previewIssueDevice').value.trim()||null,
+      environment,
+      urgency,
+      category,
+      description,
+      pnr:null,
+      raised_by:state.user.email,
+      status:'New'
+    };
+    const {data,error}=await sb.from('issues').insert(payload).select('issue_id').single();
+    if(error)throw error;
+
+    closeModal('#issuePreviewModal');
+    if(btn){btn.disabled=false;btn.textContent='Raise Issue';}
+    setMessage('#testingMessage',`Issue ${data?.issue_id||''} raised successfully.`,'success');
+  }catch(err){
+    const msg=$('#previewIssueMessage');
+    if(msg){msg.hidden=false;msg.textContent='Could not raise issue: '+(err.message||err);}
+    if(btn){btn.disabled=false;btn.textContent='Raise Issue';}
+  }
+});;
