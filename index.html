@@ -49,6 +49,54 @@
 .section-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 @media(max-width:620px){.section-actions{width:100%;}.section-actions .btn{flex:1;}}
 </style>
+<style id="analytics-style">
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:14px;margin:0 0 18px;}
+.analytics-card{min-height:118px;padding:18px;}
+.analytics-copy{display:flex;flex-direction:column;gap:5px;}
+.analytics-copy span,.chart-title span{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+.analytics-copy strong{font-size:34px;line-height:1;color:var(--ink);}
+.analytics-copy small,.chart-title small{color:var(--muted);font-size:11px;}
+.chart-card{padding:16px 18px;}
+.chart-title{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;}
+.status-chart-wrap{display:flex;align-items:center;gap:18px;min-height:72px;}
+.status-pie{width:82px;height:82px;border-radius:50%;background:conic-gradient(#d9d9e2 0 100%);border:6px solid var(--surface);box-shadow:0 0 0 1px var(--line);flex:0 0 82px;}
+.chart-legend{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px;}
+@media(max-width:900px){.analytics-grid{grid-template-columns:1fr 1fr;}.chart-card{grid-column:1/-1;}}
+@media(max-width:600px){.analytics-grid{grid-template-columns:1fr;}.chart-card{grid-column:auto;}}
+</style>
+
+<style id="issue-workflow-style">
+.issue-card{padding:0;overflow:hidden;}
+.issue-card-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:17px 18px;border-bottom:1px solid var(--line);}
+.issue-card-main{min-width:0;}
+.issue-card-main strong{display:block;font-size:17px;margin-bottom:5px;}
+.issue-card-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+.issue-status-select{min-width:150px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);padding:9px 11px;font-weight:750;outline:none;}
+.issue-workspace{padding:16px 18px;display:grid;grid-template-columns:1.1fr .9fr;gap:16px;}
+.issue-detail-panel,.issue-history-panel{border:1px solid var(--line);border-radius:13px;padding:14px;background:var(--surface);}
+.issue-detail-panel h4,.issue-history-panel h4{margin:0 0 9px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;}
+.issue-description{margin:0;color:var(--ink);font-size:13px;line-height:1.55;white-space:pre-wrap;}
+.issue-comment-box{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.issue-comment-box textarea{min-height:86px;resize:vertical;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink);padding:10px 11px;font:inherit;}
+.issue-comment-actions{display:flex;justify-content:flex-end;}
+.issue-timeline{display:flex;flex-direction:column;gap:11px;max-height:320px;overflow:auto;padding-right:3px;}
+.issue-event{position:relative;padding-left:15px;border-left:2px solid var(--line);padding-bottom:4px;}
+.issue-event:last-child{border-left-color:transparent;}
+.issue-event-dot{position:absolute;left:-6px;top:2px;width:9px;height:9px;border-radius:50%;background:#6b2df2;border:2px solid var(--surface);}
+.issue-event strong{display:block;font-size:12px;}
+.issue-event small{display:block;color:var(--muted);font-size:10px;margin-top:2px;}
+.issue-event p{margin:4px 0 0;color:var(--ink);font-size:12px;white-space:pre-wrap;}
+.issue-history-empty{color:var(--muted);font-size:12px;}
+.issue-save-status{font-size:11px;color:var(--muted);}
+@media(max-width:850px){.issue-workspace{grid-template-columns:1fr;}}
+@media(max-width:600px){
+  .issue-card-head{align-items:stretch;flex-direction:column;}
+  .issue-card-actions{justify-content:flex-start;}
+  .issue-status-select{width:100%;}
+}
+</style>
 </head>
 <body>
 <div class="app-shell">
@@ -128,12 +176,23 @@
 
     <section id="view-my-issues" class="view">
       <div class="page-head"><div><div class="eyebrow">Support</div><h2>My Issues</h2><p>Track issues you've raised and their current status.</p></div><button class="btn secondary" id="refreshMyIssues">↻ Refresh</button></div>
-      <div id="myIssuesList" class="stack"></div>
+      <div class="analytics-grid issue-analytics" id="myIssuesAnalytics">
+  <div class="card analytics-card"><div class="analytics-copy"><span>Total Issues</span><strong id="issueTotalCount">0</strong><small>Issues you've raised</small></div></div>
+  <div class="card analytics-card"><div class="analytics-copy"><span>Open</span><strong id="issueOpenCount">0</strong><small>Not yet closed</small></div></div>
+  <div class="card analytics-card chart-card"><div class="chart-title"><span>Status mix</span><small>Current issues</small></div><div class="status-chart-wrap"><div class="status-pie" id="issueStatusPie"></div><div class="chart-legend" id="issueStatusLegend"></div></div></div>
+</div>
+<div id="myIssuesList" class="stack"></div>
+      <div id="myIssuesMessage" class="message" hidden></div>
     </section>
 
     <section id="view-testing" class="view">
       <div class="page-head"><div><div class="eyebrow">Testing</div><h2>Device Testing</h2><p>Test tasks are read from the live configuration in Supabase.</p></div><button class="btn secondary" id="exportTestingBtn">⇩ Export CSV</button></div>
-      <div class="card testing-config">
+      <div class="analytics-grid testing-analytics" id="testingAnalytics">
+  <div class="card analytics-card"><div class="analytics-copy"><span>Saved Runs</span><strong id="testingRunCount">0</strong><small>Your saved testing runs</small></div></div>
+  <div class="card analytics-card"><div class="analytics-copy"><span>Average Completion</span><strong id="testingAverageCompletion">0%</strong><small>Across saved runs</small></div></div>
+  <div class="card analytics-card chart-card"><div class="chart-title"><span>Pass / Fail</span><small>Saved results</small></div><div class="status-chart-wrap"><div class="status-pie" id="testingResultPie"></div><div class="chart-legend" id="testingResultLegend"></div></div></div>
+</div>
+<div class="card testing-config">
         <div class="field-row">
           <label>Port<select id="testingPort"><option value="">Select port</option><option>BNE</option><option>MEL</option><option>SYD</option><option>OOL</option><option>MCY</option><option>MKY</option><option>ADL</option><option>PER</option><option>DRW</option><option>LST</option><option>ZQN</option><option>NAN</option></select></label>
           <label>Run reference<input id="testingReference" placeholder="Optional e.g. SYD morning regression"></label>

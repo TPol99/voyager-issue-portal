@@ -180,7 +180,63 @@ function downloadCsv(filename,rows){
 
 $('#exportTestingBtn')?.addEventListener('click',()=>{const tasks=activeTestingTasks();const rows=[['Device ID',...tasks.map(t=>t.name)],...state.testingDevices.map(d=>[d.id,...tasks.map(t=>d.results[t.id]==='pass'?'Yes':'')])];const csv='\ufeff'+rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`va-fax-${state.testingSystem.toLowerCase().replaceAll(' ','-')}-testing.csv`;a.click();});
 
-async function loadTestingRuns(){if(!state.user)return;const {data,error}=await sb.from('testing_runs').select('id,created_at,port,system,run_reference,tested_by_name,device_count,total_tests,completed_tests').eq('tested_by_user_id',state.user.id).order('created_at',{ascending:false}).limit(100);if(error){console.warn(error);return;}const table=$('#testingHistoryTable');if(!table)return;const rows=data||[];table.innerHTML=rows.length?`<thead><tr><th>Date</th><th>Port</th><th>System</th><th>Reference</th><th>Devices</th><th>Completion</th><th>Export</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(new Date(r.created_at).toLocaleString('en-AU'))}</td><td>${esc(r.port)}</td><td>${esc(r.system)}</td><td>${esc(r.run_reference||'')}</td><td>${r.device_count||0}</td><td>${r.total_tests?Math.round((r.completed_tests||0)/r.total_tests*100):0}%</td><td><button class="mini" data-export-run="${esc(r.id)}">⇩ CSV</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td colspan="7" style="text-align:left;color:var(--muted)">No saved testing runs yet.</td></tr></tbody>';$('[data-export-run]')&&$$('[data-export-run]').forEach(b=>b.addEventListener('click',()=>exportSavedRun(b.dataset.exportRun)));}
+
+function updatePie(pieId,legendId,items){
+  const total=items.reduce((n,x)=>n+x.value,0);
+  const pie=$(pieId),legend=$(legendId);
+  if(!pie||!legend)return;
+  const colours=['#6b2df2','#de0a54','#21a366','#e0b11b','#7a7a8a','#3d8bfd'];
+  if(!total){
+    pie.style.background='conic-gradient(#d9d9e2 0 100%)';
+    legend.innerHTML='<div class="legend-item"><span class="legend-dot" style="background:#aaa"></span>No data yet</div>';
+    return;
+  }
+  let cursor=0;
+  const stops=[];
+  items.forEach((item,i)=>{
+    const pct=item.value/total*100;
+    stops.push(`${colours[i%colours.length]} ${cursor}% ${cursor+pct}%`);
+    cursor+=pct;
+  });
+  pie.style.background=`conic-gradient(${stops.join(',')})`;
+  legend.innerHTML=items.filter(x=>x.value>0).map((x,i)=>`<div class="legend-item"><span class="legend-dot" style="background:${colours[i%colours.length]}"></span>${esc(x.label)} · ${x.value}</div>`).join('');
+}
+
+async function loadMyIssueAnalytics(){
+  if(!state.user)return;
+  const {data,error}=await sb.from('issues').select('status').eq('raised_by',state.user.email);
+  if(error){console.warn(error);return;}
+  const rows=data||[];
+  const total=rows.length;
+  const closed=rows.filter(r=>String(r.status||'').toLowerCase()==='closed').length;
+  $('#issueTotalCount').textContent=total;
+  $('#issueOpenCount').textContent=Math.max(0,total-closed);
+  const counts={};
+  rows.forEach(r=>{const s=r.status||'New';counts[s]=(counts[s]||0)+1;});
+  updatePie('#issueStatusPie','#issueStatusLegend',
+    ['New','Under Investigation','Test','Resolved','Closed'].map(s=>({label:s,value:counts[s]||0})));
+}
+
+async function loadTestingAnalytics(){
+  if(!state.user)return;
+  const {data:runs,error}=await sb.from('testing_runs').select('id,total_tests,completed_tests').eq('tested_by_user_id',state.user.id);
+  if(error){console.warn(error);return;}
+  const rows=runs||[];
+  $('#testingRunCount').textContent=rows.length;
+  const avg=rows.length?Math.round(rows.reduce((n,r)=>n+(r.total_tests?((r.completed_tests||0)/r.total_tests)*100:0),0)/rows.length):0;
+  $('#testingAverageCompletion').textContent=`${avg}%`;
+  if(!rows.length){updatePie('#testingResultPie','#testingResultLegend',[]);return;}
+  const ids=rows.map(r=>r.id);
+  const {data:results,error:resultError}=await sb.from('testing_results').select('result').in('run_id',ids);
+  if(resultError){console.warn(resultError);return;}
+  let pass=0,fail=0,other=0;
+  (results||[]).forEach(r=>{if(r.result==='pass')pass++;else if(r.result==='fail')fail++;else other++;});
+  updatePie('#testingResultPie','#testingResultLegend',[
+    {label:'Pass',value:pass},{label:'Fail',value:fail},{label:'Untested',value:other}
+  ]);
+}
+
+async function loadTestingRuns(){if(!state.user)return;const {data,error}=await sb.from('testing_runs').select('id,created_at,port,system,run_reference,tested_by_name,device_count,total_tests,completed_tests').eq('tested_by_user_id',state.user.id).order('created_at',{ascending:false}).limit(100);if(error){console.warn(error);return;}const table=$('#testingHistoryTable');if(!table)return;const rows=data||[];table.innerHTML=rows.length?`<thead><tr><th>Date</th><th>Port</th><th>System</th><th>Reference</th><th>Devices</th><th>Completion</th><th>Export</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(new Date(r.created_at).toLocaleString('en-AU'))}</td><td>${esc(r.port)}</td><td>${esc(r.system)}</td><td>${esc(r.run_reference||'')}</td><td>${r.device_count||0}</td><td>${r.total_tests?Math.round((r.completed_tests||0)/r.total_tests*100):0}%</td><td><button class="mini" data-export-run="${esc(r.id)}">⇩ CSV</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td colspan="7" style="text-align:left;color:var(--muted)">No saved testing runs yet.</td></tr></tbody>';$('[data-export-run]')&&$$('[data-export-run]').forEach(b=>b.addEventListener('click',()=>exportSavedRun(b.dataset.exportRun)));loadTestingAnalytics();}
 $('#refreshTestingHistory')?.addEventListener('click',loadTestingRuns);
 async function exportSavedRun(runId){const {data,error}=await sb.from('testing_results').select('device_id,test_case,result,created_at').eq('run_id',runId).order('created_at');if(error){alert(error.message);return;}const tests=[];const devices=[];for(const r of data||[]){if(!tests.includes(r.test_case))tests.push(r.test_case);if(!devices.includes(r.device_id))devices.push(r.device_id);}const lines=[['Device ID',...tests],...devices.map(d=>{const rows=(data||[]).filter(r=>r.device_id===d);const map=new Map(rows.map(r=>[r.test_case,r.result]));return [d,...tests.map(t=>map.get(t)==='pass'?'Yes':'')]} )];const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+lines.map(r=>r.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv'}));a.download=`va-fax-${runId}.csv`;a.click();}
 
@@ -244,7 +300,156 @@ async function loadAdminGoLiveRuns(){
 }
 $('#refreshAdminGoLiveRuns')?.addEventListener('click',loadAdminGoLiveRuns);
 
-async function loadMyIssues(){if(!state.user){$('#myIssuesList').innerHTML='<div class="card placeholder"><strong>Sign in required.</strong><span>Sign in to view your issues.</span></div>';return;}const {data,error}=await sb.from('issues').select('id,issue_id,system,port,terminal,device_id,category,description,urgency,status,created_at,environment,pnr').eq('raised_by',state.user.email).order('created_at',{ascending:false}).limit(100);if(error){setMessage('#issueMessage',error.message);return;}const box=$('#myIssuesList');box.innerHTML=(data||[]).map(i=>`<div class="card ticket-row"><div><strong>${esc(i.issue_id||i.id)}</strong><div class="row-meta">${esc(i.system)} · ${esc(i.port)} · ${esc(i.device_id||'No device')} · ${esc(i.category)}</div><div class="row-meta">${esc(new Date(i.created_at).toLocaleString('en-AU'))}</div></div><div class="ticket-actions"><span class="status">${esc(i.status||'New')}</span></div></div>`).join('')||'<div class="card placeholder"><strong>No issues yet.</strong><span>Your submitted issues will appear here.</span></div>';}
+
+const ISSUE_STATUSES=['New','In Progress','Testing','Resolved','Closed'];
+
+function issueStatusOptions(current){
+  return ISSUE_STATUSES.map(s=>`<option value="${esc(s)}" ${s===current?'selected':''}>${esc(s)}</option>`).join('');
+}
+
+function renderIssueHistory(history,comments){
+  const events=[
+    ...(history||[]).map(h=>({
+      when:h.created_at,
+      title:h.action_text||'Status updated',
+      detail:h.detail||'',
+      actor:h.actor_name||'System'
+    })),
+    ...(comments||[]).map(c=>({
+      when:c.created_at,
+      title:'Comment',
+      detail:c.comment,
+      actor:c.author_name||'User'
+    }))
+  ].sort((a,b)=>new Date(a.when)-new Date(b.when));
+
+  return events.length?events.map(e=>`<div class="issue-event">
+    <span class="issue-event-dot"></span>
+    <strong>${esc(e.title)}</strong>
+    <small>${esc(e.actor)} · ${esc(new Date(e.when).toLocaleString('en-AU'))}</small>
+    ${e.detail?`<p>${esc(e.detail)}</p>`:''}
+  </div>`).join(''):'<div class="issue-history-empty">No history yet.</div>';
+}
+
+function renderMyIssueCard(issue,history=[],comments=[]){
+  const card=document.createElement('div');
+  card.className='card issue-card';
+  card.innerHTML=`<div class="issue-card-head">
+    <div class="issue-card-main">
+      <strong>${esc(issue.issue_id||issue.id)}</strong>
+      <div class="row-meta">${esc(issue.system)} · ${esc(issue.port)} · ${esc(issue.device_id||'No device')} · ${esc(issue.category)}</div>
+      <div class="row-meta">${esc(new Date(issue.created_at).toLocaleString('en-AU'))}</div>
+    </div>
+    <div class="issue-card-actions">
+      <select class="issue-status-select" data-issue-status="${esc(issue.id)}">${issueStatusOptions(issue.status||'New')}</select>
+      <button class="mini" type="button" data-toggle-history="${esc(issue.id)}">History & Comments</button>
+    </div>
+  </div>
+  <div class="issue-workspace" id="issue-workspace-${esc(issue.id)}">
+    <div class="issue-detail-panel">
+      <h4>Issue</h4>
+      <p class="issue-description">${esc(issue.description||'No description supplied.')}</p>
+      <div class="issue-comment-box">
+        <h4>Add comment</h4>
+        <textarea data-comment-input="${esc(issue.id)}" placeholder="Add an update, finding or handover note..."></textarea>
+        <div class="issue-comment-actions"><button class="btn secondary" type="button" data-add-comment="${esc(issue.id)}">Add Comment</button></div>
+      </div>
+    </div>
+    <div class="issue-history-panel">
+      <h4>History & Comments</h4>
+      <div class="issue-timeline">${renderIssueHistory(history,comments)}</div>
+    </div>
+  </div>`;
+  return card;
+}
+
+async function loadIssueDetail(issueId){
+  const [{data:history,error:historyError},{data:comments,error:commentsError}]=await Promise.all([
+    sb.from('issue_activity').select('id,action_text,detail,actor_name,from_status,to_status,created_at').eq('issue_id',issueId).order('created_at',{ascending:true}),
+    sb.from('issue_comments').select('id,comment,author_name,created_at').eq('issue_id',issueId).order('created_at',{ascending:true})
+  ]);
+  if(historyError)throw historyError;
+  if(commentsError)throw commentsError;
+  return {history:history||[],comments:comments||[]};
+}
+
+async function updateMyIssueStatus(issueId,status){
+  if(!ISSUE_STATUSES.includes(status))throw new Error('Invalid issue status.');
+  const {error}=await sb.rpc('update_my_issue_status',{p_issue_id:issueId,p_status:status});
+  if(error)throw error;
+}
+
+async function addMyIssueComment(issueId,comment){
+  const text=String(comment||'').trim();
+  if(!text)throw new Error('Comment cannot be empty.');
+  const {error}=await sb.from('issue_comments').insert({
+    issue_id:issueId,
+    comment:text,
+    author_user_id:state.user.id,
+    author_name:formatName(state.user.email)
+  });
+  if(error)throw error;
+}
+
+async function loadMyIssues(){
+  if(!state.user){
+    $('#myIssuesList').innerHTML='<div class="card placeholder"><strong>Sign in required.</strong><span>Sign in to view your issues.</span></div>';
+    return;
+  }
+  const {data,error}=await sb.from('issues').select('id,issue_id,system,port,terminal,device_id,category,description,urgency,status,created_at,environment,pnr').eq('raised_by',state.user.email).order('created_at',{ascending:false}).limit(100);
+  if(error){setMessage('#myIssuesMessage',error.message);return;}
+  const box=$('#myIssuesList');
+  box.innerHTML='';
+  const rows=data||[];
+  if(!rows.length){
+    box.innerHTML='<div class="card placeholder"><strong>No issues yet.</strong><span>Your submitted issues will appear here.</span></div>';
+  }else{
+    for(const issue of rows){
+      const card=renderMyIssueCard(issue);
+      box.appendChild(card);
+      try{
+        const detail=await loadIssueDetail(issue.id);
+        card.querySelector('.issue-timeline').innerHTML=renderIssueHistory(detail.history,detail.comments);
+      }catch(e){console.warn('Could not load issue history',e);}
+    }
+  }
+  loadMyIssueAnalytics();
+  bindMyIssueControls();
+}
+
+function bindMyIssueControls(){
+  $$('[data-issue-status]').forEach(select=>select.addEventListener('change',async()=>{
+    const old=select.value;
+    const issueId=select.dataset.issueStatus;
+    try{
+      await updateMyIssueStatus(issueId,select.value);
+      await loadMyIssues();
+    }catch(e){
+      alert(e.message||e);
+      select.value=old;
+    }
+  }));
+
+  $$('[data-add-comment]').forEach(btn=>btn.addEventListener('click',async()=>{
+    const issueId=btn.dataset.addComment;
+    const input=$(`[data-comment-input="${CSS.escape(issueId)}"]`);
+    try{
+      await addMyIssueComment(issueId,input?.value||'');
+      if(input)input.value='';
+      await loadMyIssues();
+    }catch(e){alert(e.message||e);}
+  }));
+
+  $$('[data-toggle-history]').forEach(btn=>btn.addEventListener('click',()=>{
+    const issueId=btn.dataset.toggleHistory;
+    const panel=$(`#issue-workspace-${CSS.escape(issueId)}`);
+    if(!panel)return;
+    const hidden=panel.style.display==='none';
+    panel.style.display=hidden?'grid':'none';
+    btn.textContent=hidden?'Hide History':'History & Comments';
+  }));
+}
+
 $('#refreshMyIssues')?.addEventListener('click',loadMyIssues);
 $('#issueForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!state.user){openModal('#authModal');return;}const port=$('#issuePort').value.split(' - ')[0];const payload={system:$('#issueSystem').value,port,terminal:$('#issueTerminal').value.trim()||null,device_id:$('#issueDevice').value.trim()||null,environment:$('#issueEnvironment').value,urgency:$('#issueUrgency').value,category:$('#issueCategory').value,description:$('#issueDescription').value.trim(),pnr:$('#issuePnr').value.trim().toUpperCase()||null,raised_by:state.user.email,status:'New'};if(!payload.port||!payload.category||!payload.description){setMessage('#issueMessage','Please complete Port, Issue Category and Description.');return;}try{const {data,error}=await sb.from('issues').insert(payload).select('issue_id').single();if(error)throw error;$('#issueForm').reset();setMessage('#issueMessage',`Issue ${data?.issue_id||''} submitted successfully.`,'success');await loadMyIssues();}catch(err){setMessage('#issueMessage','Could not submit issue: '+(err.message||err));}});
 
@@ -256,7 +461,7 @@ $('#inviteBtn')?.addEventListener('click',async()=>{if(!isAdmin())return;const e
 
 async function loadAdminTickets(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_issues'}});if(error)throw error;const box=$('#adminTicketList');box.innerHTML=(data?.issues||[]).map(i=>`<div class="ticket-row"><div><strong>${esc(i.issue_id||i.id)}</strong><div class="row-meta">${esc(i.system)} · ${esc(i.port)} · ${esc(i.device_id||'')} · ${esc(i.raised_by||'')}</div><div class="row-meta">${esc(i.description||'')}</div></div><div class="ticket-actions"><span class="status">${esc(i.status||'New')}</span><button class="mini" data-delete-issue="${esc(i.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No tickets.</strong></div>';$$('[data-delete-issue]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete ticket?','This permanently deletes the ticket and related records.',async()=>{await sb.functions.invoke('admin-manage',{body:{action:'delete_issue',issueId:b.dataset.deleteIssue}});await loadAdminTickets();})));return data;}
 $('#refreshAdminTickets')?.addEventListener('click',loadAdminTickets);
-async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_testing_runs'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete</div></div><div class="run-actions"><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
+async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_testing_runs'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete</div></div><div class="run-actions"><button class="mini" data-export-admin-run="${esc(r.id)}">⇩ CSV</button><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-export-admin-run]').forEach(b=>b.addEventListener('click',()=>exportSingleAdminRunCsv(b.dataset.exportAdminRun)));$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
 $('#refreshAdminRuns')?.addEventListener('click',loadAdminRuns);
 
 async function exportAdminTicketsCsv(){
@@ -273,6 +478,41 @@ async function exportAdminTicketsCsv(){
     ];
     downloadCsv(`va-fax-admin-tickets-${new Date().toISOString().slice(0,10)}.csv`,rows);
   }catch(e){alert('Could not export tickets: '+(e.message||e));}
+}
+
+async function exportSingleAdminRunCsv(runId){
+  if(!isAdmin())return;
+  try{
+    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'export_testing_runs'}});
+    if(error)throw error;
+    const run=(data?.runs||[]).find(r=>String(r.id)===String(runId));
+    if(!run)throw new Error('Testing run could not be found.');
+
+    const results=run.results||[];
+    const testNames=[];
+    const devices=[];
+    for(const r of results){
+      if(r.test_case && !testNames.includes(r.test_case))testNames.push(r.test_case);
+      if(r.device_id && !devices.includes(r.device_id))devices.push(r.device_id);
+    }
+
+    const rows=[['Device ID',...testNames]];
+    for(const device of devices){
+      const map=new Map(results.filter(r=>r.device_id===device).map(r=>[r.test_case,r.result]));
+      rows.push([
+        device,
+        ...testNames.map(name=>{
+          const result=map.get(name);
+          return result==='pass'?'Pass':result==='fail'?'Fail':'';
+        })
+      ]);
+    }
+
+    downloadCsv(
+      `va-fax-testing-${run.port||'run'}-${String(run.id).slice(0,8)}.csv`,
+      rows
+    );
+  }catch(e){alert('Could not export testing run: '+(e.message||e));}
 }
 
 async function exportAdminRunsCsv(){
