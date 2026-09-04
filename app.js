@@ -64,6 +64,25 @@ window.addEventListener('beforeunload',function vafaxTestingBeforeUnload(event){
   }
 });
 
+function applyTheme(theme){
+  const dark=theme==='dark';
+  document.documentElement.dataset.theme=dark?'dark':'light';
+  localStorage.setItem('vafax-theme',dark?'dark':'light');
+  const btn=$('#themeToggle');
+  if(btn){
+    btn.textContent=dark?'☀ Light':'☾ Dark';
+    btn.setAttribute('aria-pressed',dark?'true':'false');
+    btn.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
+  }
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute('content',dark?'#0f0c15':'#7c20ed');
+}
+
+applyTheme(localStorage.getItem('vafax-theme')||'light');
+$('#themeToggle')?.addEventListener('click',()=>{
+  applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+});
+
 $('#authBtn')?.addEventListener('click',()=>state.user?signOut():openModal('#authModal'));
 $('#authClose')?.addEventListener('click',()=>closeModal('#authModal'));$('#authModal')?.addEventListener('click',e=>{if(e.target.id==='authModal')closeModal('#authModal')});
 $('#switchToCreate')?.addEventListener('click',()=>toggleAuthMode(!authCreateMode));

@@ -189,3 +189,184 @@
   }
   .top-actions .pill{max-width:280px;overflow:hidden;text-overflow:ellipsis;}
 }
+
+/* ==========================================================
+   VA FAX Testing Companion - full dark mode
+   ========================================================== */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0f0c15;
+  --surface:rgba(26,22,34,.94);
+  --surface2:#1b1624;
+  --ink:#f6f2fa;
+  --muted:#b9afc5;
+  --line:#3d3449;
+  --purple:#a66bff;
+  --pink:#ff149f;
+  --green:#39d39d;
+  --greenBg:rgba(57,211,157,.13);
+  --red:#ff6178;
+  --redBg:rgba(255,97,120,.13);
+  --amber:#ffab6b;
+  --shadow:0 22px 60px rgba(0,0,0,.34);
+}
+html[data-theme="dark"] body{
+  background:
+    radial-gradient(circle at top right,rgba(166,107,255,.16),transparent 34%),
+    radial-gradient(circle at bottom left,rgba(255,20,159,.08),transparent 28%),
+    var(--bg);
+  color:var(--ink);
+}
+html[data-theme="dark"] .topbar{
+  background:rgba(16,13,23,.88);
+  border-bottom-color:var(--line);
+}
+html[data-theme="dark"] .nav-link{color:var(--muted)}
+html[data-theme="dark"] .nav-link.active{
+  color:#fff;
+  box-shadow:0 10px 28px rgba(166,107,255,.24);
+}
+html[data-theme="dark"] .pill,
+html[data-theme="dark"] .btn.secondary,
+html[data-theme="dark"] .btn.ghost,
+html[data-theme="dark"] .mini,
+html[data-theme="dark"] .system-tab,
+html[data-theme="dark"] .admin-filter,
+html[data-theme="dark"] .check,
+html[data-theme="dark"] .go-live-check,
+html[data-theme="dark"] .modal-close{
+  background:#1c1725;
+  color:var(--ink);
+  border-color:var(--line);
+}
+html[data-theme="dark"] .theme-toggle{
+  background:#211b2c;
+  color:#e7d9ff;
+  border-color:#57466d;
+}
+html[data-theme="dark"] .theme-toggle:hover{background:#2a2237}
+html[data-theme="dark"] .hero-logo{
+  background:linear-gradient(135deg,#17131f,#211625);
+  border-color:#4a364f;
+}
+html[data-theme="dark"] .hero-logo-badge{
+  background:rgba(31,25,40,.78);
+  border-color:#4b4056;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+html[data-theme="dark"] .hero-logo-badge strong{color:#f5f2f8}
+html[data-theme="dark"] .home-status>div{background:rgba(28,23,37,.78)}
+html[data-theme="dark"] .feature-card,
+html[data-theme="dark"] .go-live-item,
+html[data-theme="dark"] .admin-row,
+html[data-theme="dark"] .user-row,
+html[data-theme="dark"] .ticket-row,
+html[data-theme="dark"] .run-row{
+  background:rgba(28,23,37,.9);
+  border-color:var(--line);
+}
+html[data-theme="dark"] .field-row input,
+html[data-theme="dark"] .field-row select,
+html[data-theme="dark"] .form-grid input,
+html[data-theme="dark"] .form-grid select,
+html[data-theme="dark"] .form-grid textarea,
+html[data-theme="dark"] .modal input,
+html[data-theme="dark"] .modal select,
+html[data-theme="dark"] .modal textarea,
+html[data-theme="dark"] .invite-grid input,
+html[data-theme="dark"] .issue-status-select,
+html[data-theme="dark"] .issue-comment-box textarea,
+html[data-theme="dark"] .context-select,
+html[data-theme="dark"] .device-input{
+  background:#17131f;
+  color:var(--ink);
+  border-color:var(--line);
+}
+html[data-theme="dark"] .field-row input::placeholder,
+html[data-theme="dark"] .field-row textarea::placeholder,
+html[data-theme="dark"] .form-grid input::placeholder,
+html[data-theme="dark"] .form-grid textarea::placeholder,
+html[data-theme="dark"] .modal input::placeholder,
+html[data-theme="dark"] .modal textarea::placeholder,
+html[data-theme="dark"] .issue-comment-box textarea::placeholder,
+html[data-theme="dark"] .device-input::placeholder{
+  color:#887c99;
+}
+html[data-theme="dark"] .system-tab.active,
+html[data-theme="dark"] .admin-filter.active{
+  background:#2a203a;
+  border-color:#8d5cf4;
+  color:#d8c4ff;
+}
+html[data-theme="dark"] .test-table,
+html[data-theme="dark"] .history-table{background:#17131f}
+html[data-theme="dark"] .test-table th,
+html[data-theme="dark"] .history-table th{
+  background:#211b2b;
+  color:#e7deee;
+}
+html[data-theme="dark"] .test-table td,
+html[data-theme="dark"] .history-table td{
+  border-color:var(--line);
+}
+html[data-theme="dark"] .progress-track{background:#292230}
+html[data-theme="dark"] .message{background:var(--redBg);color:#ff8497}
+html[data-theme="dark"] .raise-row{background:var(--redBg);border-color:#653440}
+html[data-theme="dark"] .raise-btn{background:#221922;color:#ff8ea0;border-color:#6a3a47}
+html[data-theme="dark"] .status{background:var(--greenBg);color:#59e0ad}
+html[data-theme="dark"] .status.inactive{background:#27232c;color:#a89cab}
+html[data-theme="dark"] .go-live-item.checked .go-live-check{background:var(--greenBg);border-color:#4b9e83;color:#5ce2b2}
+html[data-theme="dark"] .modal-backdrop{background:rgba(4,3,8,.67)}
+html[data-theme="dark"] .modal{
+  background:rgba(24,20,31,.98);
+  border-color:#473b52;
+  box-shadow:0 30px 90px rgba(0,0,0,.52);
+}
+html[data-theme="dark"] footer{border-top-color:var(--line)}
+html[data-theme="dark"] .nav.open{
+  background:rgba(22,18,29,.98);
+  border-color:var(--line);
+  box-shadow:0 18px 42px rgba(0,0,0,.28);
+}
+html[data-theme="dark"] .mobile-menu{
+  background:#1c1725;
+  color:#eadbff;
+  border-color:var(--line);
+}
+html[data-theme="dark"] .hero p,
+html[data-theme="dark"] .page-head p,
+html[data-theme="dark"] .home-status span,
+html[data-theme="dark"] .feature-card span:last-child,
+html[data-theme="dark"] .row-meta,
+html[data-theme="dark"] .section-head p,
+html[data-theme="dark"] .go-live-copy small,
+html[data-theme="dark"] .knowledge-card p,
+html[data-theme="dark"] .issue-description,
+html[data-theme="dark"] .issue-event small,
+html[data-theme="dark"] .issue-history-empty,
+html[data-theme="dark"] .analytics-copy small,
+html[data-theme="dark"] .chart-title small,
+html[data-theme="dark"] .analytics-copy span,
+html[data-theme="dark"] .chart-title span{
+  color:var(--muted);
+}
+html[data-theme="dark"] .failed-test-panel,
+html[data-theme="dark"] .failed-issue-tests,
+html[data-theme="dark"] .issue-detail-panel,
+html[data-theme="dark"] .issue-history-panel{
+  background:#1b1624;
+  border-color:#4a3a50;
+}
+html[data-theme="dark"] .failed-test-chip{
+  background:#281a24;
+  border-color:#693745;
+  color:#ff92a3;
+}
+html[data-theme="dark"] .go-live-item.checked .go-live-copy strong{color:#c6bdca}
+html[data-theme="dark"] .issue-event{border-left-color:#4a3b52}
+html[data-theme="dark"] .issue-event-dot{background:#a66bff;border-color:#1b1624}
+html[data-theme="dark"] select option{background:#17131f;color:var(--ink)}
+
+@media(max-width:700px){
+  html[data-theme="dark"] .nav.open{background:rgba(22,18,29,.99)}
+}
