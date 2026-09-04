@@ -15,8 +15,17 @@ function setMessage(id,text,kind='error'){const el=$(id);if(!el)return;el.textCo
 function isLoggedIn(){return !!state.user;}
 function isAdmin(){return state.role==='admin';}
 
-function showView(view){
+let pendingTestingLeaveView=null;
+function hasTestingDeviceInput(){return state.testingDevices.some(d=>String(d?.id||'').trim().length>0);}
+function openLeaveTestingPrompt(nextView){pendingTestingLeaveView=nextView;const count=state.testingDevices.filter(d=>String(d?.id||'').trim()).length;$('#leaveTestingSummary').textContent=`${count} device${count===1?'':'s'} entered. Any unsaved test results will be discarded.`;openModal('#leaveTestingModal');}
+function confirmLeaveTesting(){const next=pendingTestingLeaveView;pendingTestingLeaveView=null;closeModal('#leaveTestingModal');state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderTesting();if(next)showView(next,true);}
+function showView(view,bypassLeaveGuard=false){
   const protectedViews=new Set(['issues','my-issues','testing','go-live','knowledge','admin']);
+  const testingIsActuallyVisible=!!$('#view-testing')?.classList.contains('active');
+  if(!bypassLeaveGuard&&view!=='testing'&&(state.view==='testing'||testingIsActuallyVisible)&&hasTestingDeviceInput()){
+    openLeaveTestingPrompt(view);
+    return;
+  }
   if(protectedViews.has(view)&&!isLoggedIn()){openModal('#authModal');return;}
   if(view==='admin'&&!isAdmin()){openModal('#authModal');return;}
   state.view=view;
@@ -29,7 +38,51 @@ function showView(view){
   if(view==='admin')refreshAdmin();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+$('#raiseIssueClose')?.addEventListener('click',()=>closeModal('#raiseIssueModal'));
+$('#raiseIssueCancel')?.addEventListener('click',()=>closeModal('#raiseIssueModal'));
+$('#raiseIssueModal')?.addEventListener('click',e=>{if(e.target.id==='raiseIssueModal')closeModal('#raiseIssueModal')});
+$('#stayTestingBtn')?.addEventListener('click',()=>closeModal('#leaveTestingModal'));
+$('#leaveTestingClose')?.addEventListener('click',()=>{pendingTestingLeaveView=null;closeModal('#leaveTestingModal')});
+$('#leaveTestingModal')?.addEventListener('click',e=>{if(e.target.id==='leaveTestingModal'){pendingTestingLeaveView=null;closeModal('#leaveTestingModal')}});
+$('#leaveTestingBtn')?.addEventListener('click',confirmLeaveTesting);
+
+$('#raiseIssueForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!isLoggedIn()){closeModal('#raiseIssueModal');openModal('#authModal');return;}
+  const payload={
+    system:$('#raiseIssueSystem').value,port:$('#raiseIssuePort').value.split(' - ')[0],
+    terminal:$('#raiseIssueTerminal').value.trim()||null,device_id:$('#raiseIssueDevice').value.trim()||null,
+    environment:$('#raiseIssueEnvironment').value,urgency:$('#raiseIssueUrgency').value,
+    category:$('#raiseIssueCategory').value,description:$('#raiseIssueDescription').value.trim(),
+    pnr:$('#raiseIssuePnr').value.trim().toUpperCase()||null,raised_by:state.user.email,status:'New'
+  };
+  if(!payload.port||!payload.category||!payload.description){setMessage('#raiseIssueMessage','Please complete Port, Issue Category and Description.');return;}
+  const btn=$('#raiseIssueSubmit');if(btn){btn.disabled=true;btn.textContent='Raising…';}
+  try{
+    const {data,error}=await sb.from('issues').insert(payload).select('issue_id').single();
+    if(error)throw error;
+    closeModal('#raiseIssueModal');
+    setMessage('#testingMessage',`Issue ${data?.issue_id||''} submitted successfully.`,'success');
+    await loadMyIssues();
+  }catch(err){setMessage('#raiseIssueMessage','Could not submit issue: '+(err.message||err));}
+  finally{if(btn){btn.disabled=false;btn.textContent='Raise Issue';}}
+});
+
 $$('[data-view]').forEach(el=>el.addEventListener('click',e=>{if(el.tagName==='A')return;e.preventDefault();showView(el.dataset.view);}));
+// Hard guard for Testing navigation. This runs in capture phase before the
+// normal navigation listener, so changing tabs can never bypass the warning.
+document.addEventListener('click',e=>{
+  const target=e.target.closest?.('[data-view]');
+  if(!target || target.tagName==='A') return;
+  const nextView=target.dataset.view;
+  const testingVisible=!!$('#view-testing')?.classList.contains('active');
+  if(nextView!=='testing' && (state.view==='testing'||testingVisible) && hasTestingDeviceInput()){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openLeaveTestingPrompt(nextView);
+  }
+},true);
+
 $('#mobileMenuBtn')?.addEventListener('click',()=>$('#mainNav')?.classList.toggle('open'));
 $('#authBtn')?.addEventListener('click',()=>state.user?signOut():openModal('#authModal'));
 $('#authClose')?.addEventListener('click',()=>closeModal('#authModal'));$('#authModal')?.addEventListener('click',e=>{if(e.target.id==='authModal')closeModal('#authModal')});
@@ -61,7 +114,10 @@ $('#authForm')?.addEventListener('submit',async e=>{e.preventDefault();const ema
     const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await setUser(data.user);if(state.user)closeModal('#authModal');
   }catch(err){setMessage('#authMessage',err.message||'Unable to complete sign in.');}
 });
-async function signOut(){try{await sb.auth.signOut();}finally{state.user=null;state.role=null;state.approval=null;updateAuthUI();showView('home');}}
+async function signOut(){
+  if(state.view==='testing'&&hasTestingDeviceInput()){openLeaveTestingPrompt('home');return;}
+  try{await sb.auth.signOut();}finally{state.user=null;state.role=null;state.approval=null;updateAuthUI();showView('home',true);}
+}
 
 async function loadAllData(){await Promise.all([loadTasks(),loadGoLiveTasks(),loadMyIssues(),loadTestingRuns()]);if(isAdmin())await refreshAdmin();updateAuthUI();}
 
@@ -70,19 +126,61 @@ async function loadGoLiveTasks(){if(!state.user)return;const {data,error}=await 
 function renderSystemTabs(){const box=$('#systemTabs');if(!box)return;box.innerHTML=['Bag Tagger','Auto Bag Drop'].map(s=>`<button type="button" class="system-tab ${s===state.testingSystem?'active':''}" data-system="${esc(s)}">${esc(s)}</button>`).join('');$$('.system-tab').forEach(b=>b.addEventListener('click',()=>{state.testingSystem=b.dataset.system;state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderSystemTabs();renderTesting();}));}
 function activeTestingTasks(){return state.tasks.filter(t=>t.system===state.testingSystem&&t.active).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));}
 function renderTesting(){const table=$('#testingTable');if(!table)return;const tasks=activeTestingTasks();$('#testingTitle').textContent=`${state.testingSystem} Test Cases`;let head=`<thead><tr><th>Device ID</th>${tasks.map(t=>`<th>${esc(t.name)}</th>`).join('')}</tr></thead><tbody>`;for(const [i,d] of state.testingDevices.entries()){const failed=tasks.filter(t=>d.results[t.id]==='fail');head+=`<tr><td><input class="device-input" data-device="${i}" value="${esc(d.id)}" placeholder="e.g. SYDT3ABD001"><div class="device-actions"><button class="mini" data-pass-all="${i}">✓ Pass All</button><button class="mini" data-reset-row="${i}">↻ Reset</button>${state.testingDevices.length>1?`<button class="mini" data-remove-row="${i}">Remove</button>`:''}</div>${failed.length?`<div class="raise-row"><span>${failed.length} failed test${failed.length===1?'':'s'}</span><button class="raise-btn" data-raise-device="${i}">⚠ Raise Issue</button></div>`:''}</td>`;for(const t of tasks){const r=d.results[t.id]||'';head+=`<td><div class="check-set"><button class="check pass ${r==='pass'?'sel':''}" title="Pass" data-result="${i}|${t.id}|pass">✓</button><button class="check fail ${r==='fail'?'sel':''}" title="Fail" data-result="${i}|${t.id}|fail">✕</button></div></td>`;}head+='</tr>';}table.innerHTML=head+'</tbody>';updateTestingSummary();
-  $$('.device-input').forEach(inp=>inp.addEventListener('input',()=>{state.testingDevices[+inp.dataset.device].id=inp.value.trim();state.testingRunDirty=true;}));
-  $$('[data-result]').forEach(btn=>btn.addEventListener('click',()=>{const [i,id,r]=btn.dataset.result.split('|');state.testingDevices[+i].results[id]=r;state.testingRunDirty=true;renderTesting();}));
-  $$('[data-pass-all]').forEach(btn=>btn.addEventListener('click',()=>{const d=state.testingDevices[+btn.dataset.passAll];tasks.forEach(t=>d.results[t.id]='pass');state.testingRunDirty=true;renderTesting();}));
-  $$('[data-reset-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices[+btn.dataset.resetRow].results={};state.testingRunDirty=true;renderTesting();}));
-  $$('[data-remove-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices.splice(+btn.dataset.removeRow,1);state.testingDevices=state.testingDevices.length?state.testingDevices:[{id:'',results:{}}];state.testingRunDirty=true;renderTesting();}));
-  $$('[data-raise-device]').forEach(btn=>btn.addEventListener('click',()=>openIssueFromFailedDevice(+btn.dataset.raiseDevice)));
+  $$('.device-input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      state.testingDevices[+inp.dataset.device].id=inp.value.trim();
+      state.testingRunDirty=true;
+    });
+    inp.addEventListener('keydown',e=>{
+      if(e.key!=='Enter') return;
+      e.preventDefault();
+      e.stopPropagation();
+      const index=+inp.dataset.device;
+      if(!state.testingDevices[index]?.id?.trim()) return;
+      state.testingDevices.push({id:'',results:{}});
+      state.testingRunDirty=true;
+      renderTesting();
+      requestAnimationFrame(()=>{
+        document.querySelector(`.device-input[data-device=\"${index+1}\"]`)?.focus();
+      });
+    });
+  });
+  $$('[data-result]').forEach(btn=>btn.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    const [i,id,r]=btn.dataset.result.split('|');
+    state.testingDevices[+i].results[id]=r;
+    state.testingRunDirty=true;
+    renderTesting();
+  }));
+  $$('[data-pass-all]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const d=state.testingDevices[+btn.dataset.passAll];tasks.forEach(t=>d.results[t.id]='pass');state.testingRunDirty=true;renderTesting();}));
+  $$('[data-reset-row]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();state.testingDevices[+btn.dataset.resetRow].results={};state.testingRunDirty=true;renderTesting();}));
+  $$('[data-remove-row]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();state.testingDevices.splice(+btn.dataset.removeRow,1);state.testingDevices=state.testingDevices.length?state.testingDevices:[{id:'',results:{}}];state.testingRunDirty=true;renderTesting();}));
+  $$('[data-raise-device]').forEach(btn=>btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openIssueFromFailedDevice(+btn.dataset.raiseDevice);}));
 }
 function updateTestingSummary(){const tasks=activeTestingTasks(),total=tasks.length*state.testingDevices.length,complete=state.testingDevices.reduce((n,d)=>n+tasks.filter(t=>d.results[t.id]).length,0);$('#testingSummary').textContent=`${complete} / ${total} tests complete`;}
 $('#addDeviceBtn')?.addEventListener('click',()=>{state.testingDevices.push({id:'',results:{}});state.testingRunDirty=true;renderTesting();});
 $('#resetTestingBtn')?.addEventListener('click',()=>{state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderTesting();});
 $('#testingReference')?.addEventListener('input',()=>{if(state.testingRunDirty===false)state.testingRunDirty=true;});
 $('#testingPort')?.addEventListener('change',()=>{state.testingRunDirty=true;});
-function openIssueFromFailedDevice(index){const tasks=activeTestingTasks(),failed=tasks.filter(t=>state.testingDevices[index].results[t.id]==='fail');if(!failed.length)return;$('#issueSystem').value=state.testingSystem;$('#issuePort').value=$('#testingPort').value?$('#testingPort').value+' -':'';$('#issueDevice').value=state.testingDevices[index].id;$('#issueCategory').value='Other issues';$('#issueDescription').value=failed.map(t=>`${t.name} failed.`).join('\n');showView('issues');}
+function openIssueFromFailedDevice(index){
+  if(!isLoggedIn()){openModal('#authModal');return;}
+  const device=state.testingDevices[index], tasks=activeTestingTasks();
+  const failed=tasks.filter(t=>device.results[t.id]==='fail');
+  if(!failed.length)return;
+  $('#raiseIssueSystem').value=state.testingSystem;
+  $('#raiseIssuePort').value=$('#testingPort').value||'';
+  $('#raiseIssueTerminal').value='';
+  $('#raiseIssueDevice').value=device.id||'';
+  $('#raiseIssueEnvironment').value='Testing/CERT';
+  $('#raiseIssueUrgency').value='High';
+  $('#raiseIssuePnr').value='';
+  $('#raiseIssueCategory').value='Other issues';
+  $('#raiseIssueFailedTests').innerHTML=failed.map(t=>`<span class="failed-test-pill">${esc(t.name)}</span>`).join('');
+  $('#raiseIssueDescription').value=failed.map(t=>`${t.name} failed.`).join('\n');
+  setMessage('#raiseIssueMessage','');
+  openModal('#raiseIssueModal');
+}
 
 $('#saveTestingBtn')?.addEventListener('click',async()=>{if(!isLoggedIn())return openModal('#authModal');const tasks=activeTestingTasks();const port=$('#testingPort').value;if(!port){setMessage('#testingMessage','Select a port before saving.');return;}if(!state.testingDevices.some(d=>d.id.trim())){setMessage('#testingMessage','Enter at least one Device ID.');return;}const complete=state.testingDevices.reduce((n,d)=>n+tasks.filter(t=>d.results[t.id]).length,0);try{const {data:run,error}=await sb.from('testing_runs').insert({port,system:state.testingSystem,run_reference:$('#testingReference').value.trim()||null,tested_by_user_id:state.user.id,tested_by_name:formatName(state.user.email),device_count:state.testingDevices.length,total_tests:tasks.length*state.testingDevices.length,completed_tests:complete}).select('id').single();if(error)throw error;const resultRows=[];state.testingDevices.forEach((d,di)=>tasks.forEach(t=>resultRows.push({run_id:run.id,device_id:d.id,test_case:t.name,result:d.results[t.id]||'untested',device_index:di+1})));if(resultRows.length){const {error:rerr}=await sb.from('testing_results').insert(resultRows);if(rerr)throw rerr;}state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderTesting();await loadTestingRuns();setMessage('#testingMessage',`Testing run saved as ${run.id}.`,'success');}catch(err){setMessage('#testingMessage','Could not save testing: '+(err.message||err));}});
 
@@ -137,3 +235,5 @@ let confirmFn=null;function openConfirm(title,copy,fn){$('#confirmTitle').textCo
 
 sb.auth.onAuthStateChange(async(_event,session)=>{if(session?.user){if(!state.user||state.user.id!==session.user.id)await setUser(session.user);}else{state.user=null;state.role=null;state.approval=null;updateAuthUI();}});
 (async()=>{try{const {data}=await sb.auth.getSession();if(data.session?.user)await setUser(data.session.user);else{updateAuthUI();setConnected(true);$('#homeTaskCount').textContent='Sign in to load';$('#homeGoLiveCount').textContent='Sign in to load';}}catch(e){console.error(e);setConnected(false);}})();
+
+window.addEventListener('beforeunload',e=>{if(state.view==='testing'&&hasTestingDeviceInput()){e.preventDefault();e.returnValue='';}});

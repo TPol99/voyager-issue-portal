@@ -139,6 +139,38 @@
   <footer>Created by <strong>Tristan Pollock</strong></footer>
 </div>
 
+<div id="raiseIssueModal" class="modal-backdrop" hidden>
+  <div class="modal wide issue-modal" role="dialog" aria-modal="true" aria-labelledby="raiseIssueTitle">
+    <button class="modal-close" id="raiseIssueClose" type="button" aria-label="Close">×</button>
+    <div class="eyebrow">Testing</div><h3 id="raiseIssueTitle">Log an Issue</h3>
+    <p class="modal-subtitle">Raise an issue without leaving the current testing run.</p>
+    <form id="raiseIssueForm" class="form-grid">
+      <label>System<input id="raiseIssueSystem" readonly></label>
+      <label>Port<select id="raiseIssuePort" required><option value="">Select port</option><option>BNE - Brisbane</option><option>MEL - Melbourne</option><option>SYD - Sydney</option><option>OOL - Gold Coast</option><option>MCY - Sunshine Coast</option><option>MKY - Mackay</option><option>ADL - Adelaide</option><option>PER - Perth</option><option>DRW - Darwin</option><option>LST - Launceston</option><option>ZQN - Queenstown</option><option>NAN - Nadi</option></select></label>
+      <label>Terminal<input id="raiseIssueTerminal" placeholder="e.g. T3 / Domestic"></label>
+      <label>Device ID<input id="raiseIssueDevice" readonly></label>
+      <label>Environment<select id="raiseIssueEnvironment"><option>Testing/CERT</option><option>Production</option></select></label>
+      <label>Urgency<select id="raiseIssueUrgency"><option>Low</option><option>Medium</option><option selected>High</option><option>Critical</option></select></label>
+      <label class="full">PNR<input id="raiseIssuePnr" maxlength="6" placeholder="Optional"></label>
+      <label class="full">Issue category<select id="raiseIssueCategory" required><option value="">Select a category</option><option>Error Printing</option><option>Unable to read bag tags</option><option>Unable to retrieve booking</option><option>Incorrect allowance</option><option>Incorrect fees</option><option>Other issues</option></select></label>
+      <div class="full"><div class="field-label">Failed test(s)</div><div id="raiseIssueFailedTests" class="failed-test-list"></div></div>
+      <label class="full">Description<textarea id="raiseIssueDescription" rows="5" required placeholder="Describe what happened…"></textarea></label>
+      <div class="full modal-message" id="raiseIssueMessage" aria-live="polite"></div>
+      <div class="full modal-actions"><button class="btn secondary" type="button" id="raiseIssueCancel">Cancel</button><button class="btn primary" type="submit" id="raiseIssueSubmit">Raise Issue</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="leaveTestingModal" class="modal-backdrop" hidden>
+  <div class="modal small leave-modal" role="dialog" aria-modal="true" aria-labelledby="leaveTestingTitle">
+    <button class="modal-close" id="leaveTestingClose" type="button" aria-label="Close">×</button>
+    <div class="eyebrow">Testing in progress</div><h3 id="leaveTestingTitle">Leave testing?</h3>
+    <p class="modal-subtitle">You've entered a device ID. Leaving this page will discard the current testing run and its unsaved results.</p>
+    <div class="leave-summary" id="leaveTestingSummary"></div>
+    <div class="modal-actions"><button class="btn secondary" type="button" id="stayTestingBtn">Stay on Testing</button><button class="btn danger" type="button" id="leaveTestingBtn">Leave &amp; Discard</button></div>
+  </div>
+</div>
+
 <div id="authModal" class="modal-backdrop" hidden><div class="modal" role="dialog" aria-modal="true"><button class="modal-close" id="authClose" aria-label="Close">×</button><div class="eyebrow">Staff access</div><h3 id="authTitle">Sign in</h3><p id="authSubtitle">Sign in to use staff features.</p><form id="authForm"><label>Email<input id="authEmail" type="email" required autocomplete="email"></label><label>Password<input id="authPassword" type="password" required autocomplete="current-password"></label><label class="remember-line"><input id="rememberMe" type="checkbox"> Remember me</label><div class="modal-actions"><button class="btn primary" type="submit">Sign in</button><button class="btn secondary" id="switchToCreate" type="button">Create account</button></div></form><div id="authMessage" class="message" hidden></div></div></div>
 
 <div id="taskModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="taskClose">×</button><div class="eyebrow">Testing configuration</div><h3 id="taskModalTitle">Add test case</h3><p>Create or edit a test case.</p><label>Test name<input id="taskName" maxlength="120" required></label><label>System<select id="taskSystem"><option>Bag Tagger</option><option>Auto Bag Drop</option></select></label><label>Description / tester instructions<textarea id="taskDescription" rows="4"></textarea></label><label>Order<input id="taskOrder" type="number" min="1" value="1"></label><div class="modal-actions"><button class="btn secondary" id="taskCancel">Cancel</button><button class="btn primary" id="taskSave">Save test case</button></div></div></div>
