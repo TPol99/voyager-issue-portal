@@ -1,134 +1,152 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#28115f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="VA FAX">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="stylesheet" href="./styles.css">
-  <title>VA FAX Testing Companion</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7c20ed">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VA FAX">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<title>VA FAX Testing Companion</title>
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">VA</div>
-        <div><strong>Virgin Australia</strong><span>VA FAX Testing Companion</span></div>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">VA</div>
+      <div>
+        <div class="brand-title">Virgin Australia</div>
+        <div class="brand-subtitle">VA FAX Testing Companion</div>
       </div>
-      <button class="mobile-menu" id="mobileMenuBtn" aria-label="Open navigation">☰</button>
-      <nav id="topNav" class="nav" aria-label="Primary navigation">
-        <button class="nav-item active" data-view="home">Home</button>
-        <button class="nav-item" data-view="issues">Log an Issue</button>
-        <button class="nav-item" data-view="my-issues">My Issues</button>
-        <button class="nav-item" data-view="testing">Testing</button>
-        <button class="nav-item" data-view="go-live">Go Live Checklist</button>
-        <button class="nav-item" data-view="knowledge">Knowledge Base</button>
-        <a class="nav-item external" href="https://tpol99.github.io/AOT-Testing-Buddy/" target="_blank" rel="noopener">AOT Testing Companion ↗</a>
-        <button class="nav-item admin-only" id="adminNav" data-view="admin" hidden>Admin</button>
-      </nav>
-      <div class="auth-actions">
-        <span class="connection" id="connectionState"><i></i> Database</span>
-        <span class="user-chip" id="userChip" hidden></span>
-        <button class="btn ghost" id="authBtn">Sign in</button>
-      </div>
-    </header>
+    </div>
+    <button id="mobileMenuBtn" class="icon-btn mobile-menu" type="button" aria-label="Open navigation">☰</button>
+    <nav id="mainNav" class="nav" aria-label="Primary">
+      <button class="nav-link active" data-view="home">Home</button>
+      <button class="nav-link" data-view="issues">Log an Issue</button>
+      <button class="nav-link" data-view="my-issues">My Issues</button>
+      <button class="nav-link" data-view="testing">Testing</button>
+      <button class="nav-link" data-view="go-live">Go Live Checklist</button>
+      <button class="nav-link" data-view="knowledge">Knowledge Base</button>
+      <a class="nav-link external" href="https://tpol99.github.io/AOT-Testing-Buddy/" target="_blank" rel="noopener">AOT Testing Companion ↗</a>
+      <button class="nav-link admin-link" id="adminNav" data-view="admin" hidden>Admin</button>
+    </nav>
+    <div class="top-actions">
+      <span id="connectionPill" class="pill connection-pill"><i></i> Connected</span>
+      <span id="userPill" class="pill" hidden></span>
+      <button id="authBtn" class="btn ghost">Sign in</button>
+    </div>
+  </header>
 
-    <main id="appMain">
-      <section class="view active" id="view-home">
-        <div class="hero card">
-          <div>
-            <div class="eyebrow">Virgin Australia Airport Systems</div>
-            <h1 id="welcomeTitle">Welcome to Voyager</h1>
-            <p>One place to report issues, run device testing and find support guidance.</p>
-            <div class="hero-actions">
-              <button class="btn primary" data-view="issues">Log an Issue</button>
-              <button class="btn secondary" data-view="testing">Start Testing</button>
-            </div>
+  <main id="mainContent">
+    <section id="view-home" class="view active">
+      <div class="hero card">
+        <div>
+          <div class="eyebrow">Virgin Australia Airport Systems</div>
+          <h1 id="welcomeTitle">Welcome to VA FAX</h1>
+          <p>One clean workspace for device testing, operational issues, go-live readiness and support.</p>
+          <div class="hero-actions">
+            <button class="btn primary" data-view="issues">Log an Issue →</button>
+            <button class="btn secondary" data-view="testing">Start Testing</button>
           </div>
-          <div class="hero-mark"><span>Virgin</span><strong>australia</strong></div>
         </div>
-
-        <div class="tile-grid">
-          <button class="card tile" data-view="issues"><span class="tile-icon">🏷️</span><strong>Bag Tagger</strong><span>Report issues and run Bag Tagger checks.</span></button>
-          <button class="card tile" data-view="testing"><span class="tile-icon">🧳</span><strong>Auto Bag Drop</strong><span>Run structured ABD testing and capture results.</span></button>
-          <button class="card tile" data-view="knowledge"><span class="tile-icon">📚</span><strong>Knowledge Base</strong><span>Find support guidance and operational notes.</span></button>
+        <div class="hero-logo" aria-label="Virgin Australia">
+          <div class="hero-logo-badge"><span>Virgin</span><strong>australia</strong></div>
         </div>
-      </section>
+      </div>
+      <div class="home-grid">
+        <button class="card feature-card" data-view="testing"><span class="feature-icon">🏷️</span><strong>Bag Tagger</strong><span>Run configurable Bag Tagger checks and record results.</span></button>
+        <button class="card feature-card" data-view="testing"><span class="feature-icon">🧳</span><strong>Auto Bag Drop</strong><span>Run structured ABD checks against current test tasks.</span></button>
+        <button class="card feature-card" data-view="go-live"><span class="feature-icon">✅</span><strong>Go Live Checklist</strong><span>Work through the live operational readiness checks.</span></button>
+        <button class="card feature-card" data-view="knowledge"><span class="feature-icon">📚</span><strong>Knowledge Base</strong><span>Find support guidance for airport operations technology.</span></button>
+      </div>
+      <div class="home-status card">
+        <div><span>Testing tasks</span><strong id="homeTaskCount">—</strong></div>
+        <div><span>Go live tasks</span><strong id="homeGoLiveCount">—</strong></div>
+        <div><span>Access</span><strong id="homeAccessState">Public</strong></div>
+      </div>
+    </section>
 
-      <section class="view" id="view-issues"><div class="page-head"><div><div class="eyebrow">Support</div><h2>Log an Issue</h2><p>Capture an operational issue with the right context.</p></div></div><div class="card placeholder"><strong>Issue workflow foundation</strong><span>Ticket fields and workflow will live here.</span></div></section>
-      <section class="view" id="view-my-issues"><div class="page-head"><div><div class="eyebrow">Support</div><h2>My Issues</h2><p>Your submitted Voyager issues and status history.</p></div></div><div class="card placeholder"><strong>My Issues foundation</strong><span>Tickets, comments and timeline will live here.</span></div></section>
+    <section id="view-issues" class="view">
+      <div class="page-head"><div><div class="eyebrow">Support</div><h2>Log an Issue</h2><p>Capture an operational issue with the right context.</p></div></div>
+      <div class="card form-card">
+        <form id="issueForm" class="form-grid">
+          <label>System<select id="issueSystem" required><option>Bag Tagger</option><option>Auto Bag Drop</option></select></label>
+          <label>Port<select id="issuePort" required><option value="">Select port</option><option>BNE - Brisbane</option><option>MEL - Melbourne</option><option>SYD - Sydney</option><option>OOL - Gold Coast</option><option>MCY - Sunshine Coast</option><option>MKY - Mackay</option><option>ADL - Adelaide</option><option>PER - Perth</option><option>DRW - Darwin</option><option>LST - Launceston</option><option>ZQN - Queenstown</option><option>NAN - Nadi</option></select></label>
+          <label>Terminal<input id="issueTerminal" placeholder="e.g. T3 / Domestic"></label>
+          <label>Device ID<input id="issueDevice" placeholder="e.g. SYDT3ABD001"></label>
+          <label>Environment<select id="issueEnvironment"><option>Production</option><option>Testing/CERT</option></select></label>
+          <label>Urgency<select id="issueUrgency"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></label>
+          <label class="full">PNR<input id="issuePnr" maxlength="6" placeholder="Optional"></label>
+          <label class="full">Issue category<select id="issueCategory" required><option value="">Select a category</option><option>Error Printing</option><option>Unable to read bag tags</option><option>Unable to retrieve booking</option><option>Incorrect allowance</option><option>Incorrect fees</option><option>Other issues</option></select></label>
+          <label class="full">Description<textarea id="issueDescription" rows="6" placeholder="Describe what happened, what you expected and what you observed." required></textarea></label>
+          <div class="full form-actions"><button class="btn primary" type="submit">Submit Issue</button></div>
+          <div id="issueMessage" class="message full" hidden></div>
+        </form>
+      </div>
+    </section>
 
-      <section class="view" id="view-testing">
-        <div class="page-head"><div><div class="eyebrow">Testing</div><h2>Device Testing</h2><p>Testing tasks are loaded from the live Voyager configuration.</p></div><button class="btn primary" id="exportTestingBtn">⇩ Export CSV</button></div>
-        <div class="card testing-config">
-          <div class="field-row"><label>Port<select id="testingPort"><option>BNE - Brisbane</option><option>MEL - Melbourne</option><option>SYD - Sydney</option><option>OOL - Gold Coast</option><option>MCY - Sunshine Coast</option><option>MKY - Mackay</option><option>ADL - Adelaide</option><option>PER - Perth</option><option>DRW - Darwin</option><option>LST - Launceston</option><option>ZQN - Queenstown</option><option>NAN - Nadi</option></select></label><label>Run reference<input id="testingReference" placeholder="Optional e.g. SYD morning regression"></label></div>
-          <div class="system-tabs" id="systemTabs"></div>
+    <section id="view-my-issues" class="view">
+      <div class="page-head"><div><div class="eyebrow">Support</div><h2>My Issues</h2><p>Track issues you've raised and their current status.</p></div><button class="btn secondary" id="refreshMyIssues">↻ Refresh</button></div>
+      <div id="myIssuesList" class="stack"></div>
+    </section>
+
+    <section id="view-testing" class="view">
+      <div class="page-head"><div><div class="eyebrow">Testing</div><h2>Device Testing</h2><p>Test tasks are read from the live configuration in Supabase.</p></div><button class="btn secondary" id="exportTestingBtn">⇩ Export CSV</button></div>
+      <div class="card testing-config">
+        <div class="field-row">
+          <label>Port<select id="testingPort"><option value="">Select port</option><option>BNE</option><option>MEL</option><option>SYD</option><option>OOL</option><option>MCY</option><option>MKY</option><option>ADL</option><option>PER</option><option>DRW</option><option>LST</option><option>ZQN</option><option>NAN</option></select></label>
+          <label>Run reference<input id="testingReference" placeholder="Optional e.g. SYD morning regression"></label>
         </div>
-        <div class="card testing-card"><div class="section-head"><div><h3 id="testingTitle">Bag Tagger Test Cases</h3><p>Enter a device ID, then record each task.</p></div><button class="btn secondary" id="addDeviceBtn">+ Add Device</button></div><div class="table-wrap"><table id="testingTable"></table></div><div class="testing-footer"><span id="testingSummary">0 / 0 tests</span><button class="btn primary" id="saveTestingBtn">Save Testing</button></div></div>
-      </section>
+        <div id="systemTabs" class="system-tabs"></div>
+      </div>
+      <div class="card testing-card">
+        <div class="section-head"><div><h3 id="testingTitle">Bag Tagger Test Cases</h3><p>Enter a device ID and record each task.</p></div><button class="btn secondary" id="addDeviceBtn">+ Add Device</button></div>
+        <div class="table-scroll"><table id="testingTable" class="test-table"></table></div>
+        <div class="testing-footer"><span id="testingSummary">0 / 0 tests complete</span><div><button class="btn secondary" id="resetTestingBtn">Reset</button><button class="btn primary" id="saveTestingBtn">Save Testing</button></div></div>
+        <div id="testingMessage" class="message" hidden></div>
+      </div>
+      <div id="testingHistoryCard" class="card history-card">
+        <div class="section-head"><div><h3>Testing History</h3><p>Your saved testing runs.</p></div><button class="btn secondary" id="refreshTestingHistory">↻ Refresh</button></div>
+        <div class="table-scroll"><table id="testingHistoryTable" class="history-table"></table></div>
+      </div>
+    </section>
 
-      <section class="view" id="view-go-live">
-        <div class="page-head">
-          <div><div class="eyebrow">Operations</div><h2>Go Live Checklist</h2><p>Complete the operational checks before a device or system goes live.</p></div>
-          <button class="btn secondary" id="resetGoLiveBtn">↻ Reset checklist</button>
-        </div>
-        <div class="card go-live-summary"><div><strong id="goLiveProgressText">0 / 0 complete</strong><span>Current checklist progress</span></div><div class="go-live-progress"><div id="goLiveProgressFill"></div></div></div>
-        <div id="goLiveTaskList" class="go-live-list"></div>
-      </section>
+    <section id="view-go-live" class="view">
+      <div class="page-head"><div><div class="eyebrow">Operations</div><h2>Go Live Checklist</h2><p>Work through the current operational readiness checks.</p></div><button class="btn secondary" id="resetGoLiveBtn">↻ Reset</button></div>
+      <div class="card progress-card"><div><strong id="goLiveProgressText">0 / 0 complete</strong><span>Current checklist progress</span></div><div class="progress-track"><div id="goLiveProgressFill"></div></div></div>
+      <div id="goLiveTaskList" class="stack"></div>
+    </section>
 
-      <section class="view" id="view-knowledge"><div class="page-head"><div><div class="eyebrow">Support</div><h2>Knowledge Base</h2><p>Quick support guidance for airport systems.</p></div></div><div class="card placeholder"><strong>Knowledge Base foundation</strong><span>Articles and search will be added next.</span></div></section>
+    <section id="view-knowledge" class="view">
+      <div class="page-head"><div><div class="eyebrow">Support</div><h2>Knowledge Base</h2><p>Quick support guidance for airport systems.</p></div></div>
+      <div class="knowledge-grid"><article class="card knowledge-card"><h3>Bag Tagger</h3><p>Tap the Virgin logo three times, scan the override QR code, then open History.</p></article><article class="card knowledge-card"><h3>Auto Bag Drop</h3><p>Tap the Virgin logo three times, scan the override QR code, then open History.</p></article></div>
+    </section>
 
-      <section class="view" id="view-admin">
-        <div class="page-head"><div><div class="eyebrow">Administration</div><h2>Admin</h2><p>Manage Voyager testing configuration and access.</p></div><span class="admin-badge">Administrator</span></div>
-        <div class="admin-grid">
-          <div class="card admin-card"><div class="section-head"><div><h3>Testing Tasks</h3><p>Source of truth for future testing runs.</p></div><button class="btn primary" id="addTaskBtn">+ Add Test Task</button></div><div id="adminTaskList" class="admin-list"></div></div>
-          <div class="card admin-card"><div class="section-head"><div><h3>Go Live Checklist</h3><p>Add, edit, activate or deactivate checklist items.</p></div><button class="btn primary" id="addGoLiveTaskBtn">+ Add Checklist Task</button></div><div id="adminGoLiveTaskList" class="admin-list"></div></div>
-          <div class="card admin-card"><div class="section-head"><div><h3>User Management</h3><p>Approve staff access and manage roles.</p></div></div><div class="placeholder small"><strong>Auth management foundation</strong><span>Approval controls will plug into the existing user_roles table.</span></div></div>
-        </div>
-      </section>
-    </main>
+    <section id="view-admin" class="view">
+      <div class="page-head"><div><div class="eyebrow">Administration</div><h2>Admin</h2><p>Manage testing configuration, checklist tasks and staff access.</p></div><span class="pill admin-status">Administrator</span></div>
+      <div class="admin-grid">
+        <div class="card admin-panel"><div class="section-head"><div><h3>Testing Tasks</h3><p>Create, edit, activate, deactivate and reorder testing tasks.</p></div><button class="btn primary" id="addTaskBtn">+ Add Test Task</button></div><div class="admin-tabs" id="adminTestingTabs"><button class="admin-filter active" data-admin-system="Bag Tagger">Bag Tagger</button><button class="admin-filter" data-admin-system="Auto Bag Drop">Auto Bag Drop</button></div><div id="adminTaskList" class="admin-list"></div></div>
+        <div class="card admin-panel"><div class="section-head"><div><h3>Go Live Checklist</h3><p>Manage the checklist used by testers.</p></div><button class="btn primary" id="addGoLiveTaskBtn">+ Add Checklist Task</button></div><div id="adminGoLiveTaskList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>User Management</h3><p>Approve staff, change roles or remove access.</p></div><button class="btn secondary" id="refreshUsersBtn">↻ Refresh</button></div><div class="invite-grid"><input id="inviteEmail" type="email" placeholder="firstname.lastname@virginaustralia.com"><input id="inviteName" placeholder="Name (optional)"><button class="btn primary" id="inviteBtn">Invite User</button></div><div id="adminUserList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Tickets</h3><p>Administrator view of every issue.</p></div><button class="btn secondary" id="refreshAdminTickets">↻ Refresh</button></div><div id="adminTicketList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Testing Runs</h3><p>Administrator view of saved testing sessions.</p></div><button class="btn secondary" id="refreshAdminRuns">↻ Refresh</button></div><div id="adminRunList" class="admin-list"></div></div>
+      </div>
+    </section>
+  </main>
+  <footer>Created by <strong>Tristan Pollock</strong></footer>
+</div>
 
-    <footer>Created by <strong>Tristan Pollock</strong></footer>
-  </div>
+<div id="authModal" class="modal-backdrop" hidden><div class="modal" role="dialog" aria-modal="true"><button class="modal-close" id="authClose" aria-label="Close">×</button><div class="eyebrow">Staff access</div><h3 id="authTitle">Sign in</h3><p id="authSubtitle">Sign in to use staff features.</p><form id="authForm"><label>Email<input id="authEmail" type="email" required autocomplete="email"></label><label>Password<input id="authPassword" type="password" required autocomplete="current-password"></label><label class="remember-line"><input id="rememberMe" type="checkbox"> Remember me</label><div class="modal-actions"><button class="btn primary" type="submit">Sign in</button><button class="btn secondary" id="switchToCreate" type="button">Create account</button></div></form><div id="authMessage" class="message" hidden></div></div></div>
 
-  <div class="modal-backdrop" id="authModal" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-      <button class="modal-close" id="authClose" aria-label="Close">×</button>
-      <div class="eyebrow">Staff access</div><h3 id="authTitle">Sign in</h3>
-      <form id="authForm"><label>Email<input id="authEmail" type="email" autocomplete="email" required></label><label>Password<input id="authPassword" type="password" autocomplete="current-password" required></label><button class="btn primary" type="submit">Sign in</button></form>
-      <div id="authMessage" class="message" hidden></div>
-    </div>
-  </div>
+<div id="taskModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="taskClose">×</button><div class="eyebrow">Testing configuration</div><h3 id="taskModalTitle">Add test case</h3><p>Create or edit a test case.</p><label>Test name<input id="taskName" maxlength="120" required></label><label>System<select id="taskSystem"><option>Bag Tagger</option><option>Auto Bag Drop</option></select></label><label>Description / tester instructions<textarea id="taskDescription" rows="4"></textarea></label><label>Order<input id="taskOrder" type="number" min="1" value="1"></label><div class="modal-actions"><button class="btn secondary" id="taskCancel">Cancel</button><button class="btn primary" id="taskSave">Save test case</button></div></div></div>
 
-  <div class="modal-backdrop" id="taskModal" hidden>
-    <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
-      <button class="modal-close" id="taskClose" aria-label="Close">×</button>
-      <div class="eyebrow">Test configuration</div><h3 id="taskModalTitle">Add test case</h3>
-      <p>Create a test case that can be activated or deactivated by an administrator.</p>
-      <label>Test name<input id="taskName" maxlength="120" placeholder="e.g. Scan boarding pass"></label>
-      <label>System<select id="taskSystem"><option>Bag Tagger</option><option>Auto Bag Drop</option></select></label>
-      <label>Description / tester instructions<textarea id="taskDescription" rows="4" placeholder="What should the tester confirm?"></textarea></label>
-      <label>Order<input id="taskOrder" type="number" min="1" value="1"></label>
-      <div class="modal-actions"><button class="btn secondary" id="taskCancel">Cancel</button><button class="btn primary" id="taskSave">Save test case</button></div>
-    </div>
-  </div>
+<div id="goLiveModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="goLiveClose">×</button><div class="eyebrow">Go Live Checklist</div><h3 id="goLiveModalTitle">Add checklist task</h3><p>Create or edit a checklist item.</p><label>Task name<input id="goLiveName" maxlength="120" required></label><label>Description / completion criteria<textarea id="goLiveDescription" rows="4"></textarea></label><label>Order<input id="goLiveOrder" type="number" min="1" value="1"></label><div class="modal-actions"><button class="btn secondary" id="goLiveCancel">Cancel</button><button class="btn primary" id="goLiveSave">Save task</button></div></div></div>
 
-  <div class="modal-backdrop" id="goLiveTaskModal" hidden>
-    <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="goLiveTaskModalTitle">
-      <button class="modal-close" id="goLiveTaskClose" aria-label="Close">×</button>
-      <div class="eyebrow">Go Live Checklist</div><h3 id="goLiveTaskModalTitle">Add checklist task</h3>
-      <p>Create a checklist item that can be activated or deactivated by an administrator.</p>
-      <label>Task name<input id="goLiveTaskName" maxlength="120" placeholder="e.g. Production DCS validation complete"></label>
-      <label>Description / completion criteria<textarea id="goLiveTaskDescription" rows="4" placeholder="What must be confirmed before this task is marked complete?"></textarea></label>
-      <label>Order<input id="goLiveTaskOrder" type="number" min="1" value="1"></label>
-      <div class="modal-actions"><button class="btn secondary" id="goLiveTaskCancel">Cancel</button><button class="btn primary" id="goLiveTaskSave">Save checklist task</button></div>
-    </div>
-  </div>
+<div id="confirmModal" class="modal-backdrop" hidden><div class="modal small"><button class="modal-close" id="confirmClose">×</button><div class="eyebrow">Confirm action</div><h3 id="confirmTitle">Are you sure?</h3><p id="confirmCopy">This cannot be undone.</p><div class="modal-actions"><button class="btn secondary" id="confirmCancel">Cancel</button><button class="btn danger" id="confirmAction">Confirm</button></div></div></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="./app.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>
