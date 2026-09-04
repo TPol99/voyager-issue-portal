@@ -102,10 +102,10 @@ function renderTesting(){const table=$('#testingTable');if(!table)return;const t
   inp.addEventListener('input',()=>{state.testingDevices[+inp.dataset.device].id=inp.value.trim();state.testingRunDirty=true;});
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const i=+inp.dataset.device;const nextIndex=i+1;if(!state.testingDevices[nextIndex]){state.testingDevices.push({id:'',results:{}});}state.testingRunDirty=true;renderTesting();requestAnimationFrame(()=>document.querySelector(`.device-input[data-device=\"${nextIndex}\"]`)?.focus());}});
 });
-  $$('[data-result]').forEach(btn=>btn.addEventListener('click',()=>{const [i,id,r]=btn.dataset.result.split('|');state.testingDevices[+i].results[id]=r;state.testingRunDirty=true;renderTesting();}));
-  $$('[data-pass-all]').forEach(btn=>btn.addEventListener('click',()=>{const d=state.testingDevices[+btn.dataset.passAll];tasks.forEach(t=>d.results[t.id]='pass');state.testingRunDirty=true;renderTesting();}));
-  $$('[data-reset-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices[+btn.dataset.resetRow].results={};state.testingRunDirty=true;renderTesting();}));
-  $$('[data-remove-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices.splice(+btn.dataset.removeRow,1);state.testingDevices=state.testingDevices.length?state.testingDevices:[{id:'',results:{}}];state.testingRunDirty=true;renderTesting();}));
+  $$('[data-result]').forEach(btn=>btn.addEventListener('click',()=>{const [i,id,r]=btn.dataset.result.split('|');state.testingDevices[+i].results[id]=r;state.testingRunDirty=true;renderTesting();loadTestingAnalytics();}));
+  $$('[data-pass-all]').forEach(btn=>btn.addEventListener('click',()=>{const d=state.testingDevices[+btn.dataset.passAll];tasks.forEach(t=>d.results[t.id]='pass');state.testingRunDirty=true;renderTesting();loadTestingAnalytics();}));
+  $$('[data-reset-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices[+btn.dataset.resetRow].results={};state.testingRunDirty=true;renderTesting();loadTestingAnalytics();}));
+  $$('[data-remove-row]').forEach(btn=>btn.addEventListener('click',()=>{state.testingDevices.splice(+btn.dataset.removeRow,1);state.testingDevices=state.testingDevices.length?state.testingDevices:[{id:'',results:{}}];state.testingRunDirty=true;renderTesting();loadTestingAnalytics();}));
   $$('[data-raise-device]').forEach(btn=>btn.addEventListener('click',()=>openIssueFromFailedDevice(+btn.dataset.raiseDevice)));
 }
 function updateTestingSummary(){const tasks=activeTestingTasks(),total=tasks.length*state.testingDevices.length,complete=state.testingDevices.reduce((n,d)=>n+tasks.filter(t=>d.results[t.id]).length,0);$('#testingSummary').textContent=`${complete} / ${total} tests complete`;}
@@ -212,27 +212,59 @@ async function loadMyIssueAnalytics(){
   $('#issueTotalCount').textContent=total;
   $('#issueOpenCount').textContent=Math.max(0,total-closed);
   const counts={};
-  rows.forEach(r=>{const s=r.status||'New';counts[s]=(counts[s]||0)+1;});
+  rows.forEach(r=>{
+    const raw=String(r.status||'New').trim().toLowerCase();
+    const key={
+      'new':'New',
+      'in progress':'In Progress',
+      'under investigation':'In Progress',
+      'testing':'Testing',
+      'test':'Testing',
+      'resolved':'Resolved',
+      'closed':'Closed'
+    }[raw]||'New';
+    counts[key]=(counts[key]||0)+1;
+  });
   updatePie('#issueStatusPie','#issueStatusLegend',
-    ['New','Under Investigation','Test','Resolved','Closed'].map(s=>({label:s,value:counts[s]||0})));
+    ['New','In Progress','Testing','Resolved','Closed'].map(s=>({label:s,value:counts[s]||0})));
 }
 
 async function loadTestingAnalytics(){
   if(!state.user)return;
-  const {data:runs,error}=await sb.from('testing_runs').select('id,total_tests,completed_tests').eq('tested_by_user_id',state.user.id);
+
+  const {data:runs,error}=await sb.from('testing_runs')
+    .select('id,total_tests,completed_tests')
+    .eq('tested_by_user_id',state.user.id);
+
   if(error){console.warn(error);return;}
-  const rows=runs||[];
-  $('#testingRunCount').textContent=rows.length;
-  const avg=rows.length?Math.round(rows.reduce((n,r)=>n+(r.total_tests?((r.completed_tests||0)/r.total_tests)*100:0),0)/rows.length):0;
+
+  const savedRuns=runs||[];
+  $('#testingRunCount').textContent=savedRuns.length;
+
+  const avg=savedRuns.length
+    ? Math.round(savedRuns.reduce((n,r)=>
+        n+(r.total_tests?((r.completed_tests||0)/r.total_tests)*100:0),0)/savedRuns.length)
+    : 0;
   $('#testingAverageCompletion').textContent=`${avg}%`;
-  if(!rows.length){updatePie('#testingResultPie','#testingResultLegend',[]);return;}
-  const ids=rows.map(r=>r.id);
-  const {data:results,error:resultError}=await sb.from('testing_results').select('result').in('run_id',ids);
-  if(resultError){console.warn(resultError);return;}
-  let pass=0,fail=0,other=0;
-  (results||[]).forEach(r=>{if(r.result==='pass')pass++;else if(r.result==='fail')fail++;else other++;});
+
+  // The chart is intentionally ONLY the current test session on screen.
+  const tasks=activeTestingTasks();
+  const devices=state.testingDevices||[];
+  let pass=0,fail=0,untested=0;
+
+  devices.forEach(device=>{
+    tasks.forEach(task=>{
+      const result=device.results?.[task.id];
+      if(result==='pass')pass++;
+      else if(result==='fail')fail++;
+      else untested++;
+    });
+  });
+
   updatePie('#testingResultPie','#testingResultLegend',[
-    {label:'Pass',value:pass},{label:'Fail',value:fail},{label:'Untested',value:other}
+    {label:'Pass',value:pass},
+    {label:'Fail',value:fail},
+    {label:'Untested',value:untested}
   ]);
 }
 
