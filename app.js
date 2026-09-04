@@ -86,32 +86,24 @@ $('#resetTestingBtn')?.addEventListener('click',()=>{state.testingDevices=[{id:'
 $('#testingReference')?.addEventListener('input',()=>{if(state.testingRunDirty===false)state.testingRunDirty=true;});
 $('#testingPort')?.addEventListener('change',()=>{state.testingRunDirty=true;});
 function openIssueFromFailedDevice(index){
-  const tasks=activeTestingTasks(),device=state.testingDevices[index];
-  if(!device)return;
-  const failed=tasks.filter(t=>device.results[t.id]==='fail');
+  const tasks=activeTestingTasks(),failed=tasks.filter(t=>state.testingDevices[index].results[t.id]==='fail');
   if(!failed.length)return;
-  if(!isLoggedIn()){openModal('#authModal');return;}
-
-  const portValue=$('#testingPort')?.value||'';
-  const port=portValue.split(' - ')[0]||'';
-
-  $('#previewIssueSystem').value=state.testingSystem;
-  $('#previewIssuePort').value=port;
-  $('#previewIssueDevice').value=device.id||'';
-  $('#previewIssueEnvironment').value='Testing/CERT';
-  $('#previewIssueUrgency').value='High';
-  $('#previewIssueCategory').value='Other issues';
-  $('#previewIssueDescription').value=failed.map(t=>`${t.name} failed.`).join('\\n');
-
-  const chips=$('#previewFailedTests');
-  if(chips)chips.innerHTML=failed.map(t=>`<span class="failed-test-chip">✕ ${esc(t.name)}</span>`).join('');
-
+  $('#issueSystem').value=state.testingSystem;
+  $('#issuePort').value=$('#testingPort').value||'';
+  $('#issueDevice').value=state.testingDevices[index].id||'';
+  $('#issueTerminal').value='';
+  $('#issueEnvironment').value='Testing/CERT';
+  $('#issueUrgency').value='High';
+  $('#issueCategory').value='Other issues';
+  $('#issuePnr').value='';
+  $('#issueDescription').value=failed.map(t=>`${t.name} failed.`).join('\n');
   const modal=$('#issuePreviewModal');
   if(modal){
-    $('#issuePreviewSummary').textContent=`${failed.length} failed test${failed.length===1?'':'s'} on ${device.id||'this device'}`;
+    $('#issuePreviewSummary').textContent=`${failed.length} failed test${failed.length===1?'':'s'} on ${state.testingDevices[index].id||'this device'}`;
     modal.hidden=false;
   }
 }
+
 $('#saveTestingBtn')?.addEventListener('click',async()=>{
   if(!isLoggedIn())return openModal('#authModal');
   const tasks=activeTestingTasks(),port=$('#testingPort').value;
@@ -188,8 +180,7 @@ async function saveGoLiveChecklist(){
     if(rerr)throw rerr;
     state.goLiveChecks={};
     renderGoLive();
-    setMessage('#goLiveMessage',`Go Live checklist saved as ${run.id}.`,'success');
-    await loadAdminGoLiveRuns();
+    setMessage('#goLiveMessage',`Go Live checklist saved successfully.`,'success');
   }catch(e){
     setMessage('#goLiveMessage','Could not save checklist: '+(e.message||e));
   }
@@ -217,11 +208,23 @@ async function adminAction(action,userId,extra={}){try{const {error}=await sb.fu
 $('#refreshUsersBtn')?.addEventListener('click',loadAdminUsers);
 $('#inviteBtn')?.addEventListener('click',async()=>{if(!isAdmin())return;const email=$('#inviteEmail').value.trim().toLowerCase(),name=$('#inviteName').value.trim();if(!emailOk(email)){alert('Only @virginaustralia.com addresses can be invited.');return;}try{const {error}=await sb.functions.invoke('admin-manage',{body:{action:'invite_user',email,name}});if(error)throw error;$('#inviteEmail').value='';$('#inviteName').value='';await loadAdminUsers();}catch(e){alert(e.message||e);}});
 
-async function loadAdminTickets(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_all'}});if(error)throw error;const box=$('#adminTicketList');box.innerHTML=(data?.issues||[]).map(i=>`<div class="ticket-row"><div><strong>${esc(i.issue_id||i.id)}</strong><div class="row-meta">${esc(i.system)} · ${esc(i.port)} · ${esc(i.device_id||'')} · ${esc(i.raised_by||'')}</div><div class="row-meta">${esc(i.description||'')}</div></div><div class="ticket-actions"><span class="status">${esc(i.status||'New')}</span><button class="mini" data-delete-issue="${esc(i.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No tickets.</strong></div>';$$('[data-delete-issue]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete ticket?','This permanently deletes the ticket and related records.',async()=>{await sb.functions.invoke('admin-manage',{body:{action:'delete_issue',issueId:b.dataset.deleteIssue}});await loadAdminTickets();})));return data;}
+async function loadAdminTickets(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_issues'}});if(error)throw error;const box=$('#adminTicketList');box.innerHTML=(data?.issues||[]).map(i=>`<div class="ticket-row"><div><strong>${esc(i.issue_id||i.id)}</strong><div class="row-meta">${esc(i.system)} · ${esc(i.port)} · ${esc(i.device_id||'')} · ${esc(i.raised_by||'')}</div><div class="row-meta">${esc(i.description||'')}</div></div><div class="ticket-actions"><span class="status">${esc(i.status||'New')}</span><button class="mini" data-delete-issue="${esc(i.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No tickets.</strong></div>';$$('[data-delete-issue]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete ticket?','This permanently deletes the ticket and related records.',async()=>{await sb.functions.invoke('admin-manage',{body:{action:'delete_issue',issueId:b.dataset.deleteIssue}});await loadAdminTickets();})));return data;}
 $('#refreshAdminTickets')?.addEventListener('click',loadAdminTickets);
-async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_all'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete</div></div><div class="run-actions"><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
+async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_testing_runs'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete</div></div><div class="run-actions"><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
 $('#refreshAdminRuns')?.addEventListener('click',loadAdminRuns);
-async function refreshAdmin(){if(!isAdmin())return;try{await loadTasks();await loadGoLiveTasks();await loadAdminUsers();await loadAdminTickets();await loadAdminRuns();await loadAdminGoLiveRuns();}catch(e){console.error(e);}}
+async function refreshAdmin(){
+  if(!isAdmin())return;
+  const jobs=[
+    ['testing tasks',loadTasks],
+    ['go live tasks',loadGoLiveTasks],
+    ['users',loadAdminUsers],
+    ['tickets',loadAdminTickets],
+    ['testing runs',loadAdminRuns],
+    ['go live runs',loadAdminGoLiveRuns]
+  ];
+  const results=await Promise.allSettled(jobs.map(([,fn])=>fn()));
+  results.forEach((r,i)=>{if(r.status==='rejected')console.error('Admin load failed:',jobs[i][0],r.reason);});
+} 
 
 let confirmFn=null;function openConfirm(title,copy,fn){$('#confirmTitle').textContent=title;$('#confirmCopy').textContent=copy;confirmFn=fn;openModal('#confirmModal');}function closeConfirm(){confirmFn=null;closeModal('#confirmModal');}$('#confirmClose')?.addEventListener('click',closeConfirm);$('#confirmCancel')?.addEventListener('click',closeConfirm);$('#confirmAction')?.addEventListener('click',async()=>{const fn=confirmFn;closeConfirm();if(!fn)return;try{await fn();}catch(e){alert(e.message||e);}});
 
@@ -231,45 +234,7 @@ $('#issuePreviewClose')?.addEventListener('click',()=>closeModal('#issuePreviewM
 $('#issuePreviewCancel')?.addEventListener('click',()=>closeModal('#issuePreviewModal'));
 $('#issuePreviewModal')?.addEventListener('click',e=>{if(e.target.id==='issuePreviewModal')closeModal('#issuePreviewModal');});
 $('#issuePreviewSubmit')?.addEventListener('click',async()=>{
-  if(!isLoggedIn())return;
-  const port=$('#previewIssuePort').value.trim();
-  const description=$('#previewIssueDescription').value.trim();
-  const category=$('#previewIssueCategory').value;
-  const urgency=$('#previewIssueUrgency').value;
-  const environment=$('#previewIssueEnvironment').value;
-
-  if(!port||!category||!description){
-    const msg=$('#previewIssueMessage');
-    if(msg){msg.hidden=false;msg.textContent='Please complete the issue details before submitting.';}
-    return;
-  }
-
-  const btn=$('#issuePreviewSubmit');
-  if(btn){btn.disabled=true;btn.textContent='Raising Issue…';}
-
-  try{
-    const payload={
-      system:$('#previewIssueSystem').value,
-      port,
-      terminal:null,
-      device_id:$('#previewIssueDevice').value.trim()||null,
-      environment,
-      urgency,
-      category,
-      description,
-      pnr:null,
-      raised_by:state.user.email,
-      status:'New'
-    };
-    const {data,error}=await sb.from('issues').insert(payload).select('issue_id').single();
-    if(error)throw error;
-
-    closeModal('#issuePreviewModal');
-    if(btn){btn.disabled=false;btn.textContent='Raise Issue';}
-    setMessage('#testingMessage',`Issue ${data?.issue_id||''} raised successfully.`,'success');
-  }catch(err){
-    const msg=$('#previewIssueMessage');
-    if(msg){msg.hidden=false;msg.textContent='Could not raise issue: '+(err.message||err);}
-    if(btn){btn.disabled=false;btn.textContent='Raise Issue';}
-  }
-});;
+  closeModal('#issuePreviewModal');
+  const form=$('#issueForm');
+  if(form){form.requestSubmit();}
+});
