@@ -238,7 +238,8 @@ async function loadAdminGoLiveRuns(){
   if(error)throw error;
   const box=$('#adminGoLiveRunList');if(!box)return;
   const runs=data?.runs||[];
-  box.innerHTML=runs.length?runs.map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port||'No port')} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tasks||0} / ${r.total_tasks||0} complete · ${esc(r.status||'incomplete')}</div></div><div class="run-actions"><button class="mini" data-delete-go-live-run="${esc(r.id)}">Delete</button></div></div>`).join(''):'<div class="placeholder small"><strong>No saved Go Live checklists.</strong></div>';
+  box.innerHTML=runs.length?runs.map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port||'No port')} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tasks||0} / ${r.total_tasks||0} complete · ${esc(r.status||'incomplete')}</div></div><div class="run-actions"><button class="mini" data-export-go-live-run="${esc(r.id)}">⇩ CSV</button><button class="mini" data-delete-go-live-run="${esc(r.id)}">Delete</button></div></div>`).join(''):'<div class="placeholder small"><strong>No saved Go Live checklists.</strong></div>';
+  $$('[data-export-go-live-run]').forEach(b=>b.addEventListener('click',()=>exportSingleGoLiveRunCsv(b.dataset.exportGoLiveRun)));
   $$('[data-delete-go-live-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete Go Live checklist?','This permanently removes the saved checklist results.',async()=>{const {error:e}=await sb.functions.invoke('admin-manage',{body:{action:'delete_go_live_run',runId:b.dataset.deleteGoLiveRun}});if(e)throw e;await loadAdminGoLiveRuns();})));
 }
 $('#refreshAdminGoLiveRuns')?.addEventListener('click',loadAdminGoLiveRuns);
@@ -279,24 +280,47 @@ async function exportAdminRunsCsv(){
   try{
     const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'export_testing_runs'}});
     if(error)throw error;
-    const rows=[['Run ID','Port','System','Tested By','Device Count','Total Tests','Completed Tests','Created At','Device ID','Test Case','Result']];
-    (data?.runs||[]).forEach(run=>{
+    const runs=data?.runs||[];
+    if(!runs.length){alert('There are no testing runs to export.');return;}
+
+    const blocks=[];
+    for(const run of runs){
       const results=run.results||[];
-      if(results.length){
-        results.forEach(r=>rows.push([
-          run.id,run.port,run.system,run.tested_by_name,run.device_count,run.total_tests,run.completed_tests,
-          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'',
-          r.device_id,r.test_case,r.result
-        ]));
-      }else{
+      const testNames=[];
+      const devices=[];
+      for(const r of results){
+        if(r.test_case && !testNames.includes(r.test_case))testNames.push(r.test_case);
+        if(r.device_id && !devices.includes(r.device_id))devices.push(r.device_id);
+      }
+
+      if(!testNames.length){
+        blocks.push(['Device ID'],devices.map(d=>[d]),['']);
+        continue;
+      }
+
+      const byDevice=new Map();
+      for(const device of devices)byDevice.set(device,new Map());
+      for(const r of results){
+        if(!byDevice.has(r.device_id))byDevice.set(r.device_id,new Map());
+        byDevice.get(r.device_id).set(r.test_case,r.result);
+      }
+
+      const header=['Device ID',...testNames];
+      const rows=[header];
+      for(const [device,map] of byDevice.entries()){
         rows.push([
-          run.id,run.port,run.system,run.tested_by_name,run.device_count,run.total_tests,run.completed_tests,
-          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'',
-          '','',''
+          device,
+          ...testNames.map(name=>{
+            const result=map.get(name);
+            return result==='pass'?'Pass':result==='fail'?'Fail':'';
+          })
         ]);
       }
-    });
-    downloadCsv(`va-fax-admin-testing-runs-${new Date().toISOString().slice(0,10)}.csv`,rows);
+
+      blocks.push(...rows,['']);
+    }
+    blocks.pop();
+    downloadCsv(`va-fax-admin-testing-runs-${new Date().toISOString().slice(0,10)}.csv`,blocks);
   }catch(e){alert('Could not export testing runs: '+(e.message||e));}
 }
 
@@ -305,24 +329,35 @@ async function exportAdminGoLiveRunsCsv(){
   try{
     const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});
     if(error)throw error;
-    const rows=[['Run ID','Port','Tested By','Total Tasks','Completed Tasks','Status','Created At','Task ID','Task Name','Completed']];
-    (data?.runs||[]).forEach(run=>{
+    const runs=data?.runs||[];
+    if(!runs.length){alert('There are no saved Go Live checklists to export.');return;}
+
+    const blocks=[];
+    for(const run of runs){
       const results=run.go_live_results||[];
-      if(results.length){
-        results.forEach(r=>rows.push([
-          run.id,run.port,run.tested_by_name,run.total_tasks,run.completed_tasks,run.status,
-          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'',
-          r.task_id,r.task_name,r.completed?'Yes':'No'
-        ]));
-      }else{
-        rows.push([
-          run.id,run.port,run.tested_by_name,run.total_tasks,run.completed_tasks,run.status,
-          run.created_at?new Date(run.created_at).toLocaleString('en-AU'):'','',''
-        ]);
-      }
-    });
-    downloadCsv(`va-fax-admin-go-live-checklists-${new Date().toISOString().slice(0,10)}.csv`,rows);
+      const ordered=[...results].sort((a,b)=>0);
+      const tasks=ordered.map(r=>r.task_name).filter(Boolean);
+      const header=['Port',...tasks];
+      const row=[run.port||'',...tasks.map(()=> 'Pass')];
+      blocks.push(header,row,['']);
+    }
+    blocks.pop();
+    downloadCsv(`va-fax-go-live-checklists-${new Date().toISOString().slice(0,10)}.csv`,blocks);
   }catch(e){alert('Could not export Go Live checklists: '+(e.message||e));}
+}
+
+async function exportSingleGoLiveRunCsv(runId){
+  if(!isAdmin())return;
+  try{
+    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});
+    if(error)throw error;
+    const run=(data?.runs||[]).find(r=>String(r.id)===String(runId));
+    if(!run)throw new Error('Saved Go Live checklist could not be found.');
+    const results=run.go_live_results||[];
+    const tasks=results.map(r=>r.task_name).filter(Boolean);
+    const rows=[['Port',...tasks],[run.port||'',...tasks.map(()=> 'Pass')]];
+    downloadCsv(`va-fax-go-live-${run.port||'checklist'}-${String(run.id).slice(0,8)}.csv`,rows);
+  }catch(e){alert('Could not export Go Live checklist: '+(e.message||e));}
 }
 
 $('#exportAdminTickets')?.addEventListener('click',exportAdminTicketsCsv);
