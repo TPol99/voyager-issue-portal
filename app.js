@@ -394,7 +394,7 @@ function renderMyIssueCard(issue,history=[],comments=[]){
     <div class="issue-card-main">
       <strong>${esc(issue.issue_id||issue.id)}</strong>
       <div class="row-meta">${esc(issue.system)} · ${esc(issue.port)} · ${esc(issue.device_id||'No device')} · ${esc(issue.category)}</div>
-      <div class="row-meta">${esc(new Date(issue.created_at).toLocaleString('en-AU'))}</div>
+      <div class="issue-meta-row"><span class="issue-pnr ${issue.pnr?'has-pnr':''}">${issue.pnr?'PNR '+esc(issue.pnr):'PNR not supplied'}</span><span class="row-meta">${esc(new Date(issue.created_at).toLocaleString('en-AU'))}</span></div>
     </div>
     <div class="issue-card-actions">
       <select class="issue-status-select" data-issue-status="${esc(issue.id)}">${issueStatusOptions(issue.status||'New')}</select>
