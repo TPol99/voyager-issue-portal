@@ -325,6 +325,30 @@ function renderGoLive(){
  $$('[data-go-live-reason]').forEach(el=>el.addEventListener('input',()=>{state.goLiveChecks[el.dataset.goLiveReason]={...(state.goLiveChecks[el.dataset.goLiveReason]||{}),reason:el.value};}));
  $$('[data-go-live-note]').forEach(el=>el.addEventListener('input',()=>{state.goLiveChecks[el.dataset.goLiveNote]={...(state.goLiveChecks[el.dataset.goLiveNote]||{}),note:el.value};}));
 }
+function renderAdminGoLiveTasks(){
+  const box=$('#adminGoLiveTaskList');
+  if(!box||!isAdmin())return;
+  const rows=[...state.goLiveTasks].sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  box.innerHTML=rows.length?rows.map(t=>`<div class="admin-row"><div>☷</div><div class="admin-main"><strong>${esc(t.name)}</strong><span>${esc(t.description||'No description supplied.')}</span></div><div><span class="status ${t.active?'':'inactive'}">${t.active?'Active':'Inactive'}</span><div class="admin-actions" style="margin-top:6px"><button class="mini" data-edit-gl="${esc(t.id)}">Edit</button><button class="mini" data-toggle-gl="${esc(t.id)}">${t.active?'Deactivate':'Activate'}</button><button class="mini" data-delete-gl="${esc(t.id)}">Delete</button></div></div></div>`).join(''):'<div class="placeholder"><strong>No checklist tasks yet.</strong><span>Use Add Checklist Task to create one.</span></div>';
+  $$('[data-edit-gl]').forEach(b=>b.addEventListener('click',()=>openGoLiveModal(b.dataset.editGl)));
+  $$('[data-toggle-gl]').forEach(b=>b.addEventListener('click',()=>toggleGoLive(b.dataset.toggleGl)));
+  $$('[data-delete-gl]').forEach(b=>b.addEventListener('click',()=>deleteGoLive(b.dataset.deleteGl)));
+}
+
+function openGoLiveModal(id=null){
+  if(!isAdmin())return;
+  state.editingGoLiveId=id;
+  const t=id?state.goLiveTasks.find(x=>String(x.id)===String(id)):null;
+  $('#goLiveModalTitle').textContent=t?'Edit checklist task':'Add checklist task';
+  $('#goLiveName').value=t?.name||'';
+  $('#goLiveDescription').value=t?.description||'';
+  $('#goLiveOrder').value=t?.sort_order||((Math.max(0,...state.goLiveTasks.map(x=>Number(x.sort_order)||0))+1)||1);
+  openModal('#goLiveModal');
+}
+$('#addGoLiveTaskBtn')?.addEventListener('click',()=>openGoLiveModal());
+$('#goLiveClose')?.addEventListener('click',()=>closeModal('#goLiveModal'));
+$('#goLiveCancel')?.addEventListener('click',()=>closeModal('#goLiveModal'));
+
 $('#resetGoLiveBtn')?.addEventListener('click',()=>{openConfirm('Reset Go Live Checklist?','This will clear every Pass, Fail, N/A choice and note from the current checklist.',()=>{state.goLiveChecks={};renderGoLive();});});
 $('#goLiveSave')?.addEventListener('click',async()=>{if(!isAdmin())return;const name=$('#goLiveName').value.trim(),description=$('#goLiveDescription').value.trim()||null,sort_order=Math.max(1,Number($('#goLiveOrder').value)||1);if(!name)return;try{let result;if(state.editingGoLiveId)result=await sb.from('go_live_tasks').update({name,description,sort_order,updated_at:new Date().toISOString()}).eq('id',state.editingGoLiveId);else result=await sb.from('go_live_tasks').insert({name,description,sort_order,active:true});if(result.error)throw result.error;state.editingGoLiveId=null;closeModal('#goLiveModal');await loadGoLiveTasks();}catch(e){alert('Could not save checklist task: '+(e.message||e));}});
 async function toggleGoLive(id){const t=state.goLiveTasks.find(x=>String(x.id)===String(id));if(!t)return;const {error}=await sb.from('go_live_tasks').update({active:!t.active,updated_at:new Date().toISOString()}).eq('id',id);if(error){alert(error.message);return;}await loadGoLiveTasks();}
