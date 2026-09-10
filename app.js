@@ -2,7 +2,7 @@ const SUPABASE_URL='https://nxyutzeplurgirgdivtd.supabase.co';
 const SUPABASE_KEY='sb_publishable_gSJWywfwqb0ucXeqNcgu7g_kFJKTAF8';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 
-const state={view:'home',user:null,role:null,approval:null,tasks:[],goLiveTasks:[],goLiveChecks:{},testingSystem:'Bag Tagger',testingDevices:[{id:'',results:{}}],testingRunDirty:false,adminTaskSystem:'Bag Tagger',editingTaskId:null,editingGoLiveId:null};
+const state={view:'home',user:null,role:null,approval:null,tasks:[],goLiveTasks:[],goLiveChecks:{},testingTemplates:[],testingSystem:'Bag Tagger',testingDevices:[{id:'',results:{}}],testingRunDirty:false,adminTaskSystem:'Bag Tagger',editingTaskId:null,editingGoLiveId:null,editingTemplateId:null};
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const emailOk=e=>/^[^@\s]+@virginaustralia\.com$/i.test(e.trim());
@@ -20,7 +20,9 @@ function discardTestingState(){
   state.testingRunDirty=false;
   const port=$('#testingPort'); if(port) port.value='';
   const ref=$('#testingReference'); if(ref) ref.value='';
-  renderTesting();
+  const notes=$('#testingNotes'); if(notes) notes.value='';
+  const tpl=$('#testingTemplate'); if(tpl) tpl.value='';
+  renderTesting();loadTestingAnalytics();
 }
 
 function showView(view,force=false){
@@ -115,7 +117,19 @@ $('#authForm')?.addEventListener('submit',async e=>{e.preventDefault();const ema
 });
 async function signOut(){try{await sb.auth.signOut();}finally{state.user=null;state.role=null;state.approval=null;updateAuthUI();showView('home');}}
 
-async function loadAllData(){await Promise.all([loadTasks(),loadGoLiveTasks(),loadMyIssues(),loadTestingRuns()]);if(isAdmin())await refreshAdmin();updateAuthUI();}
+async function loadAllData(){await Promise.all([loadTasks(),loadGoLiveTasks(),loadTestingTemplates(),loadMyIssues(),loadTestingRuns(),loadHomeOpenIssues()]);if(isAdmin())await refreshAdmin();updateAuthUI();}
+
+
+async function loadTestingTemplates(){
+  if(!state.user)return;
+  const {data,error}=await sb.from('testing_templates').select('id,name,system,default_port,device_ids,active,created_at,updated_at').order('name');
+  if(error){console.warn('Templates unavailable:',error.message);return;}
+  state.testingTemplates=data||[];renderTestingTemplateSelect();renderAdminTemplates();
+}
+function renderTestingTemplateSelect(){const sel=$('#testingTemplate');if(!sel)return;const current=sel.value;const rows=state.testingTemplates.filter(t=>t.active);sel.innerHTML='<option value="">No template</option>'+rows.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} · ${esc(t.system)}</option>`).join('');if(rows.some(t=>String(t.id)===String(current)))sel.value=current;}
+$('#loadTestingTemplate')?.addEventListener('click',()=>{const id=$('#testingTemplate')?.value;if(!id)return;const t=state.testingTemplates.find(x=>String(x.id)===String(id));if(!t)return;if(state.testingRunDirty){openConfirm('Load testing template?','This will replace the current unsaved testing setup.',()=>applyTestingTemplate(t));}else applyTestingTemplate(t);});
+function applyTestingTemplate(t){state.testingSystem=t.system||'Bag Tagger';state.testingDevices=(Array.isArray(t.device_ids)&&t.device_ids.length?t.device_ids:['']).map(id=>({id:String(id||''),results:{}}));$('#testingPort').value=t.default_port||'';$('#testingReference').value=t.name||'';state.testingRunDirty=true;renderSystemTabs();renderTesting();loadTestingAnalytics();setMessage('#testingMessage',`Template ${t.name} loaded.`,'success');}
+$('#testingNotes')?.addEventListener('input',()=>{state.testingRunDirty=true;});
 
 async function loadTasks(){if(!state.user)return;const {data,error}=await sb.from('testing_tasks').select('id,system,name,description,sort_order,active,created_at,updated_at').order('system').order('sort_order').order('created_at');if(error)throw error;state.tasks=data||[];renderSystemTabs();renderTesting();renderAdminTasks();$('#homeTaskCount').textContent=state.tasks.filter(t=>t.active).length;}
 async function loadGoLiveTasks(){if(!state.user)return;const {data,error}=await sb.from('go_live_tasks').select('id,name,description,sort_order,active,created_at,updated_at').order('sort_order').order('created_at');if(error)throw error;state.goLiveTasks=data||[];renderGoLive();renderAdminGoLiveTasks();$('#homeGoLiveCount').textContent=state.goLiveTasks.filter(t=>t.active).length;}
@@ -174,16 +188,18 @@ $('#saveTestingBtn')?.addEventListener('click',async()=>{
   const results=[];
   state.testingDevices.forEach(d=>tasks.forEach(t=>results.push({device_id:d.id.trim(),test_case:t.name,result:d.results[t.id]||'untested'})));
   try{
-    const {data,error}=await sb.rpc('save_testing_run',{
+    const {data,error}=await sb.rpc('save_testing_run_v2',{
       p_port:port,
       p_system:state.testingSystem,
       p_run_reference:$('#testingReference').value.trim()||null,
+      p_run_notes:$('#testingNotes').value.trim()||null,
       p_tested_by_name:formatName(state.user.email),
       p_results:results
     });
     if(error)throw error;
     state.testingDevices=[{id:'',results:{}}];
     state.testingRunDirty=false;
+    $('#testingNotes').value='';$('#testingReference').value='';$('#testingTemplate').value='';
     renderTesting();
     await loadTestingRuns();
     setMessage('#testingMessage',`Testing run saved as ${data?.id||'successfully'}.`,'success');
@@ -292,7 +308,7 @@ async function loadTestingAnalytics(){
   ]);
 }
 
-async function loadTestingRuns(){if(!state.user)return;const {data,error}=await sb.from('testing_runs').select('id,created_at,port,system,run_reference,tested_by_name,device_count,total_tests,completed_tests').eq('tested_by_user_id',state.user.id).order('created_at',{ascending:false}).limit(100);if(error){console.warn(error);return;}const table=$('#testingHistoryTable');if(!table)return;const rows=data||[];table.innerHTML=rows.length?`<thead><tr><th>Date</th><th>Port</th><th>System</th><th>Reference</th><th>Devices</th><th>Completion</th><th>Export</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(new Date(r.created_at).toLocaleString('en-AU'))}</td><td>${esc(r.port)}</td><td>${esc(r.system)}</td><td>${esc(r.run_reference||'')}</td><td>${r.device_count||0}</td><td>${r.total_tests?Math.round((r.completed_tests||0)/r.total_tests*100):0}%</td><td><button class="mini" data-export-run="${esc(r.id)}">⇩ CSV</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td colspan="7" style="text-align:left;color:var(--muted)">No saved testing runs yet.</td></tr></tbody>';$('[data-export-run]')&&$$('[data-export-run]').forEach(b=>b.addEventListener('click',()=>exportSavedRun(b.dataset.exportRun)));loadTestingAnalytics();}
+async function loadTestingRuns(){if(!state.user)return;const {data,error}=await sb.from('testing_runs').select('id,created_at,port,system,run_reference,run_notes,tested_by_name,device_count,total_tests,completed_tests').eq('tested_by_user_id',state.user.id).order('created_at',{ascending:false}).limit(100);if(error){console.warn(error);return;}const table=$('#testingHistoryTable');if(!table)return;const rows=data||[];table.innerHTML=rows.length?`<thead><tr><th>Date</th><th>Port</th><th>System</th><th>Reference</th><th>Notes</th><th>Devices</th><th>Completion</th><th>Export</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(new Date(r.created_at).toLocaleString('en-AU'))}</td><td>${esc(r.port)}</td><td>${esc(r.system)}</td><td>${esc(r.run_reference||'')}</td><td>${esc(r.run_notes||'')}</td><td>${r.device_count||0}</td><td>${r.total_tests?Math.round((r.completed_tests||0)/r.total_tests*100):0}%</td><td><button class="mini" data-export-run="${esc(r.id)}">⇩ CSV</button></td></tr>`).join('')}</tbody>`:'<tbody><tr><td colspan="8" style="text-align:left;color:var(--muted)">No saved testing runs yet.</td></tr></tbody>';$('[data-export-run]')&&$$('[data-export-run]').forEach(b=>b.addEventListener('click',()=>exportSavedRun(b.dataset.exportRun)));loadTestingAnalytics();}
 $('#refreshTestingHistory')?.addEventListener('click',loadTestingRuns);
 async function exportSavedRun(runId){const {data,error}=await sb.from('testing_results').select('device_id,test_case,result,created_at').eq('run_id',runId).order('created_at');if(error){alert(error.message);return;}const tests=[];const devices=[];for(const r of data||[]){if(!tests.includes(r.test_case))tests.push(r.test_case);if(!devices.includes(r.device_id))devices.push(r.device_id);}const lines=[['Device ID',...tests],...devices.map(d=>{const rows=(data||[]).filter(r=>r.device_id===d);const map=new Map(rows.map(r=>[r.test_case,r.result]));return [d,...tests.map(t=>map.get(t)==='pass'?'Yes':'')]} )];const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+lines.map(r=>r.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv'}));a.download=`va-fax-${runId}.csv`;a.click();}
 
@@ -390,6 +406,7 @@ function renderIssueHistory(history,comments){
 function renderMyIssueCard(issue,history=[],comments=[]){
   const card=document.createElement('div');
   card.className='card issue-card';
+  card.dataset.issueCard=issue.id;
   card.innerHTML=`<div class="issue-card-head">
     <div class="issue-card-main">
       <strong>${esc(issue.issue_id||issue.id)}</strong>
@@ -446,6 +463,17 @@ async function addMyIssueComment(issueId,comment){
   });
   if(error)throw error;
 }
+
+
+async function loadHomeOpenIssues(){
+  const box=$('#homeOpenIssues');if(!box)return;
+  if(!state.user){box.innerHTML='<div class="placeholder small"><strong>Sign in to load your issues.</strong></div>';return;}
+  const {data,error}=await sb.from('issues').select('id,issue_id,pnr,port,device_id,urgency,status,created_at').eq('raised_by',state.user.email).neq('status','Closed').order('created_at',{ascending:false}).limit(5);
+  if(error){box.innerHTML='<div class="placeholder small"><strong>Could not load open issues.</strong></div>';return;}
+  const rows=data||[];box.innerHTML=rows.length?rows.map(i=>`<button class="home-issue-row" data-home-issue="${esc(i.id)}"><div><strong>${esc(i.issue_id||i.id)}</strong><span>${esc(i.port||'')} · ${esc(i.device_id||'No device')}${i.pnr?` · PNR ${esc(i.pnr)}`:''}</span></div><div class="home-issue-badges"><span class="status">${esc(i.status||'New')}</span><span class="urgency urgency-${esc(String(i.urgency||'low').toLowerCase())}">${esc(i.urgency||'Low')}</span></div></button>`).join(''):'<div class="placeholder small"><strong>No open issues 🎉</strong><span>You have no active tickets.</span></div>';
+  $$('[data-home-issue]').forEach(b=>b.addEventListener('click',()=>{showView('my-issues');setTimeout(()=>document.querySelector(`[data-issue-card="${CSS.escape(b.dataset.homeIssue)}"]`)?.scrollIntoView({behavior:'smooth',block:'center'}),350);}));
+}
+$('#refreshHomeIssues')?.addEventListener('click',loadHomeOpenIssues);
 
 async function loadMyIssues(){
   if(!state.user){
@@ -509,6 +537,14 @@ function bindMyIssueControls(){
 $('#refreshMyIssues')?.addEventListener('click',loadMyIssues);
 $('#issueForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!state.user){openModal('#authModal');return;}const port=$('#issuePort').value.split(' - ')[0];const payload={system:$('#issueSystem').value,port,terminal:$('#issueTerminal').value.trim()||null,device_id:$('#issueDevice').value.trim()||null,environment:$('#issueEnvironment').value,urgency:$('#issueUrgency').value,category:$('#issueCategory').value,description:$('#issueDescription').value.trim(),pnr:$('#issuePnr').value.trim().toUpperCase()||null,raised_by:state.user.email,status:'New'};if(!payload.port||!payload.category||!payload.description){setMessage('#issueMessage','Please complete Port, Issue Category and Description.');return;}try{const {data,error}=await sb.from('issues').insert(payload).select('issue_id').single();if(error)throw error;$('#issueForm').reset();setMessage('#issueMessage',`Issue ${data?.issue_id||''} submitted successfully.`,'success');await loadMyIssues();}catch(err){setMessage('#issueMessage','Could not submit issue: '+(err.message||err));}});
 
+
+function renderAdminTemplates(){const box=$('#adminTemplateList');if(!box||!isAdmin())return;const rows=state.testingTemplates;box.innerHTML=rows.length?rows.map(t=>`<div class="admin-row"><div>▣</div><div class="admin-main"><strong>${esc(t.name)}</strong><span>${esc(t.system)}${t.default_port?` · ${esc(t.default_port)}`:''} · ${(t.device_ids||[]).length} device${(t.device_ids||[]).length===1?'':'s'}</span></div><div><span class="status ${t.active?'':'inactive'}">${t.active?'Active':'Inactive'}</span><div class="admin-actions" style="margin-top:6px"><button class="mini" data-edit-template="${esc(t.id)}">Edit</button><button class="mini" data-toggle-template="${esc(t.id)}">${t.active?'Deactivate':'Activate'}</button><button class="mini" data-delete-template="${esc(t.id)}">Delete</button></div></div></div>`).join(''):'<div class="placeholder small"><strong>No testing templates yet.</strong></div>';$$('[data-edit-template]').forEach(b=>b.addEventListener('click',()=>openTemplateModal(b.dataset.editTemplate)));$$('[data-toggle-template]').forEach(b=>b.addEventListener('click',()=>toggleTemplate(b.dataset.toggleTemplate)));$$('[data-delete-template]').forEach(b=>b.addEventListener('click',()=>deleteTemplate(b.dataset.deleteTemplate)));}
+function openTemplateModal(id=null){if(!isAdmin())return;state.editingTemplateId=id;const t=id?state.testingTemplates.find(x=>String(x.id)===String(id)):null;$('#templateModalTitle').textContent=t?'Edit Testing Template':'Add Testing Template';$('#templateName').value=t?.name||'';$('#templateSystem').value=t?.system||'Bag Tagger';$('#templatePort').value=t?.default_port||'';$('#templateDevices').value=(t?.device_ids||[]).join('\n');$('#templateActive').checked=t?.active!==false;openModal('#templateModal');}
+$('#addTemplateBtn')?.addEventListener('click',()=>openTemplateModal());$('#templateClose')?.addEventListener('click',()=>closeModal('#templateModal'));$('#templateCancel')?.addEventListener('click',()=>closeModal('#templateModal'));
+$('#templateSave')?.addEventListener('click',async()=>{if(!isAdmin())return;const payload={name:$('#templateName').value.trim(),system:$('#templateSystem').value,default_port:$('#templatePort').value||null,device_ids:$('#templateDevices').value.split(/\n|,/).map(x=>x.trim()).filter(Boolean),active:$('#templateActive').checked};if(!payload.name)return alert('Template name is required.');const action=state.editingTemplateId?'update_testing_template':'create_testing_template';const body={action,...payload};if(state.editingTemplateId)body.templateId=state.editingTemplateId;const {data,error}=await sb.functions.invoke('admin-manage',{body});if(error||data?.error)return alert('Could not save template: '+(data?.error||error.message));closeModal('#templateModal');state.editingTemplateId=null;await loadTestingTemplates();});
+async function toggleTemplate(id){const t=state.testingTemplates.find(x=>String(x.id)===String(id));if(!t)return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'update_testing_template',templateId:id,active:!t.active}});if(error||data?.error)return alert(data?.error||error.message);await loadTestingTemplates();}
+function deleteTemplate(id){openConfirm('Delete testing template?','This removes the template for all testers.',async()=>{const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'delete_testing_template',templateId:id}});if(error||data?.error)throw new Error(data?.error||error.message);await loadTestingTemplates();});}
+
 async function loadAdminUsers(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_users'}});if(error)throw error;renderAdminUsers(data?.users||[]);return data;}
 function renderAdminUsers(users){const box=$('#adminUserList');if(!box)return;box.innerHTML=users.length?users.map(u=>{const pending=u.approval_status!=='approved'&&u.role!=='admin';return `<div class="user-row"><div><strong>${esc(u.email)}</strong><div class="row-meta">${esc(u.name||'')} · Created ${esc(new Date(u.created_at).toLocaleString('en-AU'))}</div></div><div class="user-actions"><span class="status ${pending?'inactive':''}">${pending?'Pending approval':'Approved'}</span>${pending?`<button class="mini" data-approve-user="${esc(u.id)}">Approve</button>`:''}<button class="mini" data-role-user="${esc(u.id)}" data-role="${u.role==='admin'?'staff':'admin'}">Make ${u.role==='admin'?'Staff':'Admin'}</button>${u.id!==state.user.id?`<button class="mini" data-delete-user="${esc(u.id)}">Delete</button>`:'<span class="row-meta">Current user</span>'}</div></div>`}).join(''):'<div class="placeholder small"><strong>No users found.</strong></div>';$$('[data-approve-user]').forEach(b=>b.addEventListener('click',()=>adminAction('approve_user',b.dataset.approveUser)));$$('[data-role-user]').forEach(b=>b.addEventListener('click',()=>adminAction('set_role',b.dataset.roleUser,{role:b.dataset.role})));$$('[data-delete-user]').forEach(b=>b.addEventListener('click',()=>adminAction('delete_user',b.dataset.deleteUser)));}
 async function adminAction(action,userId,extra={}){try{const {error}=await sb.functions.invoke('admin-manage',{body:{action,userId,...extra}});if(error)throw error;await loadAdminUsers();}catch(e){alert(e.message||e);}}
@@ -517,7 +553,7 @@ $('#inviteBtn')?.addEventListener('click',async()=>{if(!isAdmin())return;const e
 
 async function loadAdminTickets(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_issues'}});if(error)throw error;const box=$('#adminTicketList');box.innerHTML=(data?.issues||[]).map(i=>`<div class="ticket-row"><div><strong>${esc(i.issue_id||i.id)}</strong><div class="row-meta">${esc(i.system)} · ${esc(i.port)} · ${esc(i.device_id||'')} · ${esc(i.raised_by||'')}</div><div class="row-meta"><span class="issue-pnr ${i.pnr?'has-pnr':''}">PNR ${esc(i.pnr||'Not supplied')}</span></div><div class="row-meta">${esc(i.description||'')}</div></div><div class="ticket-actions"><span class="status">${esc(i.status||'New')}</span><button class="mini" data-delete-issue="${esc(i.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No tickets.</strong></div>';$$('[data-delete-issue]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete ticket?','This permanently deletes the ticket and related records.',async()=>{await sb.functions.invoke('admin-manage',{body:{action:'delete_issue',issueId:b.dataset.deleteIssue}});await loadAdminTickets();})));return data;}
 $('#refreshAdminTickets')?.addEventListener('click',loadAdminTickets);
-async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_testing_runs'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete</div></div><div class="run-actions"><button class="mini" data-export-admin-run="${esc(r.id)}">⇩ CSV</button><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-export-admin-run]').forEach(b=>b.addEventListener('click',()=>exportSingleAdminRunCsv(b.dataset.exportAdminRun)));$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
+async function loadAdminRuns(){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_testing_runs'}});if(error)throw error;const box=$('#adminRunList');box.innerHTML=(data?.runs||[]).map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port)} · ${esc(r.system)} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tests||0} / ${r.total_tests||0} complete${r.run_notes?` · Notes: ${esc(r.run_notes)}`:''}</div></div><div class="run-actions"><button class="mini" data-export-admin-run="${esc(r.id)}">⇩ CSV</button><button class="mini" data-delete-run="${esc(r.id)}">Delete</button></div></div>`).join('')||'<div class="placeholder small"><strong>No testing runs.</strong></div>';$$('[data-export-admin-run]').forEach(b=>b.addEventListener('click',()=>exportSingleAdminRunCsv(b.dataset.exportAdminRun)));$$('[data-delete-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete testing run?','This permanently removes the run and saved results.',async()=>{const r=await sb.functions.invoke('admin-manage',{body:{action:'delete_test_run',runId:b.dataset.deleteRun}});if(r.error)throw r.error;await loadAdminRuns();})));return data;}
 $('#refreshAdminRuns')?.addEventListener('click',loadAdminRuns);
 
 async function exportAdminTicketsCsv(){
@@ -664,6 +700,7 @@ async function refreshAdmin(){
   if(!isAdmin())return;
   const jobs=[
     ['testing tasks',loadTasks],
+    ['testing templates',loadTestingTemplates],
     ['go live tasks',loadGoLiveTasks],
     ['users',loadAdminUsers],
     ['tickets',loadAdminTickets],

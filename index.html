@@ -150,6 +150,10 @@
         <button class="card feature-card" data-view="go-live"><span class="feature-icon">✅</span><strong>Go Live Checklist</strong><span>Work through the live operational readiness checks.</span></button>
         <button class="card feature-card" data-view="knowledge"><span class="feature-icon">📚</span><strong>Knowledge Base</strong><span>Find support guidance for airport operations technology.</span></button>
       </div>
+      <div class="card phase1-home-panel">
+        <div class="section-head"><div><h3>My Open Issues</h3><p>Your active VA FAX tickets. Tap one to open it in My Issues.</p></div><button class="btn secondary" id="refreshHomeIssues">↻ Refresh</button></div>
+        <div id="homeOpenIssues" class="home-open-issues"><div class="placeholder small"><strong>Sign in to load your issues.</strong></div></div>
+      </div>
       <div class="home-status card">
         <div><span>Testing tasks</span><strong id="homeTaskCount">—</strong></div>
         <div><span>Go live tasks</span><strong id="homeGoLiveCount">—</strong></div>
@@ -198,7 +202,10 @@
         <div class="field-row">
           <label>Port<select id="testingPort"><option value="">Select port</option><option>BNE</option><option>MEL</option><option>SYD</option><option>OOL</option><option>MCY</option><option>MKY</option><option>ADL</option><option>PER</option><option>DRW</option><option>LST</option><option>ZQN</option><option>NAN</option></select></label>
           <label>Run reference<input id="testingReference" placeholder="Optional e.g. SYD morning regression"></label>
+          <label>Testing template<select id="testingTemplate"><option value="">No template</option></select></label>
+          <div class="template-action"><button class="btn secondary" id="loadTestingTemplate" type="button">Load Template</button><span id="templateHint">Templates can prefill system, port and device IDs.</span></div>
         </div>
+        <label class="run-notes-label">Run Notes<textarea id="testingNotes" rows="3" placeholder="Optional notes about this test run, release, change or observations."></textarea></label>
         <div id="systemTabs" class="system-tabs"></div>
       </div>
       <div class="card testing-card">
@@ -250,6 +257,7 @@
       <div class="admin-grid">
         <div class="card admin-panel"><div class="section-head"><div><h3>Testing Tasks</h3><p>Create, edit, activate, deactivate and reorder testing tasks.</p></div><button class="btn primary" id="addTaskBtn">+ Add Test Task</button></div><div class="admin-tabs" id="adminTestingTabs"><button class="admin-filter active" data-admin-system="Bag Tagger">Bag Tagger</button><button class="admin-filter" data-admin-system="Auto Bag Drop">Auto Bag Drop</button></div><div id="adminTaskList" class="admin-list"></div></div>
         <div class="card admin-panel"><div class="section-head"><div><h3>Go Live Checklist</h3><p>Manage the checklist used by testers.</p></div><button class="btn primary" id="addGoLiveTaskBtn">+ Add Checklist Task</button></div><div id="adminGoLiveTaskList" class="admin-list"></div></div>
+        <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>Testing Templates</h3><p>Create reusable testing setups for staff.</p></div><button class="btn primary" id="addTemplateBtn">+ Add Template</button></div><div id="adminTemplateList" class="admin-list"></div></div>
         <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>User Management</h3><p>Approve staff, change roles or remove access.</p></div><button class="btn secondary" id="refreshUsersBtn">↻ Refresh</button></div><div class="invite-grid"><input id="inviteEmail" type="email" placeholder="firstname.lastname@virginaustralia.com"><input id="inviteName" placeholder="Name (optional)"><button class="btn primary" id="inviteBtn">Invite User</button></div><div id="adminUserList" class="admin-list"></div></div>
         <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Tickets</h3><p>Administrator view of every issue.</p></div><div class="section-actions"><button class="btn secondary" id="refreshAdminTickets">↻ Refresh</button><button class="btn secondary" id="exportAdminTickets">⇩ Export CSV</button></div></div><div id="adminTicketList" class="admin-list"></div></div>
         <div class="card admin-panel wide-admin"><div class="section-head"><div><h3>All Testing Runs</h3><p>Administrator view of saved testing sessions.</p></div><div class="section-actions"><button class="btn secondary" id="refreshAdminRuns">↻ Refresh</button><button class="btn secondary" id="exportAdminRuns">⇩ Export CSV</button></div></div><div id="adminRunList" class="admin-list"></div></div>
@@ -266,6 +274,10 @@
 
 <div id="goLiveModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="goLiveClose">×</button><div class="eyebrow">Go Live Checklist</div><h3 id="goLiveModalTitle">Add checklist task</h3><p>Create or edit a checklist item.</p><label>Task name<input id="goLiveName" maxlength="120" required></label><label>Description / completion criteria<textarea id="goLiveDescription" rows="4"></textarea></label><label>Order<input id="goLiveOrder" type="number" min="1" value="1"></label><div class="modal-actions"><button class="btn secondary" id="goLiveCancel">Cancel</button><button class="btn primary" id="goLiveSave">Save task</button></div></div></div>
 
+
+<div id="templateModal" class="modal-backdrop" hidden><div class="modal wide"><button class="modal-close" id="templateClose">×</button><div class="eyebrow">Testing Templates</div><h3 id="templateModalTitle">Add Testing Template</h3><p>Build a reusable setup that works across desktop, iPhone and iPad.</p><label>Template name<input id="templateName" maxlength="120" placeholder="e.g. BNE Morning Regression"></label><label>System<select id="templateSystem"><option>Bag Tagger</option><option>Auto Bag Drop</option></select></label><label>Default port<select id="templatePort"><option value="">No default port</option><option>BNE</option><option>MEL</option><option>SYD</option><option>OOL</option><option>MCY</option><option>MKY</option><option>ADL</option><option>PER</option><option>DRW</option><option>LST</option><option>ZQN</option><option>NAN</option></select></label><label>Device IDs<textarea id="templateDevices" rows="4" placeholder="One per line, e.g.
+BNET1BT001
+BNET1BT002"></textarea></label><label class="template-active-line"><input id="templateActive" type="checkbox" checked> Active</label><div class="modal-actions"><button class="btn secondary" id="templateCancel">Cancel</button><button class="btn primary" id="templateSave">Save Template</button></div></div></div>
 
 <div id="issuePreviewModal" class="modal-backdrop" hidden>
   <div class="modal wide failed-issue-modal" role="dialog" aria-modal="true" aria-labelledby="failedIssueTitle">
