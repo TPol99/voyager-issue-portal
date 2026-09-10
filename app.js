@@ -760,3 +760,27 @@ $('#issuePreviewSubmit')?.addEventListener('click',async()=>{
   }
 });;$('#goLiveRunClose')?.addEventListener('click',()=>closeModal('#goLiveRunModal'));$('#goLiveRunModal')?.addEventListener('click',e=>{if(e.target.id==='goLiveRunModal')closeModal('#goLiveRunModal')});
 
+
+
+(function initVAFAXLaunchAnimation(){
+  const splash=document.getElementById('vafaxLaunchSplash');
+  if(!splash)return;
+
+  const alreadyPlayed=sessionStorage.getItem('vafax_launch_played')==='1';
+  if(alreadyPlayed){
+    splash.hidden=true;
+    return;
+  }
+
+  sessionStorage.setItem('vafax_launch_played','1');
+
+  const removeSplash=()=>{
+    if(!splash.isConnected)return;
+    splash.hidden=true;
+  };
+
+  window.setTimeout(removeSplash,1800);
+  window.addEventListener('pageshow',(event)=>{
+    if(event.persisted)removeSplash();
+  });
+})();
