@@ -220,32 +220,7 @@
       </div>
     </section>
 
-    <section id="view-go-live" class="view">
-      <div class="page-head"><div><div class="eyebrow">Operations</div><h2>Go Live Checklist</h2><p>Work through the current operational readiness checks.</p></div><div class="page-head-actions"><button class="btn secondary" id="resetGoLiveBtn">↻ Reset</button><button class="btn primary" id="saveGoLiveBtn">Save Checklist</button></div></div><div class="card checklist-context">
-        <div>
-          <label for="goLivePort">Port</label>
-          <span>Select the airport this go-live checklist applies to.</span>
-        </div>
-        <select id="goLivePort" class="context-select">
-          <option value="">Select port</option>
-          <option>LST - Launceston</option>
-          <option>MEL - Melbourne</option>
-          <option>SYD - Sydney</option>
-          <option>BNE - Brisbane</option>
-          <option>MCY - Sunshine Coast</option>
-          <option>MKY - Mackay</option>
-          <option>ADL - Adelaide</option>
-          <option>PER - Perth</option>
-          <option>DRW - Darwin</option>
-          <option>ZQN - Queenstown</option>
-          <option>NAN - Nadi</option>
-        </select>
-      </div>
-      
-      <div class="card progress-card"><div><strong id="goLiveProgressText">0 / 0 complete</strong><span>Current checklist progress</span></div><div class="progress-track"><div id="goLiveProgressFill"></div></div></div>
-      <div id="goLiveTaskList" class="stack"></div>
-      <div id="goLiveMessage" class="message" hidden></div>
-    </section>
+    <section id="view-go-live" class="view"><div class="page-head"><div><div class="eyebrow">Operations</div><h2>Go Live Checklist</h2><p>Record Pass, Fail or N/A for each readiness check.</p></div><div class="page-head-actions"><button class="btn secondary" id="resetGoLiveBtn">↻ Reset</button><button class="btn primary" id="saveGoLiveBtn">Save Checklist</button></div></div><div class="card checklist-context"><div><label for="goLivePort">Port</label><span>Select the airport this go-live checklist applies to.</span></div><select id="goLivePort" class="context-select"><option value="">Select port</option><option>LST - Launceston</option><option>MEL - Melbourne</option><option>SYD - Sydney</option><option>BNE - Brisbane</option><option>MCY - Sunshine Coast</option><option>MKY - Mackay</option><option>ADL - Adelaide</option><option>PER - Perth</option><option>DRW - Darwin</option><option>ZQN - Queenstown</option><option>NAN - Nadi</option></select></div><div class="card progress-card"><div><strong id="goLiveProgressText">0 / 0 decided</strong><span id="goLiveProgressSubtext">Current checklist progress</span></div><div class="progress-track"><div id="goLiveProgressFill"></div></div></div><div id="goLiveTaskList" class="stack"></div><div id="goLiveMessage" class="message" hidden></div></section>
 
     <section id="view-knowledge" class="view">
       <div class="page-head"><div><div class="eyebrow">Support</div><h2>Knowledge Base</h2><p>Quick support guidance for airport systems.</p></div></div>
@@ -339,6 +314,7 @@ BNET1BT002"></textarea></label><label class="template-active-line"><input id="te
   </div>
 </div>
 
+<div id="goLiveRunModal" class="modal-backdrop" hidden><div class="modal wide go-live-history-modal"><button class="modal-close" id="goLiveRunClose" aria-label="Close">×</button><div class="eyebrow">Saved Go Live Checklist</div><h3 id="goLiveRunTitle">Checklist Results</h3><p id="goLiveRunSummary"></p><div id="goLiveRunResults" class="go-live-history-results"></div></div></div>
 <div id="confirmModal" class="modal-backdrop" hidden><div class="modal small"><button class="modal-close" id="confirmClose">×</button><div class="eyebrow">Confirm action</div><h3 id="confirmTitle">Are you sure?</h3><p id="confirmCopy">This cannot be undone.</p><div class="modal-actions"><button class="btn secondary" id="confirmCancel">Cancel</button><button class="btn danger" id="confirmAction">Confirm</button></div></div></div>
 
 <script src="./app.js"></script>

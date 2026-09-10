@@ -313,63 +313,43 @@ $('#refreshTestingHistory')?.addEventListener('click',loadTestingRuns);
 async function exportSavedRun(runId){const {data,error}=await sb.from('testing_results').select('device_id,test_case,result,created_at').eq('run_id',runId).order('created_at');if(error){alert(error.message);return;}const tests=[];const devices=[];for(const r of data||[]){if(!tests.includes(r.test_case))tests.push(r.test_case);if(!devices.includes(r.device_id))devices.push(r.device_id);}const lines=[['Device ID',...tests],...devices.map(d=>{const rows=(data||[]).filter(r=>r.device_id===d);const map=new Map(rows.map(r=>[r.test_case,r.result]));return [d,...tests.map(t=>map.get(t)==='pass'?'Yes':'')]} )];const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+lines.map(r=>r.map(csvEscape).join(',')).join('\r\n')],{type:'text/csv'}));a.download=`va-fax-${runId}.csv`;a.click();}
 
 function activeGoLive(){return state.goLiveTasks.filter(t=>t.active).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));}
-function renderGoLive(){const box=$('#goLiveTaskList');if(!box)return;const tasks=activeGoLive(),complete=tasks.filter(t=>state.goLiveChecks[t.id]).length;$('#goLiveProgressText').textContent=`${complete} / ${tasks.length} complete`;$('#goLiveProgressFill').style.width=tasks.length?`${Math.round(complete/tasks.length*100)}%`:'0%';box.innerHTML=tasks.length?tasks.map((t,i)=>`<label class="go-live-item ${state.goLiveChecks[t.id]?'checked':''}"><input type="checkbox" data-go-live="${esc(t.id)}" ${state.goLiveChecks[t.id]?'checked':''}><span class="go-live-check">✓</span><span class="go-live-copy"><strong>${i+1}. ${esc(t.name)}</strong><small>${esc(t.description||'No completion criteria supplied.')}</small></span>${state.goLiveChecks[t.id]?'<span class="status">Complete</span>':''}</label>`).join(''):'<div class="card placeholder"><strong>No active checklist tasks.</strong><span>An administrator can add them from Admin.</span></div>';
-$$('[data-go-live]').forEach(cb=>cb.addEventListener('change',()=>{state.goLiveChecks[cb.dataset.goLive]=cb.checked;renderGoLive();}));}
-$('#resetGoLiveBtn')?.addEventListener('click',()=>{state.goLiveChecks={};renderGoLive();});
-
-function renderAdminTasks(){const box=$('#adminTaskList');if(!box||!isAdmin())return;const rows=state.tasks.filter(t=>t.system===state.adminTaskSystem).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));box.innerHTML=rows.length?rows.map(t=>`<div class="admin-row"><div>☷</div><div class="admin-main"><strong>${esc(t.name)}</strong><span>${esc(t.description||'No description supplied.')}</span></div><div><span class="status ${t.active?'':'inactive'}">${t.active?'Active':'Inactive'}</span><div class="admin-actions" style="margin-top:6px"><button class="mini" data-edit-task="${esc(t.id)}">Edit</button><button class="mini" data-toggle-task="${esc(t.id)}">${t.active?'Deactivate':'Activate'}</button><button class="mini" data-delete-task="${esc(t.id)}">Delete</button></div></div></div>`).join(''):'<div class="placeholder"><strong>No tasks in this system.</strong><span>Use Add Test Task to create one.</span></div>';
-$$('[data-edit-task]').forEach(b=>b.addEventListener('click',()=>openTaskModal(b.dataset.editTask)));$$('[data-toggle-task]').forEach(b=>b.addEventListener('click',()=>toggleTask(b.dataset.toggleTask)));$$('[data-delete-task]').forEach(b=>b.addEventListener('click',()=>deleteTask(b.dataset.deleteTask)));}
-$$('[data-admin-system]')?.forEach?.(()=>{});
-$$('.admin-filter').forEach(b=>b.addEventListener('click',()=>{state.adminTaskSystem=b.dataset.adminSystem;$$('.admin-filter').forEach(x=>x.classList.toggle('active',x===b));renderAdminTasks();}));
-function openTaskModal(id=null){if(!isAdmin())return;state.editingTaskId=id;const t=id?state.tasks.find(x=>String(x.id)===String(id)):null;$('#taskModalTitle').textContent=t?'Edit test case':'Add test case';$('#taskName').value=t?.name||'';$('#taskDescription').value=t?.description||'';$('#taskOrder').value=t?.sort_order||((Math.max(0,...state.tasks.filter(x=>x.system===state.adminTaskSystem).map(x=>Number(x.sort_order)||0))+1)||1);$('#taskSystem').value=t?.system||state.adminTaskSystem;openModal('#taskModal');}
-$('#addTaskBtn')?.addEventListener('click',()=>openTaskModal());$('#taskClose')?.addEventListener('click',()=>closeModal('#taskModal'));$('#taskCancel')?.addEventListener('click',()=>closeModal('#taskModal'));
-$('#taskSave')?.addEventListener('click',async()=>{if(!isAdmin())return;const name=$('#taskName').value.trim(),description=$('#taskDescription').value.trim()||null,system=$('#taskSystem').value,sort_order=Math.max(1,Number($('#taskOrder').value)||1);if(!name)return;try{let result;if(state.editingTaskId)result=await sb.from('testing_tasks').update({name,description,system,sort_order,updated_at:new Date().toISOString()}).eq('id',state.editingTaskId);else result=await sb.from('testing_tasks').insert({name,description,system,sort_order,active:true});if(result.error)throw result.error;closeModal('#taskModal');state.editingTaskId=null;await loadTasks();state.adminTaskSystem=system;$$('.admin-filter').forEach(b=>b.classList.toggle('active',b.dataset.adminSystem===system));renderAdminTasks();}catch(e){alert('Could not save test task: '+(e.message||e));}});
-async function toggleTask(id){const t=state.tasks.find(x=>String(x.id)===String(id));if(!t)return;const {error}=await sb.from('testing_tasks').update({active:!t.active,updated_at:new Date().toISOString()}).eq('id',id);if(error){alert(error.message);return;}await loadTasks();}
-async function deleteTask(id){const t=state.tasks.find(x=>String(x.id)===String(id));if(!t)return;openConfirm('Delete test case?',`Delete "${t.name}" permanently?`,async()=>{const {error}=await sb.from('testing_tasks').delete().eq('id',id);if(error)throw error;await loadTasks();});}
-
-function renderAdminGoLiveTasks(){const box=$('#adminGoLiveTaskList');if(!box||!isAdmin())return;const rows=[...state.goLiveTasks].sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));box.innerHTML=rows.length?rows.map(t=>`<div class="admin-row"><div>☷</div><div class="admin-main"><strong>${esc(t.name)}</strong><span>${esc(t.description||'No description supplied.')}</span></div><div><span class="status ${t.active?'':'inactive'}">${t.active?'Active':'Inactive'}</span><div class="admin-actions" style="margin-top:6px"><button class="mini" data-edit-gl="${esc(t.id)}">Edit</button><button class="mini" data-toggle-gl="${esc(t.id)}">${t.active?'Deactivate':'Activate'}</button><button class="mini" data-delete-gl="${esc(t.id)}">Delete</button></div></div></div>`).join(''):'<div class="placeholder"><strong>No checklist tasks yet.</strong><span>Use Add Checklist Task to create one.</span></div>';
-$$('[data-edit-gl]').forEach(b=>b.addEventListener('click',()=>openGoLiveModal(b.dataset.editGl)));$$('[data-toggle-gl]').forEach(b=>b.addEventListener('click',()=>toggleGoLive(b.dataset.toggleGl)));$$('[data-delete-gl]').forEach(b=>b.addEventListener('click',()=>deleteGoLive(b.dataset.deleteGl)));}
-
-function openGoLiveModal(id=null){if(!isAdmin())return;state.editingGoLiveId=id;const t=id?state.goLiveTasks.find(x=>String(x.id)===String(id)):null;$('#goLiveModalTitle').textContent=t?'Edit checklist task':'Add checklist task';$('#goLiveName').value=t?.name||'';$('#goLiveDescription').value=t?.description||'';$('#goLiveOrder').value=t?.sort_order||((Math.max(0,...state.goLiveTasks.map(x=>Number(x.sort_order)||0))+1)||1);openModal('#goLiveModal');}
-$('#addGoLiveTaskBtn')?.addEventListener('click',()=>openGoLiveModal());$('#goLiveClose')?.addEventListener('click',()=>closeModal('#goLiveModal'));$('#goLiveCancel')?.addEventListener('click',()=>closeModal('#goLiveModal'));
+function goLiveDecision(id){return state.goLiveChecks[id]?.result||'';}
+function renderGoLive(){
+ const box=$('#goLiveTaskList');if(!box)return;const tasks=activeGoLive();
+ const decided=tasks.filter(t=>goLiveDecision(t.id)).length,pass=tasks.filter(t=>goLiveDecision(t.id)==='pass').length,fail=tasks.filter(t=>goLiveDecision(t.id)==='fail').length,na=tasks.filter(t=>goLiveDecision(t.id)==='na').length;
+ $('#goLiveProgressText').textContent=`${decided} / ${tasks.length} decided`;
+ $('#goLiveProgressSubtext').textContent=`${pass} Pass · ${fail} Fail · ${na} N/A`;
+ $('#goLiveProgressFill').style.width=tasks.length?`${Math.round(decided/tasks.length*100)}%`:'0%';
+ box.innerHTML=tasks.length?tasks.map((t,i)=>{const item=state.goLiveChecks[t.id]||{},result=item.result||'';return `<div class="go-live-item"><div class="go-live-main"><span class="go-live-check">${result==='pass'?'✓':result==='fail'?'!':result==='na'?'—':''}</span><span class="go-live-copy"><strong>${i+1}. ${esc(t.name)}</strong><small>${esc(t.description||'No completion criteria supplied.')}</small></span>${result?`<span class="status ${result==='fail'?'inactive':''}">${result==='pass'?'Pass':result==='fail'?'Fail':'N/A'}</span>`:''}</div><div class="go-live-choice-row"><button type="button" class="go-live-choice pass ${result==='pass'?'sel':''}" data-go-live-choice="${esc(t.id)}|pass">✓ Pass</button><button type="button" class="go-live-choice fail ${result==='fail'?'sel':''}" data-go-live-choice="${esc(t.id)}|fail">✕ Fail</button><button type="button" class="go-live-choice na ${result==='na'?'sel':''}" data-go-live-choice="${esc(t.id)}|na">— N/A</button></div>${result?`<div class="go-live-note"><label>${result==='fail'?'Failure reason (required)':'Note (optional)'}</label>${result==='fail'?`<textarea class="go-live-fail-reason" data-go-live-reason="${esc(t.id)}" placeholder="Why did this task fail?">${esc(item.reason||'')}</textarea>`:''}<textarea data-go-live-note="${esc(t.id)}" placeholder="Optional note or evidence...">${esc(item.note||'')}</textarea></div>`:''}</div>`}).join(''):'<div class="card placeholder"><strong>No active checklist tasks.</strong><span>An administrator can add them from Admin.</span></div>';
+ $$('[data-go-live-choice]').forEach(b=>b.addEventListener('click',()=>{const [id,result]=b.dataset.goLiveChoice.split('|');const cur=state.goLiveChecks[id]||{};state.goLiveChecks[id]={...cur,result,reason:result==='fail'?cur.reason||'':'',note:cur.note||''};renderGoLive();}));
+ $$('[data-go-live-reason]').forEach(el=>el.addEventListener('input',()=>{state.goLiveChecks[el.dataset.goLiveReason]={...(state.goLiveChecks[el.dataset.goLiveReason]||{}),reason:el.value};}));
+ $$('[data-go-live-note]').forEach(el=>el.addEventListener('input',()=>{state.goLiveChecks[el.dataset.goLiveNote]={...(state.goLiveChecks[el.dataset.goLiveNote]||{}),note:el.value};}));
+}
+$('#resetGoLiveBtn')?.addEventListener('click',()=>{openConfirm('Reset Go Live Checklist?','This will clear every Pass, Fail, N/A choice and note from the current checklist.',()=>{state.goLiveChecks={};renderGoLive();});});
 $('#goLiveSave')?.addEventListener('click',async()=>{if(!isAdmin())return;const name=$('#goLiveName').value.trim(),description=$('#goLiveDescription').value.trim()||null,sort_order=Math.max(1,Number($('#goLiveOrder').value)||1);if(!name)return;try{let result;if(state.editingGoLiveId)result=await sb.from('go_live_tasks').update({name,description,sort_order,updated_at:new Date().toISOString()}).eq('id',state.editingGoLiveId);else result=await sb.from('go_live_tasks').insert({name,description,sort_order,active:true});if(result.error)throw result.error;state.editingGoLiveId=null;closeModal('#goLiveModal');await loadGoLiveTasks();}catch(e){alert('Could not save checklist task: '+(e.message||e));}});
 async function toggleGoLive(id){const t=state.goLiveTasks.find(x=>String(x.id)===String(id));if(!t)return;const {error}=await sb.from('go_live_tasks').update({active:!t.active,updated_at:new Date().toISOString()}).eq('id',id);if(error){alert(error.message);return;}await loadGoLiveTasks();}
 async function deleteGoLive(id){const t=state.goLiveTasks.find(x=>String(x.id)===String(id));if(!t)return;openConfirm('Delete checklist task?',`Delete "${t.name}" permanently?`,async()=>{const {error}=await sb.from('go_live_tasks').delete().eq('id',id);if(error)throw error;delete state.goLiveChecks[id];await loadGoLiveTasks();});}
 
 
 async function saveGoLiveChecklist(){
-  if(!isLoggedIn()){openModal('#authModal');return;}
-  const tasks=activeGoLive();
-  if(!tasks.length){setMessage('#goLiveMessage','There are no active checklist tasks to save.');return;}
-  const completed=tasks.filter(t=>state.goLiveChecks[t.id]).length;
-  try{
-    const portValue=$('#goLivePort')?.value||'';
-    const port=portValue.split(' - ')[0]||'';
-    if(!port){setMessage('#goLiveMessage','Please select a port before saving the checklist.');return;}
-    const {data:run,error}=await sb.from('go_live_runs').insert({tested_by_user_id:state.user.id,tested_by_name:formatName(state.user.email),port,total_tasks:tasks.length,completed_tasks:completed,status:completed===tasks.length?'completed':'incomplete',completed_at:completed===tasks.length?new Date().toISOString():null}).select('id').single();
-    if(error)throw error;
-    const rows=tasks.map(t=>({run_id:run.id,task_id:t.id,task_name:t.name,completed:!!state.goLiveChecks[t.id]}));
-    const {error:rerr}=await sb.from('go_live_results').insert(rows);
-    if(rerr)throw rerr;
-    state.goLiveChecks={};
-    renderGoLive();
-    setMessage('#goLiveMessage',`Go Live checklist saved successfully.`,'success');
-  }catch(e){
-    setMessage('#goLiveMessage','Could not save checklist: '+(e.message||e));
-  }
+ if(!isLoggedIn()){openModal('#authModal');return;}const tasks=activeGoLive();if(!tasks.length){setMessage('#goLiveMessage','There are no active checklist tasks to save.');return;}
+ const portValue=$('#goLivePort')?.value||'',port=portValue.split(' - ')[0]||'';if(!port){setMessage('#goLiveMessage','Please select a port before saving the checklist.');return;}
+ const incomplete=tasks.filter(t=>!goLiveDecision(t.id));if(incomplete.length){setMessage('#goLiveMessage',`Please record Pass, Fail or N/A for all ${incomplete.length} remaining task${incomplete.length===1?'':'s'}.`);return;}
+ const missing=tasks.filter(t=>goLiveDecision(t.id)==='fail'&&!String(state.goLiveChecks[t.id]?.reason||'').trim());if(missing.length){setMessage('#goLiveMessage',`Please add a failure reason for: ${missing.map(t=>t.name).join(', ')}`);return;}
+ const pass=tasks.filter(t=>goLiveDecision(t.id)==='pass').length,fail=tasks.filter(t=>goLiveDecision(t.id)==='fail').length,na=tasks.filter(t=>goLiveDecision(t.id)==='na').length;
+ try{const {data:run,error}=await sb.from('go_live_runs').insert({tested_by_user_id:state.user.id,tested_by_name:formatName(state.user.email),port,total_tasks:tasks.length,completed_tasks:pass+fail+na,status:fail?'failed':'completed',completed_at:new Date().toISOString()}).select('id').single();if(error)throw error;
+  const rows=tasks.map(t=>({run_id:run.id,task_id:t.id,task_name:t.name,completed:goLiveDecision(t.id)==='pass',result:goLiveDecision(t.id),failure_reason:goLiveDecision(t.id)==='fail'?(state.goLiveChecks[t.id]?.reason||null):null,note:state.goLiveChecks[t.id]?.note||null}));
+  const {error:rerr}=await sb.from('go_live_results').insert(rows);if(rerr)throw rerr;state.goLiveChecks={};renderGoLive();setMessage('#goLiveMessage',`Go Live checklist saved: ${pass} Pass · ${fail} Fail · ${na} N/A.`,'success');
+ }catch(e){setMessage('#goLiveMessage','Could not save checklist: '+(e.message||e));}
 }
 $('#saveGoLiveBtn')?.addEventListener('click',saveGoLiveChecklist);
 
 async function loadAdminGoLiveRuns(){
-  if(!isAdmin())return;
-  const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});
-  if(error)throw error;
-  const box=$('#adminGoLiveRunList');if(!box)return;
-  const runs=data?.runs||[];
-  box.innerHTML=runs.length?runs.map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port||'No port')} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tasks||0} / ${r.total_tasks||0} complete · ${esc(r.status||'incomplete')}</div></div><div class="run-actions"><button class="mini" data-export-go-live-run="${esc(r.id)}">⇩ CSV</button><button class="mini" data-delete-go-live-run="${esc(r.id)}">Delete</button></div></div>`).join(''):'<div class="placeholder small"><strong>No saved Go Live checklists.</strong></div>';
-  $$('[data-export-go-live-run]').forEach(b=>b.addEventListener('click',()=>exportSingleGoLiveRunCsv(b.dataset.exportGoLiveRun)));
-  $$('[data-delete-go-live-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete Go Live checklist?','This permanently removes the saved checklist results.',async()=>{const {error:e}=await sb.functions.invoke('admin-manage',{body:{action:'delete_go_live_run',runId:b.dataset.deleteGoLiveRun}});if(e)throw e;await loadAdminGoLiveRuns();})));
+ if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});if(error)throw error;const box=$('#adminGoLiveRunList');if(!box)return;const runs=data?.runs||[];
+ box.innerHTML=runs.length?runs.map(r=>`<div class="run-row"><div><strong>${esc(r.id)}</strong><div class="row-meta">${esc(r.port||'No port')} · ${esc(r.tested_by_name||'')} · ${esc(new Date(r.created_at).toLocaleString('en-AU'))}</div><div class="row-meta">${r.completed_tasks||0} / ${r.total_tasks||0} decided · ${esc(r.status||'incomplete')}</div></div><div class="run-actions"><button class="mini" data-view-go-live-run="${esc(r.id)}">View Results</button><button class="mini" data-export-go-live-run="${esc(r.id)}">⇩ CSV</button><button class="mini" data-delete-go-live-run="${esc(r.id)}">Delete</button></div></div>`).join(''):'<div class="placeholder small"><strong>No saved Go Live checklists.</strong></div>';
+ $$('[data-view-go-live-run]').forEach(b=>b.addEventListener('click',()=>openGoLiveRunDetails(b.dataset.viewGoLiveRun)));$$('[data-export-go-live-run]').forEach(b=>b.addEventListener('click',()=>exportSingleGoLiveRunCsv(b.dataset.exportGoLiveRun)));$$('[data-delete-go-live-run]').forEach(b=>b.addEventListener('click',()=>openConfirm('Delete Go Live checklist?','This permanently removes the saved checklist results.',async()=>{const {error:e}=await sb.functions.invoke('admin-manage',{body:{action:'delete_go_live_run',runId:b.dataset.deleteGoLiveRun}});if(e)throw e;await loadAdminGoLiveRuns();})));
 }
+async function openGoLiveRunDetails(runId){if(!isAdmin())return;const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});if(error)throw error;const run=(data?.runs||[]).find(r=>String(r.id)===String(runId));if(!run)throw new Error('Saved Go Live checklist not found.');$('#goLiveRunTitle').textContent=`${run.port||'No port'} Go Live Checklist`;$('#goLiveRunSummary').textContent=`${run.tested_by_name||'Unknown tester'} · ${new Date(run.created_at).toLocaleString('en-AU')} · ${run.status||'incomplete'}`;const results=run.go_live_results||[];$('#goLiveRunResults').innerHTML=results.length?results.map(r=>`<div class="go-live-history-row"><div><strong>${esc(r.task_name)}</strong>${r.failure_reason?`<small><b>Failure reason:</b> ${esc(r.failure_reason)}</small>`:''}${r.note?`<small><b>Note:</b> ${esc(r.note)}</small>`:''}</div><span class="result-pill ${r.result==='pass'?'result-pass':r.result==='fail'?'result-fail':'result-na'}">${r.result==='pass'?'Pass':r.result==='fail'?'Fail':'N/A'}</span></div>`).join(''):'<div class="issue-history-empty">No saved task results.</div>';openModal('#goLiveRunModal');}
 $('#refreshAdminGoLiveRuns')?.addEventListener('click',loadAdminGoLiveRuns);
 
 
@@ -656,42 +636,8 @@ async function exportAdminRunsCsv(){
   }catch(e){alert('Could not export testing runs: '+(e.message||e));}
 }
 
-async function exportAdminGoLiveRunsCsv(){
-  if(!isAdmin())return;
-  try{
-    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});
-    if(error)throw error;
-    const runs=data?.runs||[];
-    if(!runs.length){alert('There are no saved Go Live checklists to export.');return;}
-
-    const blocks=[];
-    for(const run of runs){
-      const results=run.go_live_results||[];
-      const ordered=[...results].sort((a,b)=>0);
-      const tasks=ordered.map(r=>r.task_name).filter(Boolean);
-      const header=['Port',...tasks];
-      const row=[run.port||'',...tasks.map(()=> 'Pass')];
-      blocks.push(header,row,['']);
-    }
-    blocks.pop();
-    downloadCsv(`va-fax-go-live-checklists-${new Date().toISOString().slice(0,10)}.csv`,blocks);
-  }catch(e){alert('Could not export Go Live checklists: '+(e.message||e));}
-}
-
-async function exportSingleGoLiveRunCsv(runId){
-  if(!isAdmin())return;
-  try{
-    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});
-    if(error)throw error;
-    const run=(data?.runs||[]).find(r=>String(r.id)===String(runId));
-    if(!run)throw new Error('Saved Go Live checklist could not be found.');
-    const results=run.go_live_results||[];
-    const tasks=results.map(r=>r.task_name).filter(Boolean);
-    const rows=[['Port',...tasks],[run.port||'',...tasks.map(()=> 'Pass')]];
-    downloadCsv(`va-fax-go-live-${run.port||'checklist'}-${String(run.id).slice(0,8)}.csv`,rows);
-  }catch(e){alert('Could not export Go Live checklist: '+(e.message||e));}
-}
-
+async function exportAdminGoLiveRunsCsv(){if(!isAdmin())return;try{const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});if(error)throw error;const runs=data?.runs||[];if(!runs.length){alert('There are no saved Go Live checklists to export.');return;}const blocks=[];for(const run of runs){const results=run.go_live_results||[],tasks=results.map(r=>r.task_name).filter(Boolean);blocks.push(['Port',...tasks],[run.port||'',...tasks.map(t=>{const r=results.find(x=>x.task_name===t);return r?.result==='pass'?'Pass':r?.result==='fail'?'Fail':'N/A';})],['']);}blocks.pop();downloadCsv(`va-fax-go-live-checklists-${new Date().toISOString().slice(0,10)}.csv`,blocks);}catch(e){alert('Could not export Go Live checklists: '+(e.message||e));}}
+async function exportSingleGoLiveRunCsv(runId){if(!isAdmin())return;try{const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'list_go_live_runs'}});if(error)throw error;const run=(data?.runs||[]).find(r=>String(r.id)===String(runId));if(!run)throw new Error('Saved Go Live checklist could not be found.');const results=run.go_live_results||[],tasks=results.map(r=>r.task_name).filter(Boolean);const rows=[['Port',...tasks],[run.port||'',...tasks.map(t=>{const r=results.find(x=>x.task_name===t);return r?.result==='pass'?'Pass':r?.result==='fail'?'Fail':'N/A';})]];downloadCsv(`va-fax-go-live-${run.port||'checklist'}-${String(run.id).slice(0,8)}.csv`,rows);}catch(e){alert('Could not export Go Live checklist: '+(e.message||e));}}
 $('#exportAdminTickets')?.addEventListener('click',exportAdminTicketsCsv);
 $('#exportAdminRuns')?.addEventListener('click',exportAdminRunsCsv);
 $('#exportAdminGoLiveRuns')?.addEventListener('click',exportAdminGoLiveRunsCsv);
@@ -788,4 +734,5 @@ $('#issuePreviewSubmit')?.addEventListener('click',async()=>{
     if(msg){msg.hidden=false;msg.textContent='Could not raise issue: '+(err.message||err);}
     if(btn){btn.disabled=false;btn.textContent='Raise Issue';}
   }
-});;
+});;$('#goLiveRunClose')?.addEventListener('click',()=>closeModal('#goLiveRunModal'));$('#goLiveRunModal')?.addEventListener('click',e=>{if(e.target.id==='goLiveRunModal')closeModal('#goLiveRunModal')});
+
