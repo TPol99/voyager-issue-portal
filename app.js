@@ -696,8 +696,36 @@ $('#exportAdminTickets')?.addEventListener('click',exportAdminTicketsCsv);
 $('#exportAdminRuns')?.addEventListener('click',exportAdminRunsCsv);
 $('#exportAdminGoLiveRuns')?.addEventListener('click',exportAdminGoLiveRunsCsv);
 
+
+async function loadAdminDashboard(){
+  if(!isAdmin())return;
+  const selected=$('#adminPortFilter')?.value||'ALL';
+  try{
+    const {data,error}=await sb.functions.invoke('admin-manage',{body:{action:'admin_dashboard',port:selected}});
+    if(error)throw error;
+    const m=data?.metrics||{};
+    $('#adminOpenIssues').textContent=m.open_issues||0;
+    $('#adminCriticalIssues').textContent=m.critical_issues||0;
+    $('#adminTestingRuns').textContent=m.testing_runs||0;
+    $('#adminPassRate').textContent=`${m.test_pass_rate||0}%`;
+    $('#adminGoLiveRuns').textContent=m.go_live_runs||0;
+    $('#adminGoLiveComplete').textContent=`${m.go_live_completion_rate||0}%`;
+    updatePie('#adminIssuePie','#adminIssueLegend',m.issue_status||[]);
+    updatePie('#adminTestingPie','#adminTestingLegend',m.testing_results||[]);
+    renderAdminPortBars(m.issues_by_port||[]);
+  }catch(e){console.warn('Admin dashboard load failed',e);}
+}
+function renderAdminPortBars(items){
+  const box=$('#adminPortBars');if(!box)return;
+  if(!items.length){box.innerHTML='<div class="placeholder small"><strong>No issue data.</strong></div>';return;}
+  const max=Math.max(...items.map(x=>x.value),1);
+  box.innerHTML=items.map(x=>`<div class="port-bar-row"><strong>${esc(x.label)}</strong><div class="port-bar-track"><div class="port-bar-fill" style="width:${Math.round(x.value/max*100)}%"></div></div><span>${x.value}</span></div>`).join('');
+}
+$('#adminPortFilter')?.addEventListener('change',loadAdminDashboard);
+
 async function refreshAdmin(){
   if(!isAdmin())return;
+  await loadAdminDashboard();
   const jobs=[
     ['testing tasks',loadTasks],
     ['testing templates',loadTestingTemplates],

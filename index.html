@@ -254,6 +254,25 @@
 
     <section id="view-admin" class="view">
       <div class="page-head"><div><div class="eyebrow">Administration</div><h2>Admin</h2><p>Manage testing configuration, checklist tasks and staff access.</p></div><span class="pill admin-status">Administrator</span></div>
+      <div class="admin-dashboard">
+        <div class="dashboard-toolbar card">
+          <div><div class="eyebrow">Operational overview</div><h3>Airport Operations</h3><p>Live view of issues, testing and go-live activity.</p></div>
+          <label class="dashboard-port-label">Port<select id="adminPortFilter"><option value="ALL">All Ports</option><option>BNE</option><option>MEL</option><option>SYD</option><option>OOL</option><option>MCY</option><option>MKY</option><option>ADL</option><option>PER</option><option>DRW</option><option>LST</option><option>ZQN</option><option>NAN</option></select></label>
+        </div>
+        <div class="dashboard-stats">
+          <div class="card dashboard-stat"><span>Open Issues</span><strong id="adminOpenIssues">0</strong><small>Not closed</small></div>
+          <div class="card dashboard-stat"><span>Critical Issues</span><strong id="adminCriticalIssues">0</strong><small>High-priority attention</small></div>
+          <div class="card dashboard-stat"><span>Testing Runs</span><strong id="adminTestingRuns">0</strong><small>Saved runs</small></div>
+          <div class="card dashboard-stat"><span>Test Pass Rate</span><strong id="adminPassRate">0%</strong><small>Saved test results</small></div>
+          <div class="card dashboard-stat"><span>Go Live Runs</span><strong id="adminGoLiveRuns">0</strong><small>Saved checklists</small></div>
+          <div class="card dashboard-stat"><span>Go Live Complete</span><strong id="adminGoLiveComplete">0%</strong><small>Completed task rate</small></div>
+        </div>
+        <div class="dashboard-charts">
+          <div class="card dashboard-chart"><div class="section-head"><div><h3>Issues by Status</h3><p>Current tickets for the selected port.</p></div></div><div class="status-chart-wrap"><div class="status-pie admin-pie" id="adminIssuePie"></div><div class="chart-legend" id="adminIssueLegend"></div></div></div>
+          <div class="card dashboard-chart"><div class="section-head"><div><h3>Testing Results</h3><p>Saved results for the selected port.</p></div></div><div class="status-chart-wrap"><div class="status-pie admin-pie" id="adminTestingPie"></div><div class="chart-legend" id="adminTestingLegend"></div></div></div>
+          <div class="card dashboard-chart"><div class="section-head"><div><h3>Issues by Port</h3><p>Open issues across all airports.</p></div></div><div id="adminPortBars" class="port-bars"></div></div>
+        </div>
+      </div>
       <div class="admin-grid">
         <div class="card admin-panel"><div class="section-head"><div><h3>Testing Tasks</h3><p>Create, edit, activate, deactivate and reorder testing tasks.</p></div><button class="btn primary" id="addTaskBtn">+ Add Test Task</button></div><div class="admin-tabs" id="adminTestingTabs"><button class="admin-filter active" data-admin-system="Bag Tagger">Bag Tagger</button><button class="admin-filter" data-admin-system="Auto Bag Drop">Auto Bag Drop</button></div><div id="adminTaskList" class="admin-list"></div></div>
         <div class="card admin-panel"><div class="section-head"><div><h3>Go Live Checklist</h3><p>Manage the checklist used by testers.</p></div><button class="btn primary" id="addGoLiveTaskBtn">+ Add Checklist Task</button></div><div id="adminGoLiveTaskList" class="admin-list"></div></div>
