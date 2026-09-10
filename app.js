@@ -66,10 +66,10 @@ window.addEventListener('beforeunload',function vafaxTestingBeforeUnload(event){
   }
 });
 
-function applyTheme(theme){
+function applyTheme(theme,persistManual=false){
   const dark=theme==='dark';
   document.documentElement.dataset.theme=dark?'dark':'light';
-  localStorage.setItem('vafax-theme',dark?'dark':'light');
+  if(persistManual) localStorage.setItem('vafax-theme-manual',dark?'dark':'light');
   const btn=$('#themeToggle');
   if(btn){
     btn.textContent=dark?'☀ Light':'☾ Dark';
@@ -80,10 +80,26 @@ function applyTheme(theme){
   if(meta)meta.setAttribute('content',dark?'#0f0c15':'#7c20ed');
 }
 
-applyTheme(localStorage.getItem('vafax-theme')||'light');
+const systemThemeQuery=window.matchMedia?.('(prefers-color-scheme: dark)');
+const manualTheme=localStorage.getItem('vafax-theme-manual');
+const initialTheme=manualTheme==='dark'||manualTheme==='light'
+  ? manualTheme
+  : (systemThemeQuery?.matches?'dark':'light');
+applyTheme(initialTheme,false);
+
 $('#themeToggle')?.addEventListener('click',()=>{
-  applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+  applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark',true);
 });
+
+if(systemThemeQuery){
+  const syncSystemTheme=(event)=>{
+    if(!localStorage.getItem('vafax-theme-manual')){
+      applyTheme(event.matches?'dark':'light',false);
+    }
+  };
+  systemThemeQuery.addEventListener?.('change',syncSystemTheme);
+  systemThemeQuery.addListener?.(syncSystemTheme);
+}
 
 $('#authBtn')?.addEventListener('click',()=>state.user?signOut():openModal('#authModal'));
 $('#authClose')?.addEventListener('click',()=>closeModal('#authModal'));$('#authModal')?.addEventListener('click',e=>{if(e.target.id==='authModal')closeModal('#authModal')});

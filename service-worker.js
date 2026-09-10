@@ -1,4 +1,4 @@
-const CACHE_NAME = 'va-fax-v5-20260911';
+const CACHE_NAME = 'va-fax-v6-20260911';
 const APP_SHELL = [
   './',
   './index.html',
