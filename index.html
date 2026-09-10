@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7c20ed">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="VA FAX">
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 <link rel="stylesheet" href="./styles.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <title>VA FAX Testing Companion</title>
@@ -318,5 +320,25 @@ BNET1BT002"></textarea></label><label class="template-active-line"><input id="te
 <div id="confirmModal" class="modal-backdrop" hidden><div class="modal small"><button class="modal-close" id="confirmClose">×</button><div class="eyebrow">Confirm action</div><h3 id="confirmTitle">Are you sure?</h3><p id="confirmCopy">This cannot be undone.</p><div class="modal-actions"><button class="btn secondary" id="confirmCancel">Cancel</button><button class="btn danger" id="confirmAction">Confirm</button></div></div></div>
 
 <script src="./app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js', { scope: './' })
+      .then(reg => {
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        reg.addEventListener('updatefound', () => {
+          const worker = reg.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+              worker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('VA FAX service worker registration failed', err));
+  });
+}
+</script>
 </body>
 </html>

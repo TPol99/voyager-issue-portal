@@ -540,3 +540,17 @@ html[data-theme="dark"] select option{background:#17131f;color:var(--ink)}
     grid-template-columns:1fr;
   }
 }
+
+/* ==========================================================
+   Phase 4 - installed iPhone / iPad app mode
+   ========================================================== */
+@media (display-mode: standalone){
+  html,body{min-height:100%;}
+  body{padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+  .topbar{top:0;}
+}
+@supports (-webkit-touch-callout:none){
+  @media (display-mode: standalone){
+    .topbar{padding-top:max(14px,env(safe-area-inset-top));}
+  }
+}
