@@ -133,6 +133,66 @@ $('#testingNotes')?.addEventListener('input',()=>{state.testingRunDirty=true;});
 
 async function loadTasks(){if(!state.user)return;const {data,error}=await sb.from('testing_tasks').select('id,system,name,description,sort_order,active,created_at,updated_at').order('system').order('sort_order').order('created_at');if(error)throw error;state.tasks=data||[];renderSystemTabs();renderTesting();renderAdminTasks();$('#homeTaskCount').textContent=state.tasks.filter(t=>t.active).length;}
 async function loadGoLiveTasks(){if(!state.user)return;const {data,error}=await sb.from('go_live_tasks').select('id,name,description,sort_order,active,created_at,updated_at').order('sort_order').order('created_at');if(error)throw error;state.goLiveTasks=data||[];renderGoLive();renderAdminGoLiveTasks();$('#homeGoLiveCount').textContent=state.goLiveTasks.filter(t=>t.active).length;}
+function renderAdminTasks(){
+  const box=$('#adminTaskList');
+  if(!box||!isAdmin())return;
+
+  const rows=[...state.tasks].sort((a,b)=>{
+    const systemCompare=String(a.system||'').localeCompare(String(b.system||''));
+    return systemCompare || (Number(a.sort_order||0)-Number(b.sort_order||0));
+  });
+
+  box.innerHTML=rows.length?rows.map(t=>`<div class="admin-row">
+    <div>☷</div>
+    <div class="admin-main">
+      <strong>${esc(t.name)}</strong>
+      <span>${esc(t.system)} · ${esc(t.description||'No description supplied.')}</span>
+    </div>
+    <div>
+      <span class="status ${t.active?'':'inactive'}">${t.active?'Active':'Inactive'}</span>
+      <div class="admin-actions" style="margin-top:6px">
+        <button class="mini" data-edit-task="${esc(t.id)}">Edit</button>
+        <button class="mini" data-toggle-task="${esc(t.id)}">${t.active?'Deactivate':'Activate'}</button>
+        <button class="mini danger" data-delete-task="${esc(t.id)}">Delete</button>
+      </div>
+    </div>
+  </div>`).join(''):'<div class="placeholder small"><strong>No testing tasks.</strong></div>';
+
+  $$('[data-edit-task]').forEach(b=>b.addEventListener('click',()=>{
+    const task=state.tasks.find(t=>String(t.id)===String(b.dataset.editTask));
+    if(task)openTaskModal(task);
+  }));
+
+  $$('[data-toggle-task]').forEach(b=>b.addEventListener('click',async()=>{
+    const task=state.tasks.find(t=>String(t.id)===String(b.dataset.toggleTask));
+    if(!task)return;
+    const {error}=await sb.functions.invoke('admin-manage',{body:{
+      action:'update_task',
+      taskId:task.id,
+      active:!task.active
+    }});
+    if(error){alert(error.message||error);return;}
+    await loadTasks();
+  }));
+
+  $$('[data-delete-task]').forEach(b=>b.addEventListener('click',()=>{
+    const task=state.tasks.find(t=>String(t.id)===String(b.dataset.deleteTask));
+    if(!task)return;
+    openConfirm(
+      'Delete testing task?',
+      `Delete "${task.name}"? Historical saved testing results will remain unchanged.`,
+      async()=>{
+        const {error}=await sb.functions.invoke('admin-manage',{body:{
+          action:'delete_task',
+          taskId:task.id
+        }});
+        if(error)throw error;
+        await loadTasks();
+      }
+    );
+  }));
+}
+
 function renderSystemTabs(){const box=$('#systemTabs');if(!box)return;box.innerHTML=['Bag Tagger','Auto Bag Drop'].map(s=>`<button type="button" class="system-tab ${s===state.testingSystem?'active':''}" data-system="${esc(s)}">${esc(s)}</button>`).join('');$$('.system-tab').forEach(b=>b.addEventListener('click',()=>{state.testingSystem=b.dataset.system;state.testingDevices=[{id:'',results:{}}];state.testingRunDirty=false;renderSystemTabs();renderTesting();}));}
 function activeTestingTasks(){return state.tasks.filter(t=>t.system===state.testingSystem&&t.active).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));}
 function renderTesting(){const table=$('#testingTable');if(!table)return;const tasks=activeTestingTasks();$('#testingTitle').textContent=`${state.testingSystem} Test Cases`;let head=`<thead><tr><th>Device ID</th>${tasks.map(t=>`<th>${esc(t.name)}</th>`).join('')}</tr></thead><tbody>`;for(const [i,d] of state.testingDevices.entries()){const failed=tasks.filter(t=>d.results[t.id]==='fail');head+=`<tr><td><input class="device-input" data-device="${i}" value="${esc(d.id)}" placeholder="e.g. SYDT3ABD001"><div class="device-actions"><button class="mini" data-pass-all="${i}">✓ Pass All</button><button class="mini" data-reset-row="${i}">↻ Reset</button>${state.testingDevices.length>1?`<button class="mini" data-remove-row="${i}">Remove</button>`:''}</div>${failed.length?`<div class="raise-row"><span>${failed.length} failed test${failed.length===1?'':'s'}</span><button class="raise-btn" data-raise-device="${i}">⚠ Raise Issue</button></div>`:''}</td>`;for(const t of tasks){const r=d.results[t.id]||'';head+=`<td><div class="check-set"><button class="check pass ${r==='pass'?'sel':''}" title="Pass" data-result="${i}|${t.id}|pass">✓</button><button class="check fail ${r==='fail'?'sel':''}" title="Fail" data-result="${i}|${t.id}|fail">✕</button></div></td>`;}head+='</tr>';}table.innerHTML=head+'</tbody>';updateTestingSummary();
